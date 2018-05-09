@@ -1,0 +1,29 @@
+{
+  "private": true,
+  "version": "1.0.0",
+  "author": "Jonathan Olaleye",
+  "proxy": "http://localhost:3001",
+  "scripts": {
+    "start": "node server/index.js",
+    "start:server": "nodemon server/index.js",
+    "start:client": "react-scripts start",
+    "start:dev": "concurrently -k -n \"client,server\" -c \"cyan,magenta\" \"npm run start:client\" \"npm run start:server\"",
+    "build": "react-scripts build"
+  },
+  "dependencies": {
+    "express": "^4.16.3",
+    "lodash": "^4.17.10",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0",
+    "react-scripts": "1.1.1",
+    "socket.io": "^2.1.0",
+    "socket.io-client": "^2.1.0"
+  },
+  "devDependencies": {
+    "concurrently": "^3.5.1",
+    "eslint": "^4.9.0",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.7.0",
+    "nodemon": "^1.17.1"
+  }
+}
