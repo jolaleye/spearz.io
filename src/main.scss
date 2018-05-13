@@ -1,2 +1,5 @@
 @import 'bulma/sass/utilities/initial-variables';
+
+html { overflow-y: auto !important; }
+
 @import 'bulma/bulma';
