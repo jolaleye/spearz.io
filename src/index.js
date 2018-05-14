@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 
 import './main.css';
-import Start from './components/Start';
+import StartContainer from './components/Start/StartContainer';
 import Game from './components/Game';
 import Restart from './components/Restart';
 
@@ -14,7 +14,7 @@ class App extends Component {
   render = () => {
     const { view } = this.state;
 
-    if (view === 'start') return <Start changeView={this.changeView} />;
+    if (view === 'start') return <StartContainer changeView={this.changeView} />;
     else if (view === 'game') return <Game changeView={this.changeView} />;
     return <Restart changeView={this.changeView} />;
   };
