@@ -3,7 +3,16 @@ import React, { Component } from 'react';
 import FriendModal from './FriendModal';
 
 class FriendModalContainer extends Component {
-  state = { roomCode: '' };
+  state = {
+    roomCode: '',
+    invalid: false,
+  };
+
+  componentDidUpdate() {
+    if (this.props.socket) {
+      this.props.socket.on('invalidRoom', () => this.setState({ invalid: true }));
+    }
+  }
 
   handleCodeChange = e => this.setState({ roomCode: e.target.value });
 
@@ -12,8 +21,8 @@ class FriendModalContainer extends Component {
 
     const { roomCode } = this.state;
     if (roomCode && roomCode.length === 9) {
-      this.props.joinRoom(roomCode);
-      this.setState({ roomCode: '' });
+      this.props.socket.emit('joinRoom', roomCode);
+      this.setState({ roomCode: '', invalid: false });
     }
   }
 
@@ -21,7 +30,8 @@ class FriendModalContainer extends Component {
     const { active, toggle, room } = this.props;
 
     return (
-      <FriendModal active={active} toggle={toggle} room={room} joinRoom={this.joinRoom}
+      <FriendModal active={active} toggle={toggle}
+        invalid={this.state.invalid} room={room} joinRoom={this.joinRoom}
         handleCodeChange={this.handleCodeChange} codeValue={this.state.roomCode}
       />
     );

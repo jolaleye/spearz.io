@@ -5,7 +5,7 @@ import logo from './logo.svg';
 import FriendModalContainer from './FriendModal/FriendModalContainer';
 
 const Start = ({
-  handleNameChange, handleSubmit, name, room, joinRoom, toggleModal, modalOpen,
+  socket, handleNameChange, handleSubmit, name, room, toggleModal, modalOpen,
 }) => (
   <div className="start">
     <img className="logo" src={logo} alt="Spearz.io" />
@@ -38,9 +38,7 @@ const Start = ({
       </button>
     </div>
 
-    <FriendModalContainer active={modalOpen} toggle={toggleModal}
-      room={room} joinRoom={joinRoom}
-    />
+    <FriendModalContainer socket={socket} active={modalOpen} toggle={toggleModal} room={room} />
   </div>
 );
 

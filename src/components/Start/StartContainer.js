@@ -17,12 +17,11 @@ class StartContainer extends Component {
 
   toggleModal = () => this.setState(prevState => ({ modalOpen: !prevState.modalOpen }));
 
-  joinRoom = id => this.props.socket.emit('joinRoom', id);
-
   render = () => (
-    <Start name={this.state.name} handleNameChange={this.handleNameChange}
+    <Start socket={this.props.socket}
+      name={this.state.name} handleNameChange={this.handleNameChange}
       handleSubmit={this.handleSubmit}
-      room={this.props.room} joinRoom={this.joinRoom}
+      room={this.props.room}
       toggleModal={this.toggleModal} modalOpen={this.state.modalOpen}
     />
   );

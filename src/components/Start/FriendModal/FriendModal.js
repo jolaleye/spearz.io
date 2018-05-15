@@ -2,7 +2,7 @@ import React from 'react';
 
 import './FriendModal.css';
 
-const FriendModal = ({ active, toggle, room, joinRoom, handleCodeChange, codeValue }) => (
+const FriendModal = ({ active, toggle, room, joinRoom, invalid, handleCodeChange, codeValue }) => (
   <div className={`modal ${active ? 'is-active' : null}`}>
     <div className="modal-background" onClick={toggle} />
     <div className="f-modal modal-card">
@@ -18,6 +18,9 @@ const FriendModal = ({ active, toggle, room, joinRoom, handleCodeChange, codeVal
                 value={codeValue} onChange={handleCodeChange}
               />
             </div>
+            <p className={`help ${invalid ? 'has-text-danger' : 'is-invisible'}`}>
+              Invalid room code
+            </p>
           </div>
           <div className="field">
             <div className="control">
