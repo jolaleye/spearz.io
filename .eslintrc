@@ -3,6 +3,7 @@
   "rules": {
     "linebreak-style": ["error", "windows"],
     "no-console": "off",
-    "arrow-parens": "off"
+    "arrow-parens": "off",
+    "object-curly-newline": "off"
   }
 }
