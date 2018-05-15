@@ -20,7 +20,7 @@ class FriendModalContainer extends Component {
     e.preventDefault();
 
     const { roomCode } = this.state;
-    if (roomCode && roomCode.length === 9) {
+    if (roomCode) {
       this.props.socket.emit('joinRoom', roomCode);
       this.setState({ roomCode: '', invalid: false });
     }
