@@ -12,6 +12,7 @@ class StartContainer extends Component {
 
   handleSubmit = e => {
     e.preventDefault();
+    this.props.socket.emit('joinGame', this.state.name);
     this.setState({ name: '' });
   }
 
