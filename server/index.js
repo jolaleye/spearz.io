@@ -4,6 +4,7 @@ const app = express();
 
 const config = require('./config');
 const Room = require('./Room');
+const Player = require('./Player');
 
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(`${__dirname}/../build`));
@@ -25,6 +26,7 @@ rooms[newRoom.id] = newRoom;
 io.on('connection', socket => {
   console.log(`Connection made: ${socket.id}`);
 
+
   // INITIAL ROOM CONNECTION
   let roomList = Object.values(rooms);
   let newestRoom = roomList[roomList.length - 1];
@@ -38,7 +40,7 @@ io.on('connection', socket => {
   }
   // connect the player to the newest room
   socket.join(newestRoom.id, () => socket.emit('roomId', Object.values(socket.rooms)[1]));
-  socket.emit('rooms', rooms);
+
 
   // PLAYER REQUESTS TO JOIN ROOM
   socket.on('joinRoom', id => {
@@ -49,5 +51,18 @@ io.on('connection', socket => {
       // join requested room
       socket.join(id, () => socket.emit('roomId', Object.values(socket.rooms)[1]));
     }
+  });
+
+
+  // PLAYER ENTERS NAME TO JOIN GAME
+  socket.on('joinGame', name => {
+    const roomId = Object.values(socket.rooms)[1];
+    console.log(`${name} wants to join room ${roomId}`);
+    // create a new player
+    const newPlayer = new Player(socket.id, name, roomId);
+    // add them to their room
+    rooms[roomId].players.push(newPlayer);
+    // give them the good to go
+    socket.emit('ready');
   });
 });
