@@ -4,7 +4,7 @@ import io from 'socket.io-client';
 
 import './main.css';
 import StartContainer from './components/Start/StartContainer';
-import Game from './components/Game';
+import GameContainer from './components/Game/GameContainer';
 import Restart from './components/Restart';
 
 class App extends Component {
@@ -20,25 +20,21 @@ class App extends Component {
     const { socket } = this.state;
 
     socket.on('roomId', id => this.setState({ room: id }));
-    socket.on('rooms', rooms => console.log(rooms));
+    socket.on('ready', () => this.changeView('game'));
   }
 
   changeView = view => this.setState({ view });
 
   render = () => {
-    const { view } = this.state;
+    const { socket, view, room } = this.state;
 
     if (view === 'start') {
-      return (
-        <StartContainer socket={this.state.socket}
-          changeView={this.changeView} room={this.state.room}
-        />
-      );
+      return <StartContainer socket={socket} room={room} />;
     } else if (view === 'game') {
-      return <Game changeView={this.changeView} />;
+      return <GameContainer socket={socket} />;
     }
-    return <Restart changeView={this.changeView} />;
-  };
+    return <Restart />;
+  }
 }
 
 ReactDOM.render(<App />, document.getElementById('root'));
