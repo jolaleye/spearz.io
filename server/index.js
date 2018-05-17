@@ -26,7 +26,6 @@ rooms[newRoom.id] = newRoom;
 io.on('connection', socket => {
   console.log(`Connection made: ${socket.id}`);
 
-
   // INITIAL ROOM CONNECTION
   let roomList = Object.values(rooms);
   let newestRoom = roomList[roomList.length - 1];
@@ -42,7 +41,7 @@ io.on('connection', socket => {
   socket.join(newestRoom.id, () => socket.emit('roomId', Object.values(socket.rooms)[1]));
 
 
-  // PLAYER REQUESTS TO JOIN ROOM
+  // PLAYER REQUESTS TO JOIN A ROOM
   socket.on('joinRoom', id => {
     if (!rooms[id]) socket.emit('invalidRoom');
     else {
@@ -54,7 +53,7 @@ io.on('connection', socket => {
   });
 
 
-  // PLAYER ENTERS NAME TO JOIN GAME
+  // PLAYER JOINS THE GAME
   socket.on('joinGame', name => {
     const roomId = Object.values(socket.rooms)[1];
     console.log(`${name} wants to join room ${roomId}`);
@@ -62,6 +61,8 @@ io.on('connection', socket => {
     const newPlayer = new Player(socket.id, name, roomId);
     // add them to their room
     rooms[roomId].players.push(newPlayer);
+    // assign this player to the socket
+    socket.player = newPlayer; // eslint-disable-line
     // give them the good to go
     socket.emit('ready');
   });
