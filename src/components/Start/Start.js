@@ -1,7 +1,7 @@
 import React from 'react';
 
 import './start.css';
-import logo from './logo.svg';
+import logo from '../../assets/logo.svg';
 import FriendModalContainer from './FriendModal/FriendModalContainer';
 
 const Start = ({
