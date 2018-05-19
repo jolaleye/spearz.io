@@ -5,5 +5,8 @@
     "no-console": "off",
     "arrow-parens": "off",
     "object-curly-newline": "off"
+  },
+  "env": {
+    "browser": true
   }
 }
