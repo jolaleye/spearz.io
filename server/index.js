@@ -66,4 +66,10 @@ io.on('connection', socket => {
     // give them the good to go
     socket.emit('ready');
   });
+
+
+  // PLAYER REQUESTS AN UPDATE
+  socket.on('requestUpdate', () => {
+    socket.emit('playerData', socket.player);
+  });
 });
