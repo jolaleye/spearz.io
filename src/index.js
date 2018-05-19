@@ -6,7 +6,7 @@ import './main.css';
 import StartContainer from './components/Start/StartContainer';
 import GameContainer from './components/Game/GameContainer';
 import Restart from './components/Restart';
-import arenaBg from './assets/arena-bg.png';
+import arenaBgCell from './assets/arena-bg-cell.png';
 
 const { LoadQueue } = window.createjs;
 
@@ -50,7 +50,7 @@ class App extends Component {
 
     // list of assets to be loaded
     queue.loadManifest([
-      { id: 'background', src: arenaBg },
+      { id: 'backgroundCell', src: arenaBgCell },
     ]);
   }
 
