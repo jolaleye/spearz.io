@@ -5,9 +5,9 @@ import Canvas from './Canvas';
 import LeaderboardContainer from './Leaderboard/LeaderboardContainer';
 import StatusContainer from './Status/StatusContainer';
 
-const Game = ({ socket }) => (
+const Game = ({ socket, assets }) => (
   <div className="game">
-    <Canvas socket={socket} />
+    <Canvas socket={socket} assets={assets} />
     <LeaderboardContainer socket={socket} />
     <StatusContainer socket={socket} />
   </div>
