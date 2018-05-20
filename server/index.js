@@ -8,7 +8,7 @@ const Player = require('./Player');
 
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(`${__dirname}/../build`));
-  app.get('/*', (req, res) => {
+  app.get('/', (req, res) => {
     res.sendFile(`${__dirname}/../build/index.html`);
   });
 }
@@ -16,6 +16,8 @@ if (process.env.NODE_ENV === 'production') {
 const server = app.listen(3001, () => console.log('Server started on port 3001'));
 
 const io = require('socket.io')(server);
+
+io.origins('http://localhost:3000');
 
 // all of the game rooms
 const rooms = {};

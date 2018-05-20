@@ -22,7 +22,7 @@ class App extends Component {
 
   async componentDidMount() {
     // connect to the server
-    await this.setState({ socket: io.connect() });
+    await this.setState({ socket: io.connect('http://localhost:3001') });
     const { socket } = this.state;
 
     // load game assets
