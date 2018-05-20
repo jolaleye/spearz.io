@@ -8,6 +8,9 @@ class Player {
     this.id = id;
     this.name = name;
     this.room = room;
+    this.health = 80;
+    this.shield = 80;
+
     // random initial position within the arena (a circle)
     // origin is at the center of the arena
     const randomAngle = _.random(2 * Math.PI);

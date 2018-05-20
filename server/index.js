@@ -74,9 +74,15 @@ io.on('connection', socket => {
   socket.on('requestUpdate', (target, callback) => {
     socket.player.move(target);
 
-    // respond with data
+    // respond with data needed by the canvas
     callback({
       player: socket.player,
+    });
+
+    // emit other data
+    socket.emit('status', {
+      health: socket.player.health,
+      shield: socket.player.shield,
     });
   });
 });
