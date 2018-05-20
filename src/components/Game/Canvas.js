@@ -8,6 +8,10 @@ class Canvas extends Component {
   canvas = createRef();
   backgroundCell = this.props.assets.backgroundCell;
 
+  state = {
+    pos: { x: 0, y: 0 },
+  }
+
   componentDidMount() {
     // Easel JS
     this.stage = new Stage(this.canvas.current);
@@ -16,11 +20,8 @@ class Canvas extends Component {
     this.resizeCanvas();
     window.addEventListener('resize', this.resizeCanvas);
 
-    // get initial player data & start game cycle
-    this.props.socket.emit('requestPlayerData', data => {
-      this.drawBackground(data.pos);
-      window.requestAnimationFrame(this.updateCycle);
-    });
+    // start game cycle
+    window.requestAnimationFrame(this.updateCycle);
   }
 
   // scale the canvas to the current device
@@ -33,8 +34,14 @@ class Canvas extends Component {
     window.requestAnimationFrame(this.updateCycle);
     this.stage.removeAllChildren();
 
-    this.props.socket.emit('requestPlayerData', data => {
-      this.drawBackground(data.pos);
+    const mouse = {
+      x: this.stage.mouseX + (this.state.pos.x - (this.stage.canvas.width / 2)),
+      y: this.stage.mouseY + (this.state.pos.y - (this.stage.canvas.height / 2)),
+    };
+
+    this.props.socket.emit('requestUpdate', mouse, data => {
+      this.setState({ pos: data.player.pos });
+      this.drawBackground(data.player.pos);
     });
   }
 

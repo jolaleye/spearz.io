@@ -70,5 +70,13 @@ io.on('connection', socket => {
   });
 
 
-  socket.on('requestPlayerData', callback => callback(socket.player));
+  // PLAYER REQUESTS AN UPDATE - INITIALIZE SERVER LOGIC AND RESPOND WITH UPDATED DATA
+  socket.on('requestUpdate', (target, callback) => {
+    socket.player.move(target);
+
+    // respond with data
+    callback({
+      player: socket.player,
+    });
+  });
 });
