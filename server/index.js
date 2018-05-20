@@ -68,8 +68,5 @@ io.on('connection', socket => {
   });
 
 
-  // PLAYER REQUESTS AN UPDATE
-  socket.on('requestUpdate', () => {
-    socket.emit('playerData', socket.player);
-  });
+  socket.on('requestPlayerData', callback => callback(socket.player));
 });
