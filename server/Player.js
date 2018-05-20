@@ -1,6 +1,7 @@
 const _ = require('lodash');
 
 const config = require('./config');
+const { getDistance } = require('./util');
 
 class Player {
   constructor(id, name, room) {
@@ -15,6 +16,22 @@ class Player {
       x: Math.sqrt(randomDistance) * Math.cos(randomAngle),
       y: Math.sqrt(randomDistance) * Math.sin(randomAngle),
     };
+  }
+
+  move(target) {
+    const distance = getDistance(this.pos.x, target.x, this.pos.y, target.y);
+    const direction = Math.atan2(distance.y, distance.x);
+
+    let dx = 5 * Math.cos(direction);
+    let dy = 5 * Math.sin(direction);
+
+    if (distance.total < 100) {
+      dx *= distance.total / 100;
+      dy *= distance.total / 100;
+    }
+
+    this.pos.x += dx;
+    this.pos.y += dy;
   }
 }
 
