@@ -6,43 +6,40 @@ const { Stage, Bitmap } = window.createjs;
 
 class Canvas extends Component {
   canvas = createRef();
-
-  state = {
-    player: null,
-  }
+  backgroundCell = this.props.assets.backgroundCell;
 
   componentDidMount() {
     // Easel JS
     this.stage = new Stage(this.canvas.current);
-    this.backgroundCell = this.props.assets.backgroundCell;
+
     // initialize the canvas
     this.resizeCanvas();
     window.addEventListener('resize', this.resizeCanvas);
+
     // get initial player data & start game cycle
     this.props.socket.emit('requestPlayerData', data => {
-      this.setState({ player: data });
+      this.drawBackground(data.pos);
       window.requestAnimationFrame(this.updateCycle);
     });
   }
 
   // scale the canvas to the current device
   resizeCanvas = () => {
-    const canvas = this.canvas.current;
-    canvas.width = Math.round(config.deviceWidth / config.scale);
-    canvas.height = Math.round(config.deviceHeight / config.scale);
+    this.stage.canvas.width = Math.round(config.deviceWidth / config.scale);
+    this.stage.canvas.height = Math.round(config.deviceHeight / config.scale);
   }
 
-  updateCycle = async () => {
-    this.props.socket.emit('requestPlayerData', data => this.setState({ player: data }));
-
-    this.stage.removeAllChildren();
-    this.drawBackground();
+  updateCycle = () => {
     window.requestAnimationFrame(this.updateCycle);
+    this.stage.removeAllChildren();
+
+    this.props.socket.emit('requestPlayerData', data => {
+      this.drawBackground(data.pos);
+    });
   }
 
-  drawBackground = () => {
+  drawBackground = pos => {
     const { stage, backgroundCell } = this;
-    const { pos } = this.state.player;
 
     const xNumOfCells = Math.ceil(stage.canvas.width / backgroundCell.width) + 1;
     const yNumOfCells = Math.ceil(stage.canvas.height / backgroundCell.height) + 1;
@@ -60,6 +57,7 @@ class Canvas extends Component {
         stage.update();
       }
     }
+
     stage.setTransform();
   }
 
