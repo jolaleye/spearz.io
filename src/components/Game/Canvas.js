@@ -1,73 +1,66 @@
 import React, { Component, createRef } from 'react';
-import _ from 'lodash';
 
 import config from '../../config';
 
-const { Stage, Bitmap, Rectangle } = window.createjs;
+const { Stage, Bitmap } = window.createjs;
 
 class Canvas extends Component {
   canvas = createRef();
-  stage = null;
-  background = null;
 
   state = {
-    player: { pos: { x: 0, y: 0 } },
-  };
+    player: null,
+  }
 
   componentDidMount() {
-    // EaselJS
+    // Easel JS
     this.stage = new Stage(this.canvas.current);
-    this.background = new Bitmap(this.props.assets.background);
+    this.backgroundCell = this.props.assets.backgroundCell;
     // initialize the canvas
     this.resizeCanvas();
     window.addEventListener('resize', this.resizeCanvas);
-    this.drawBackground();
-    // handle incoming data
-    this.handleSocket();
-    // start game cycle
-    window.requestAnimationFrame(this.updateCycle);
+    // get initial player data & start game cycle
+    this.props.socket.emit('requestPlayerData', data => {
+      this.setState({ player: data });
+      window.requestAnimationFrame(this.updateCycle);
+    });
   }
 
-  // scale the canvas to the screen
+  // scale the canvas to the current device
   resizeCanvas = () => {
     const canvas = this.canvas.current;
     canvas.width = Math.round(config.deviceWidth / config.scale);
     canvas.height = Math.round(config.deviceHeight / config.scale);
   }
 
-  // clear the canvas before each draw
-  clearCanvas = () => {
-    const canvas = this.canvas.current;
-    const c = canvas.getContext('2d');
-    c.clearRect(0, 0, canvas.width, canvas.height);
-  }
+  updateCycle = async () => {
+    this.props.socket.emit('requestPlayerData', data => this.setState({ player: data }));
 
-  updateCycle = () => {
+    this.stage.removeAllChildren();
+    this.drawBackground();
     window.requestAnimationFrame(this.updateCycle);
-    this.props.socket.emit('requestUpdate');
-    this.stage.update();
-  }
-
-  handleSocket = () => {
-    const { socket } = this.props;
-    socket.on('playerData', async player => {
-      await this.setState({ player });
-      this.drawBackground();
-    });
   }
 
   drawBackground = () => {
-    const canvas = this.canvas.current;
-    const { stage, background } = this;
-    const { player } = this.state;
-    this.clearCanvas();
+    const { stage, backgroundCell } = this;
+    const { pos } = this.state.player;
 
-    // position of the canvas in the arena
-    const xOffset = (player.pos.x - (canvas.width / 2)) + 2000 + 5500 || _.random(5000, 10000);
-    const yOffset = (player.pos.y - (canvas.height / 2)) + 2000 + 5500 || _.random(5000, 10000);
+    const xNumOfCells = Math.ceil(stage.canvas.width / backgroundCell.width) + 1;
+    const yNumOfCells = Math.ceil(stage.canvas.height / backgroundCell.height) + 1;
 
-    background.sourceRect = new Rectangle(xOffset, yOffset, canvas.width, canvas.height);
-    stage.addChild(background);
+    const xOffset = pos.x % backgroundCell.width;
+    const yOffset = pos.y % backgroundCell.height;
+
+    stage.setTransform(-xOffset, -yOffset);
+
+    for (let x = -xNumOfCells; x < xNumOfCells; x += 1) {
+      for (let y = -yNumOfCells; y < yNumOfCells; y += 1) {
+        const bgCell = new Bitmap(backgroundCell);
+        bgCell.setTransform(x * bgCell.getBounds().width, y * bgCell.getBounds().height);
+        stage.addChild(bgCell);
+        stage.update();
+      }
+    }
+    stage.setTransform();
   }
 
   render = () => <canvas ref={this.canvas} />
