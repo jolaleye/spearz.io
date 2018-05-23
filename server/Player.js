@@ -10,6 +10,7 @@ class Player {
     this.room = room;
     this.health = 80;
     this.shield = 80;
+    this.direction = 90;
 
     // random initial position within the arena (a circle)
     // origin is at the center of the arena
@@ -25,8 +26,11 @@ class Player {
     const distance = getDistance(this.pos.x, target.x, this.pos.y, target.y);
     const direction = Math.atan2(distance.y, distance.x);
 
-    let dx = 5 * Math.cos(direction);
-    let dy = 5 * Math.sin(direction);
+    // set this player's direction in degrees
+    this.direction = direction * (180 / Math.PI);
+
+    let dx = 4 * Math.cos(direction);
+    let dy = 4 * Math.sin(direction);
 
     if (distance.total < 100) {
       dx *= distance.total / 100;
