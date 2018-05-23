@@ -4,7 +4,7 @@ import io from 'socket.io-client';
 
 import './main.css';
 import StartContainer from './components/Start/StartContainer';
-import GameContainer from './components/Game/GameContainer';
+import Game from './components/Game/Game';
 import Restart from './components/Restart';
 import backgroundCell from './assets/bg-cell.png';
 
@@ -63,7 +63,7 @@ class App extends Component {
       return <StartContainer socket={socket} room={room} />;
     } else if (view === 'game') {
       return allLoaded
-        ? <GameContainer socket={socket} assets={assets} />
+        ? <Game socket={socket} assets={assets} />
         : <div>loading</div>;
     }
     return <Restart />;
