@@ -83,7 +83,7 @@ class Canvas extends Component {
 
     // adjust spear registration point and placement
     spearBitmap.regY = spearBitmap.getBounds().height / 2;
-    spearBitmap.x = containerWidth - 14;
+    spearBitmap.x = playerBitmap.getBounds().width + 10;
     spearBitmap.y = containerHeight / 2;
   }
 
