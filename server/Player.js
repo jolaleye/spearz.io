@@ -3,6 +3,15 @@ const _ = require('lodash');
 const config = require('./config');
 const { getDistance } = require('./util');
 
+class Spear {
+  constructor(posx, posy) {
+    this.pos = {
+      x: posx,
+      y: posy,
+    };
+  }
+}
+
 class Player {
   constructor(id, name, room) {
     this.id = id;
@@ -20,6 +29,8 @@ class Player {
       x: Math.sqrt(randomDistance) * Math.cos(randomAngle),
       y: Math.sqrt(randomDistance) * Math.sin(randomAngle),
     };
+
+    this.spear = new Spear(this.pos.x + 62.5, this.pos.y);
   }
 
   move(target) {
@@ -39,6 +50,11 @@ class Player {
 
     this.pos.x += dx;
     this.pos.y += dy;
+
+    // determine position of the spear (62.5 away from the player)
+    const angleToSpear = (direction + (Math.PI / 2));
+    this.spear.pos.x = this.pos.x + (62.5 * Math.cos(angleToSpear));
+    this.spear.pos.y = this.pos.y + (62.5 * Math.sin(angleToSpear));
   }
 }
 
