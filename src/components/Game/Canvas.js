@@ -4,7 +4,7 @@ import config from '../../config';
 import playerSprite from '../../assets/player.png';
 import spearSprite from '../../assets/spear.png';
 
-const { Stage, Bitmap, Container } = window.createjs;
+const { Stage, Bitmap } = window.createjs;
 
 class Canvas extends Component {
   canvas = createRef();
@@ -20,9 +20,6 @@ class Canvas extends Component {
   componentDidMount() {
     // set up Easel JS objects
     this.stage = new Stage(this.canvas.current);
-    this.playerContainer = new Container();
-    this.playerContainer.addChild(this.playerBitmap);
-    this.playerContainer.addChild(this.spearBitmap);
 
     // initialize the canvas
     this.resizeCanvas();
@@ -47,44 +44,38 @@ class Canvas extends Component {
       y: this.stage.mouseY + (this.state.pos.y - (this.stage.canvas.height / 2)),
     };
 
-    this.props.socket.emit('requestUpdate', mouse, data => {
-      this.setState({
+    this.props.socket.emit('requestUpdate', mouse, async data => {
+      await this.setState({
         pos: data.player.pos,
         direction: data.player.direction,
+        distanceToSpear: data.player.distanceToSpear,
       });
-    });
 
-    this.drawBackground();
-    this.drawPlayer();
-    this.stage.update();
+      this.drawBackground();
+      this.drawPlayer();
+      this.stage.update();
+    });
   }
 
   drawPlayer = () => {
-    const { stage, playerContainer, playerBitmap, spearBitmap } = this;
-    stage.addChild(playerContainer);
-
-    const containerWidth = playerContainer.getBounds().width;
-    const containerHeight = playerContainer.getBounds().height;
-
-    // set player container's registration point to its center
-    playerContainer.regX = containerWidth / 2;
-    playerContainer.regY = containerHeight / 2;
+    const { stage, playerBitmap, spearBitmap } = this;
+    stage.addChild(playerBitmap, spearBitmap);
 
     // center the player
-    playerContainer.x = stage.canvas.width / 2;
-    playerContainer.y = stage.canvas.height / 2;
-
-    // rotate the player to the direction it's facing in game
-    playerContainer.rotation = this.state.direction + 90;
-
-    // adjust player registration point and placement
+    playerBitmap.regX = playerBitmap.getBounds().width / 2;
     playerBitmap.regY = playerBitmap.getBounds().height / 2;
-    playerBitmap.y = containerHeight / 2;
+    playerBitmap.x = stage.canvas.width / 2;
+    playerBitmap.y = stage.canvas.height / 2;
 
-    // adjust spear registration point and placement
+    // position the spear (distance from player to spear provided by server)
+    spearBitmap.regX = spearBitmap.getBounds().width / 2;
     spearBitmap.regY = spearBitmap.getBounds().height / 2;
-    spearBitmap.x = playerBitmap.getBounds().width + 10;
-    spearBitmap.y = containerHeight / 2;
+    spearBitmap.x = playerBitmap.x + this.state.distanceToSpear.x;
+    spearBitmap.y = playerBitmap.y + this.state.distanceToSpear.y;
+
+    // rotate both towards the target
+    playerBitmap.rotation = this.state.direction - 90;
+    spearBitmap.rotation = this.state.direction - 90;
   }
 
   drawBackground = () => {
