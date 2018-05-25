@@ -4,10 +4,10 @@ const config = require('./config');
 const { getDistance } = require('./util');
 
 class Spear {
-  constructor(posx, posy) {
+  constructor(pos) {
     this.pos = {
-      x: posx,
-      y: posy,
+      x: pos.x,
+      y: pos.y,
     };
   }
 }
@@ -30,7 +30,7 @@ class Player {
       y: Math.sqrt(randomDistance) * Math.sin(randomAngle),
     };
 
-    this.spear = new Spear(this.pos.x + 62.5, this.pos.y);
+    this.spear = new Spear(this.pos);
   }
 
   move(target) {
@@ -38,7 +38,7 @@ class Player {
     const direction = Math.atan2(distance.y, distance.x);
 
     // set this player's direction in degrees
-    this.direction = direction * (180 / Math.PI);
+    this.direction = (direction * (180 / Math.PI)) + 180;
 
     let dx = 4 * Math.cos(direction);
     let dy = 4 * Math.sin(direction);
@@ -51,10 +51,12 @@ class Player {
     this.pos.x += dx;
     this.pos.y += dy;
 
-    // determine position of the spear (62.5 away from the player)
+    // determine position of the spear (60 away from the player)
     const angleToSpear = (direction + (Math.PI / 2));
-    this.spear.pos.x = this.pos.x + (62.5 * Math.cos(angleToSpear));
-    this.spear.pos.y = this.pos.y + (62.5 * Math.sin(angleToSpear));
+    this.spear.pos.x = this.pos.x + (60 * Math.cos(angleToSpear));
+    this.spear.pos.y = this.pos.y + (60 * Math.sin(angleToSpear));
+
+    this.distanceToSpear = getDistance(this.pos.x, this.spear.pos.x, this.pos.y, this.spear.pos.y);
   }
 }
 
