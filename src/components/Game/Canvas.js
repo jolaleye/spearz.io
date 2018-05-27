@@ -139,12 +139,12 @@ class Canvas extends Component {
 
     if (timeOutOfBounds === 0) return;
     let alpha = `.${timeOutOfBounds.toString().split('.')[1].slice(0, 3)}`;
-    alpha = Math.min(alpha, 0.6);
+    alpha = Math.min(alpha, 0.7);
 
     warning.graphics.clear();
     warning.graphics.beginRadialGradientFill(
-      ['transparent', `rgba(249, 109, 107, ${alpha})`],
-      [0.8, 1],
+      ['transparent', `rgba(189, 75, 104, ${alpha})`],
+      [0.7, 1],
       stage.canvas.width / 2, stage.canvas.height / 2, 0,
       stage.canvas.width / 2, stage.canvas.height / 2, 800,
     ).drawRect(0, 0, stage.canvas.width, stage.canvas.height);
