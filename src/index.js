@@ -7,6 +7,7 @@ import StartContainer from './components/Start/StartContainer';
 import Game from './components/Game/Game';
 import Restart from './components/Restart';
 import backgroundCell from './assets/bg-cell.png';
+import boundary from './assets/boundary.png';
 
 const { LoadQueue } = window.createjs;
 
@@ -51,6 +52,7 @@ class App extends Component {
     // list of assets to be loaded
     queue.loadManifest([
       { id: 'backgroundCell', src: backgroundCell },
+      { id: 'boundary', src: boundary },
     ]);
   }
 

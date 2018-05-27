@@ -4,13 +4,14 @@ import config from '../../config';
 import playerSprite from '../../assets/player.png';
 import spearSprite from '../../assets/spear.png';
 
-const { Stage, Bitmap } = window.createjs;
+const { Stage, Bitmap, Rectangle } = window.createjs;
 
 class Canvas extends Component {
   canvas = createRef();
   backgroundCell = this.props.assets.backgroundCell;
   playerBitmap = new Bitmap(playerSprite);
   spearBitmap = new Bitmap(spearSprite);
+  boundary = new Bitmap(this.props.assets.boundary);
 
   state = {
     pos: { x: 0, y: 0 },
@@ -20,6 +21,9 @@ class Canvas extends Component {
   componentDidMount() {
     // set up Easel JS objects
     this.stage = new Stage(this.canvas.current);
+
+    this.boundary.scaleX = 10;
+    this.boundary.scaleY = 10;
 
     // initialize the canvas
     this.resizeCanvas();
@@ -52,6 +56,7 @@ class Canvas extends Component {
       });
 
       this.drawBackground();
+      this.drawBoundary();
       this.drawPlayer();
       this.stage.update();
     });
@@ -98,6 +103,19 @@ class Canvas extends Component {
         stage.addChild(bgCell);
       }
     }
+  }
+
+  drawBoundary = () => {
+    const { stage, boundary } = this;
+
+    boundary.sourceRect = new Rectangle(
+      (((this.state.pos.x + 5500) - (stage.canvas.width / 2)) + 1000) / 10,
+      (((this.state.pos.y + 5500) - (stage.canvas.height / 2)) + 1000) / 10,
+      stage.canvas.width / 10,
+      stage.canvas.height / 10,
+    );
+
+    stage.addChild(boundary);
   }
 
   render = () => <canvas ref={this.canvas} />;
