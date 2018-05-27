@@ -4,15 +4,11 @@ import config from '../../config';
 import playerSprite from '../../assets/player.png';
 import spearSprite from '../../assets/spear.png';
 
-const { Stage, Bitmap, Shape } = window.createjs;
+const { Stage, Bitmap, Shape, Text } = window.createjs;
 
 class Canvas extends Component {
   canvas = createRef();
   backgroundCell = this.props.assets.backgroundCell;
-  playerBitmap = new Bitmap(playerSprite);
-  spearBitmap = new Bitmap(spearSprite);
-  boundary = new Shape();
-  warning = new Shape();
 
   state = {
     pos: { x: 0, y: 0 },
@@ -22,15 +18,24 @@ class Canvas extends Component {
   }
 
   componentDidMount() {
-    // Easel JS
-    this.stage = new Stage(this.canvas.current);
-
+    this.initEasel();
     // initialize the canvas
     this.resizeCanvas();
     window.addEventListener('resize', this.resizeCanvas);
-
     // start game cycle
     window.requestAnimationFrame(this.updateCycle);
+  }
+
+  initEasel = () => {
+    this.stage = new Stage(this.canvas.current);
+    this.playerBitmap = new Bitmap(playerSprite);
+    this.spearBitmap = new Bitmap(spearSprite);
+    this.boundary = new Shape();
+    this.warning = new Shape();
+
+    this.playerName = new Text();
+    this.playerName.font = '22px Roboto';
+    this.playerName.color = 'rgba(255, 255, 255, 0.6)';
   }
 
   // scale the canvas to the current device
@@ -58,16 +63,16 @@ class Canvas extends Component {
 
       this.drawBackground();
       this.drawBoundary();
-      this.drawPlayer();
+      this.drawPlayer(data.player.name);
       this.drawWarning();
 
       this.stage.update();
     });
   }
 
-  drawPlayer = () => {
-    const { stage, playerBitmap, spearBitmap } = this;
-    stage.addChild(playerBitmap, spearBitmap);
+  drawPlayer = name => {
+    const { stage, playerBitmap, spearBitmap, playerName } = this;
+    stage.addChild(playerBitmap, spearBitmap, playerName);
 
     // center the player
     playerBitmap.regX = playerBitmap.getBounds().width / 2;
@@ -84,6 +89,13 @@ class Canvas extends Component {
     // rotate both towards the target
     playerBitmap.rotation = this.state.direction - 90;
     spearBitmap.rotation = this.state.direction - 90;
+
+    // player name
+    if (!name) return;
+    playerName.text = name;
+    playerName.regX = playerName.getBounds().width / 2;
+    playerName.x = playerBitmap.x;
+    playerName.y = playerBitmap.y + 75;
   }
 
   drawBackground = () => {
