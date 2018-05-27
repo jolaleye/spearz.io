@@ -4,26 +4,26 @@ import config from '../../config';
 import playerSprite from '../../assets/player.png';
 import spearSprite from '../../assets/spear.png';
 
-const { Stage, Bitmap, Rectangle } = window.createjs;
+const { Stage, Bitmap, Shape } = window.createjs;
 
 class Canvas extends Component {
   canvas = createRef();
   backgroundCell = this.props.assets.backgroundCell;
   playerBitmap = new Bitmap(playerSprite);
   spearBitmap = new Bitmap(spearSprite);
-  boundary = new Bitmap(this.props.assets.boundary);
+  boundary = new Shape();
+  warning = new Shape();
 
   state = {
     pos: { x: 0, y: 0 },
-    direction: 90,
+    direction: 0,
+    distanceToSpear: 0,
+    timeOutOfBounds: 0,
   }
 
   componentDidMount() {
-    // set up Easel JS objects
+    // Easel JS
     this.stage = new Stage(this.canvas.current);
-
-    this.boundary.scaleX = 10;
-    this.boundary.scaleY = 10;
 
     // initialize the canvas
     this.resizeCanvas();
@@ -53,11 +53,14 @@ class Canvas extends Component {
         pos: data.player.pos,
         direction: data.player.direction,
         distanceToSpear: data.player.distanceToSpear,
+        timeOutOfBounds: data.player.outOfBounds ? data.player.outOfBounds.time : 0,
       });
 
       this.drawBackground();
       this.drawBoundary();
       this.drawPlayer();
+      this.drawWarning();
+
       this.stage.update();
     });
   }
@@ -106,16 +109,35 @@ class Canvas extends Component {
   }
 
   drawBoundary = () => {
-    const { stage, boundary } = this;
+    const { boundary, stage } = this;
 
-    boundary.sourceRect = new Rectangle(
-      (((this.state.pos.x + 5500) - (stage.canvas.width / 2)) + 1000) / 10,
-      (((this.state.pos.y + 5500) - (stage.canvas.height / 2)) + 1000) / 10,
-      stage.canvas.width / 10,
-      stage.canvas.height / 10,
-    );
+    boundary.x = stage.canvas.width / 2;
+    boundary.y = stage.canvas.height / 2;
+
+    boundary.graphics.clear();
+    boundary.graphics.setStrokeStyle(10).beginStroke('rgba(255, 255, 255, 0.1)')
+      .drawCircle(-this.state.pos.x, -this.state.pos.y, 5500);
 
     stage.addChild(boundary);
+  }
+
+  drawWarning = () => {
+    const { stage, warning } = this;
+    const { timeOutOfBounds } = this.state;
+
+    if (timeOutOfBounds === 0) return;
+    let alpha = `.${timeOutOfBounds.toString().split('.')[1].slice(0, 3)}`;
+    alpha = Math.min(alpha, 0.6);
+
+    warning.graphics.clear();
+    warning.graphics.beginRadialGradientFill(
+      ['transparent', `rgba(249, 109, 107, ${alpha})`],
+      [0.8, 1],
+      stage.canvas.width / 2, stage.canvas.height / 2, 0,
+      stage.canvas.width / 2, stage.canvas.height / 2, 800,
+    ).drawRect(0, 0, stage.canvas.width, stage.canvas.height);
+
+    stage.addChild(warning);
   }
 
   render = () => <canvas ref={this.canvas} />;

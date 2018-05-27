@@ -20,7 +20,7 @@ class Player {
     this.health = 80;
     this.shield = 80;
     this.direction = 0;
-    this.bouncing = false;
+    this.outOfBounds = false;
 
     // random initial position within the arena (a circle)
     // origin is at the center of the arena
@@ -32,9 +32,6 @@ class Player {
     };
 
     this.spear = new Spear(this.pos);
-
-    this.dx = 0;
-    this.dy = 0;
   }
 
   move(target) {
@@ -45,43 +42,28 @@ class Player {
     this.direction = (direction * (180 / Math.PI)) + 180;
 
     if (getDistance(this.pos.x, 0, this.pos.y, 0).total >= config.arenaRadius) {
-      // BOUNDARY COLLISION
-      // find the normal vector
-      const nx = this.pos.x / Math.sqrt((this.pos.x ** 2) + (this.pos.y ** 2));
-      const ny = this.pos.y / Math.sqrt((this.pos.x ** 2) + (this.pos.y ** 2));
-
-      // reflect the incoming vector
-      let newDX = 1.5 * (this.dx - (2 * ((nx * this.dx) + (ny * this.dy)) * nx));
-      let newDY = 1.5 * (this.dy - (2 * ((nx * this.dx) + (ny * this.dy)) * ny));
-
-      // dx and dy can't be too small
-      newDX = newDX < 0 ? Math.min(-3, newDX) : Math.max(3, newDX);
-      newDY = newDY < 0 ? Math.min(-3, newDY) : Math.max(3, newDY);
-      // or too large
-      this.dx = _.clamp(newDX, -10, 10);
-      this.dy = _.clamp(newDY, -10, 10);
-
-      this.bouncing = true;
-    } else if (this.bouncing) {
-      // PLAYER IS BEING BOUNCED
-      this.dx *= 0.99;
-      this.dy *= 0.99;
-
-      if (Math.abs(this.dx) < 2 || Math.abs(this.dy) < 2) this.bouncing = false;
-    } else {
-      // NORMAL MOVEMENT
-      this.dx = 4 * Math.cos(direction);
-      this.dy = 4 * Math.sin(direction);
-      // movement is slower when the target is close
-      if (distance.total < 100) {
-        this.dx *= distance.total / 100;
-        this.dy *= distance.total / 100;
+      // calculate how long the player has been out of bounds (in seconds)
+      if (!this.outOfBounds.start) this.outOfBounds = { start: Date.now() };
+      if (this.outOfBounds) {
+        const elapsed = (Date.now() - this.outOfBounds.start) / 1000;
+        this.outOfBounds.time = Number.parseFloat(elapsed).toFixed(2);
       }
+    } else {
+      this.outOfBounds = false;
+    }
+
+    let dx = 4 * Math.cos(direction);
+    let dy = 4 * Math.sin(direction);
+
+    // movement is slower when the target is close
+    if (distance.total < 100) {
+      dx *= distance.total / 100;
+      dy *= distance.total / 100;
     }
 
     // move the player
-    this.pos.x += this.dx;
-    this.pos.y += this.dy;
+    this.pos.x += dx;
+    this.pos.y += dy;
 
     // determine the position of the spear (60 away from the player)
     const angleToSpear = (direction + (Math.PI / 2));
