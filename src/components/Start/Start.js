@@ -14,7 +14,7 @@ const Start = ({
       <div className="field">
         <div className="control">
           <input className="form__name input is-large" type="text" placeholder="Nickname"
-            value={name} onChange={handleNameChange}
+            value={name} onChange={handleNameChange} maxLength='15'
           />
         </div>
       </div>
