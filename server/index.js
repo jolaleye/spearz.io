@@ -80,7 +80,7 @@ io.on('connection', socket => {
     // respond with data needed by the canvas
     callback({
       player: socket.player,
-      otherPlayers: socket.room.fetchOtherPlayers(socket.player),
+      players: socket.room.fetchPlayers(socket.player),
     });
 
     // emit other data
