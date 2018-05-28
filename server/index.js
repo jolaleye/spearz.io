@@ -41,6 +41,7 @@ io.on('connection', socket => {
   }
   // connect the player to the newest room
   socket.join(newestRoom.id, () => socket.emit('roomId', Object.values(socket.rooms)[1]));
+  socket.room = newestRoom.id; // eslint-disable-line
 
 
   // PLAYER REQUESTS TO JOIN A ROOM
@@ -51,6 +52,7 @@ io.on('connection', socket => {
       socket.leave(Object.values(socket.rooms)[1]);
       // join requested room
       socket.join(id, () => socket.emit('roomId', Object.values(socket.rooms)[1]));
+      socket.room = id; // eslint-disable-line
     }
   });
 
@@ -84,5 +86,12 @@ io.on('connection', socket => {
       health: socket.player.health,
       shield: socket.player.shield,
     });
+  });
+
+
+  // PLAYER DISCONNECTS
+  socket.on('disconnect', () => {
+    const room = rooms[socket.room];
+    room.players = room.players.filter(player => player.id !== socket.id);
   });
 });
