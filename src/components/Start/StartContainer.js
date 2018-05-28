@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import _ from 'lodash';
 
 import Start from './Start';
 
@@ -12,7 +13,7 @@ class StartContainer extends Component {
 
   handleSubmit = e => {
     e.preventDefault();
-    this.props.socket.emit('joinGame', this.state.name);
+    this.props.socket.emit('joinGame', _.trim(this.state.name));
     this.setState({ name: '' });
   }
 
