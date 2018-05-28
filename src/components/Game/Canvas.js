@@ -77,7 +77,7 @@ class Canvas extends Component {
       playerBitmap.regY = playerBitmap.getBounds().height / 2;
       playerBitmap.x = player.pos.x - xOffset;
       playerBitmap.y = player.pos.y - yOffset;
-      playerBitmap.rotation = player.direction + 90;
+      playerBitmap.rotation = (player.direction * (180 / Math.PI)) + 90;
 
       // spear
       const spearBitmap = new Bitmap(spearSprite);
@@ -86,7 +86,7 @@ class Canvas extends Component {
       spearBitmap.regY = spearBitmap.getBounds().height / 2;
       spearBitmap.x = playerBitmap.x + player.distanceToSpear.x;
       spearBitmap.y = playerBitmap.y + player.distanceToSpear.y;
-      spearBitmap.rotation = player.spear.direction + 90;
+      spearBitmap.rotation = (player.spear.direction * (180 / Math.PI)) + 90;
 
       stage.addChild(playerBitmap, spearBitmap);
 
