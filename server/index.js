@@ -41,7 +41,8 @@ io.on('connection', socket => {
   }
   // connect the player to the newest room
   socket.join(newestRoom.id, () => socket.emit('roomId', Object.values(socket.rooms)[1]));
-  socket.room = newestRoom.id; // eslint-disable-line
+  // assign the room to the socket
+  socket.room = newestRoom; // eslint-disable-line
 
 
   // PLAYER REQUESTS TO JOIN A ROOM
@@ -52,19 +53,19 @@ io.on('connection', socket => {
       socket.leave(Object.values(socket.rooms)[1]);
       // join requested room
       socket.join(id, () => socket.emit('roomId', Object.values(socket.rooms)[1]));
-      socket.room = id; // eslint-disable-line
+      // assign the room to the socket
+      socket.room = rooms[id]; // eslint-disable-line
     }
   });
 
 
   // PLAYER JOINS THE GAME
   socket.on('joinGame', name => {
-    const roomId = Object.values(socket.rooms)[1];
-    console.log(`${name} wants to join room ${roomId}`);
+    console.log(`${name} wants to join room ${socket.room.id}`);
     // create a new player
-    const newPlayer = new Player(socket.id, name, roomId);
+    const newPlayer = new Player(socket.id, name, socket.room.id);
     // add them to their room
-    rooms[roomId].players.push(newPlayer);
+    socket.room.players.push(newPlayer);
     // assign this player to the socket
     socket.player = newPlayer; // eslint-disable-line
     // give them the good to go
@@ -79,6 +80,7 @@ io.on('connection', socket => {
     // respond with data needed by the canvas
     callback({
       player: socket.player,
+      otherPlayers: socket.room.fetchOtherPlayers(socket.player),
     });
 
     // emit other data
@@ -91,7 +93,7 @@ io.on('connection', socket => {
 
   // PLAYER DISCONNECTS
   socket.on('disconnect', () => {
-    const room = rooms[socket.room];
-    room.players = room.players.filter(player => player.id !== socket.id);
+    // eslint-disable-next-line
+    socket.room.players = socket.room.players.filter(player => player.id !== socket.id);
   });
 });
