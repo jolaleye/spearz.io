@@ -5,10 +5,8 @@ const { getDistance } = require('./util');
 
 class Spear {
   constructor(pos) {
-    this.pos = {
-      x: pos.x,
-      y: pos.y,
-    };
+    this.pos = { x: pos.x, y: pos.y };
+    this.direction = 0;
   }
 }
 
@@ -69,6 +67,7 @@ class Player {
     const angleToSpear = (direction + (Math.PI / 2));
     this.spear.pos.x = this.pos.x + (60 * Math.cos(angleToSpear));
     this.spear.pos.y = this.pos.y + (60 * Math.sin(angleToSpear));
+    this.spear.direction = this.direction;
 
     this.distanceToSpear = getDistance(this.pos.x, this.spear.pos.x, this.pos.y, this.spear.pos.y);
   }
