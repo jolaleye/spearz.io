@@ -4,17 +4,13 @@ import config from '../../config';
 import playerSprite from '../../assets/player.png';
 import spearSprite from '../../assets/spear.png';
 
-const { Stage, Bitmap, Shape, Text } = window.createjs;
+const { Stage, Bitmap, Shape, Text, Container } = window.createjs;
 
 class Canvas extends Component {
   canvas = createRef();
-  backgroundCell = this.props.assets.backgroundCell;
 
   state = {
     pos: { x: 0, y: 0 },
-    direction: 0,
-    distanceToSpear: 0,
-    timeOutOfBounds: 0,
   }
 
   componentDidMount() {
@@ -26,6 +22,8 @@ class Canvas extends Component {
     window.requestAnimationFrame(this.updateCycle);
   }
 
+
+  // SET UP EASEL JS OBJECTS
   initEasel = () => {
     this.stage = new Stage(this.canvas.current);
     this.playerBitmap = new Bitmap(playerSprite);
@@ -33,46 +31,47 @@ class Canvas extends Component {
     this.boundary = new Shape();
     this.warning = new Shape();
 
-    this.playerName = new Text();
-    this.playerName.font = '22px Roboto';
-    this.playerName.color = 'rgba(255, 255, 255, 0.6)';
+    this.name = new Text(null, '18px Roboto', 'white');
+    this.name.textBaseline = 'middle';
+    this.nameBackground = new Shape();
+    this.nameTag = new Container();
+    this.nameTag.addChild(this.name);
+    this.nameTag.addChild(this.nameBackground);
   }
 
-  // scale the canvas to the current device
+
+  // SCALE TO THE CURRENT DEVICE
   resizeCanvas = () => {
     this.stage.canvas.width = Math.round(config.deviceWidth / config.scale);
     this.stage.canvas.height = Math.round(config.deviceHeight / config.scale);
   }
 
+
   updateCycle = () => {
     window.requestAnimationFrame(this.updateCycle);
     this.stage.removeAllChildren();
 
-    const mouse = {
+    const target = {
       x: this.stage.mouseX + (this.state.pos.x - (this.stage.canvas.width / 2)),
       y: this.stage.mouseY + (this.state.pos.y - (this.stage.canvas.height / 2)),
     };
 
-    this.props.socket.emit('requestUpdate', mouse, async data => {
-      await this.setState({
-        pos: data.player.pos,
-        direction: data.player.direction,
-        distanceToSpear: data.player.distanceToSpear,
-        timeOutOfBounds: data.player.outOfBounds ? data.player.outOfBounds.time : 0,
-      });
+    this.props.socket.emit('requestUpdate', target, data => {
+      this.setState({ pos: data.player.pos });
 
       this.drawBackground();
       this.drawBoundary();
-      this.drawPlayer(data.player.name);
-      this.drawWarning();
+      this.drawWarning(data.player.outOfBounds ? data.player.outOfBounds.time : 0);
+      this.drawPlayer(data.player);
 
       this.stage.update();
     });
   }
 
-  drawPlayer = name => {
-    const { stage, playerBitmap, spearBitmap, playerName } = this;
-    stage.addChild(playerBitmap, spearBitmap, playerName);
+
+  // DRAW CURRENT PLAYER, SPEAR, AND NAME
+  drawPlayer = player => {
+    const { stage, playerBitmap, spearBitmap, nameTag, name, nameBackground } = this;
 
     // center the player
     playerBitmap.regX = playerBitmap.getBounds().width / 2;
@@ -80,77 +79,89 @@ class Canvas extends Component {
     playerBitmap.x = stage.canvas.width / 2;
     playerBitmap.y = stage.canvas.height / 2;
 
-    // position the spear (distance from player to spear provided by server)
+    // position the spear
     spearBitmap.regX = spearBitmap.getBounds().width / 2;
     spearBitmap.regY = spearBitmap.getBounds().height / 2;
-    spearBitmap.x = playerBitmap.x + this.state.distanceToSpear.x;
-    spearBitmap.y = playerBitmap.y + this.state.distanceToSpear.y;
+    spearBitmap.x = playerBitmap.x + player.distanceToSpear.x;
+    spearBitmap.y = playerBitmap.y + player.distanceToSpear.y;
 
-    // rotate both towards the target
-    playerBitmap.rotation = this.state.direction - 90;
-    spearBitmap.rotation = this.state.direction - 90;
+    // rotate the player and spear towards their targets
+    playerBitmap.rotation = player.direction - 90;
+    spearBitmap.rotation = player.spear.direction - 90;
 
-    // player name
-    if (!name) return;
-    playerName.text = name;
-    playerName.regX = playerName.getBounds().width / 2;
-    playerName.x = playerBitmap.x;
-    playerName.y = playerBitmap.y + 75;
+    // draw the player's name
+    if (player.name) {
+      name.text = player.name;
+      name.y = nameTag.getBounds().height / 2;
+      nameBackground.graphics.clear();
+      nameBackground.graphics.beginFill('rgba(0, 0, 0, 0.1)')
+        .drawRect(-10, -5, nameTag.getBounds().width + 20, nameTag.getBounds().height + 10);
+      // position the name tag
+      nameTag.regX = nameTag.getBounds().width / 2;
+      nameTag.x = playerBitmap.x;
+      nameTag.y = playerBitmap.y + 75;
+    }
+
+    stage.addChild(playerBitmap, spearBitmap, nameTag);
   }
 
+
+  // DRAW BACKGROUND CELLS AROUND THE PLAYER"S POSITION
   drawBackground = () => {
-    const { stage, backgroundCell } = this;
+    const { stage } = this;
+    const { pos } = this.state;
+    const { backgroundCell } = this.props.assets;
 
     const xNumOfCells = Math.ceil(stage.canvas.width / backgroundCell.width) + 1;
     const yNumOfCells = Math.ceil(stage.canvas.height / backgroundCell.height) + 1;
 
-    const xOffset = this.state.pos.x % backgroundCell.width;
-    const yOffset = this.state.pos.y % backgroundCell.height;
+    const xOffset = pos.x % backgroundCell.width;
+    const yOffset = pos.y % backgroundCell.height;
 
-    // draw cells around the player
     for (let x = -xNumOfCells; x < xNumOfCells; x += 1) {
       for (let y = -yNumOfCells; y < yNumOfCells; y += 1) {
-        const bgCell = new Bitmap(backgroundCell);
-        bgCell.setTransform(
-          -xOffset + (x * bgCell.getBounds().width),
-          -yOffset + (y * bgCell.getBounds().height),
-        );
-        stage.addChild(bgCell);
+        const cell = new Bitmap(backgroundCell);
+        cell.x = -xOffset + (x * cell.getBounds().width);
+        cell.y = -yOffset + (y * cell.getBounds().height);
+        stage.addChild(cell);
       }
     }
   }
 
+
+  // DRAW THE BOUNDARY CIRCLE
   drawBoundary = () => {
     const { boundary, stage } = this;
+    const { pos } = this.state;
 
     boundary.x = stage.canvas.width / 2;
     boundary.y = stage.canvas.height / 2;
 
     boundary.graphics.clear();
     boundary.graphics.setStrokeStyle(10).beginStroke('rgba(255, 255, 255, 0.1)')
-      .drawCircle(-this.state.pos.x, -this.state.pos.y, 5500);
+      .drawCircle(-pos.x, -pos.y, 5500);
 
     stage.addChild(boundary);
   }
 
-  drawWarning = () => {
+
+  // DRAW WARNING PULSES WHILE OUT OF BOUNDS
+  drawWarning = timeOutOfBounds => {
     const { stage, warning } = this;
-    const { timeOutOfBounds } = this.state;
 
     if (timeOutOfBounds === 0) return;
-    let alpha = `.${timeOutOfBounds.toString().split('.')[1].slice(0, 3)}`;
-    alpha = Math.min(alpha, 0.7);
+    const alpha = Math.min(`.${timeOutOfBounds.toString().split('.')[1].slice(0, 3)}`, 0.8);
 
     warning.graphics.clear();
     warning.graphics.beginRadialGradientFill(
-      ['transparent', `rgba(189, 75, 104, ${alpha})`],
-      [0.7, 1],
+      ['transparent', `rgba(189, 75, 104, ${alpha})`], [0.7, 1],
       stage.canvas.width / 2, stage.canvas.height / 2, 0,
-      stage.canvas.width / 2, stage.canvas.height / 2, 800,
+      stage.canvas.width / 2, stage.canvas.height / 2, 900,
     ).drawRect(0, 0, stage.canvas.width, stage.canvas.height);
 
     stage.addChild(warning);
   }
+
 
   render = () => <canvas ref={this.canvas} />;
 }
