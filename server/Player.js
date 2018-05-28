@@ -37,7 +37,7 @@ class Player {
     const distance = getDistance(this.pos.x, target.x, this.pos.y, target.y);
     const direction = Math.atan2(distance.y, distance.x);
     // direction in degrees for canvas drawing
-    this.direction = (direction * (180 / Math.PI)) + 180;
+    this.direction = (direction * (180 / Math.PI));
 
     if (getDistance(this.pos.x, 0, this.pos.y, 0).total >= config.arenaRadius) {
       // calculate how long the player has been out of bounds (in seconds)
