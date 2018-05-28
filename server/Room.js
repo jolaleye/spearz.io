@@ -6,19 +6,16 @@ class Room {
     this.players = [];
   }
 
-  fetchOtherPlayers(currentPlayer) {
-    // exclude the current player
-    const otherPlayers = this.players.filter(player => player.id !== currentPlayer.id);
+  fetchPlayers(currentPlayer) {
     // only include players within 2500 units of the current player
-    const nearbyPlayers = otherPlayers.filter(player => {
+    // (this includes the current player)
+    return this.players.filter(player => {
       const distance = getDistance(
         currentPlayer.pos.x, player.pos.x,
         currentPlayer.pos.y, player.pos.y,
       );
       return distance.total <= 2500;
     });
-
-    return nearbyPlayers;
   }
 }
 
