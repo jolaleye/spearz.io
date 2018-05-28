@@ -2,11 +2,19 @@ const _ = require('lodash');
 
 const config = require('./config');
 const { getDistance } = require('./util');
+const { Vector, Polygon } = require('sat');
 
 class Spear {
   constructor(pos) {
-    this.pos = { x: pos.x, y: pos.y };
+    this.pos = new Vector(pos.x, pos.y);
     this.direction = 0;
+    // hit box points are hard coded to fit sprite size
+    this.hitbox = new Polygon(this.pos, []);
+  }
+
+  updateHitbox() {
+    this.hitbox.setPoints([new Vector(0, -53.5), new Vector(5, -45), new Vector(-5, -45)]);
+    this.hitbox.rotate(this.direction + (Math.PI / 2));
   }
 }
 
@@ -24,20 +32,21 @@ class Player {
     // origin is at the center of the arena
     const randomAngle = _.random(2 * Math.PI);
     const randomDistance = _.random(config.arenaRadius ** 2);
-    this.pos = {
-      x: Math.sqrt(randomDistance) * Math.cos(randomAngle),
-      y: Math.sqrt(randomDistance) * Math.sin(randomAngle),
-    };
+    this.pos = new Vector(
+      Math.sqrt(randomDistance) * Math.cos(randomAngle),
+      Math.sqrt(randomDistance) * Math.sin(randomAngle),
+    );
 
     this.spear = new Spear(this.pos);
+
+    // hit box points are hard coded to fit sprite size
+    this.hitbox = new Polygon(this.pos, []);
   }
 
   move(target) {
     // distance and direction to the target
     const distance = getDistance(this.pos.x, target.x, this.pos.y, target.y);
-    const direction = Math.atan2(distance.y, distance.x);
-    // direction in degrees for canvas drawing
-    this.direction = (direction * (180 / Math.PI));
+    this.direction = Math.atan2(distance.y, distance.x);
 
     if (getDistance(this.pos.x, 0, this.pos.y, 0).total >= config.arenaRadius) {
       // calculate how long the player has been out of bounds (in seconds)
@@ -50,8 +59,8 @@ class Player {
       this.outOfBounds = false;
     }
 
-    let dx = 4 * Math.cos(direction);
-    let dy = 4 * Math.sin(direction);
+    let dx = 4 * Math.cos(this.direction);
+    let dy = 4 * Math.sin(this.direction);
 
     // movement is slower when the target is close
     if (distance.total < 100) {
@@ -63,13 +72,23 @@ class Player {
     this.pos.x += dx;
     this.pos.y += dy;
 
+    // move & rotate hitbox
+    this.hitbox.setPoints([
+      new Vector(-7, -38), new Vector(7, -38),
+      new Vector(44, 28), new Vector(23, 40),
+      new Vector(-23, 40), new Vector(-44, 28),
+    ]);
+    this.hitbox.rotate(this.direction + (Math.PI / 2));
+
     // determine the position of the spear (60 away from the player)
-    const angleToSpear = (direction + (Math.PI / 2));
+    const angleToSpear = (this.direction + (Math.PI / 2));
     this.spear.pos.x = this.pos.x + (60 * Math.cos(angleToSpear));
     this.spear.pos.y = this.pos.y + (60 * Math.sin(angleToSpear));
-    this.spear.direction = this.direction;
-
     this.distanceToSpear = getDistance(this.pos.x, this.spear.pos.x, this.pos.y, this.spear.pos.y);
+
+    // update the spear's orientation and hitbox
+    this.spear.direction = this.direction;
+    this.spear.updateHitbox();
   }
 }
 
