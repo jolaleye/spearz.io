@@ -26,17 +26,8 @@ class Canvas extends Component {
   // SET UP EASEL JS OBJECTS
   initEasel = () => {
     this.stage = new Stage(this.canvas.current);
-    this.playerBitmap = new Bitmap(playerSprite);
-    this.spearBitmap = new Bitmap(spearSprite);
     this.boundary = new Shape();
     this.warning = new Shape();
-
-    this.name = new Text(null, '18px Roboto', 'white');
-    this.name.textBaseline = 'middle';
-    this.nameBackground = new Shape();
-    this.nameTag = new Container();
-    this.nameTag.addChild(this.name);
-    this.nameTag.addChild(this.nameBackground);
   }
 
 
@@ -62,47 +53,63 @@ class Canvas extends Component {
       this.drawBackground();
       this.drawBoundary();
       this.drawWarning(data.player.outOfBounds ? data.player.outOfBounds.time : 0);
-      this.drawPlayer(data.player);
+      this.drawPlayers(data.players);
 
       this.stage.update();
     });
   }
 
 
-  // DRAW CURRENT PLAYER, SPEAR, AND NAME
-  drawPlayer = player => {
-    const { stage, playerBitmap, spearBitmap, nameTag, name, nameBackground } = this;
+  // DRAW PLAYERS, THEIR SPEAR, AND THEIR NAME
+  drawPlayers = players => {
+    const { stage } = this;
+    const { pos } = this.state;
 
-    // center the player
-    playerBitmap.regX = playerBitmap.getBounds().width / 2;
-    playerBitmap.regY = playerBitmap.getBounds().height / 2;
-    playerBitmap.x = stage.canvas.width / 2;
-    playerBitmap.y = stage.canvas.height / 2;
+    // position of the top left corner of the canvas in the game
+    const xOffset = pos.x - (stage.canvas.width / 2);
+    const yOffset = pos.y - (stage.canvas.height / 2);
 
-    // position the spear
-    spearBitmap.regX = spearBitmap.getBounds().width / 2;
-    spearBitmap.regY = spearBitmap.getBounds().height / 2;
-    spearBitmap.x = playerBitmap.x + player.distanceToSpear.x;
-    spearBitmap.y = playerBitmap.y + player.distanceToSpear.y;
+    players.forEach(player => {
+      // player
+      const playerBitmap = new Bitmap(playerSprite);
+      playerBitmap.setBounds(0, 0, playerBitmap.image.width, playerBitmap.image.height);
+      playerBitmap.regX = playerBitmap.getBounds().width / 2;
+      playerBitmap.regY = playerBitmap.getBounds().height / 2;
+      playerBitmap.x = player.pos.x - xOffset;
+      playerBitmap.y = player.pos.y - yOffset;
+      playerBitmap.rotation = player.direction + 90;
 
-    // rotate the player and spear towards their targets
-    playerBitmap.rotation = player.direction - 90;
-    spearBitmap.rotation = player.spear.direction - 90;
+      // spear
+      const spearBitmap = new Bitmap(spearSprite);
+      spearBitmap.setBounds(0, 0, spearBitmap.image.width, spearBitmap.image.height);
+      spearBitmap.regX = spearBitmap.getBounds().width / 2;
+      spearBitmap.regY = spearBitmap.getBounds().height / 2;
+      spearBitmap.x = playerBitmap.x + player.distanceToSpear.x;
+      spearBitmap.y = playerBitmap.y + player.distanceToSpear.y;
+      spearBitmap.rotation = player.spear.direction + 90;
 
-    // draw the player's name
-    if (player.name) {
-      name.text = player.name;
-      name.y = nameTag.getBounds().height / 2;
-      nameBackground.graphics.clear();
-      nameBackground.graphics.beginFill('rgba(0, 0, 0, 0.1)')
-        .drawRect(-10, -5, nameTag.getBounds().width + 20, nameTag.getBounds().height + 10);
-      // position the name tag
-      nameTag.regX = nameTag.getBounds().width / 2;
-      nameTag.x = playerBitmap.x;
-      nameTag.y = playerBitmap.y + 75;
-    }
+      stage.addChild(playerBitmap, spearBitmap);
 
-    stage.addChild(playerBitmap, spearBitmap, nameTag);
+      // name tag
+      if (player.name) {
+        const name = new Text(player.name, '18px Roboto', 'white');
+        const nameBackground = new Shape();
+        const nameTag = new Container();
+        nameTag.addChild(name);
+        nameTag.addChild(nameBackground);
+
+        name.textBaseline = 'middle';
+        name.y = nameTag.getBounds().height / 2;
+        nameBackground.graphics.clear();
+        nameBackground.graphics.beginFill('rgba(0, 0, 0, 0.1)')
+          .drawRect(-10, -5, nameTag.getBounds().width + 20, nameTag.getBounds().height + 10);
+        nameTag.regX = nameTag.getBounds().width / 2;
+        nameTag.x = playerBitmap.x;
+        nameTag.y = playerBitmap.y + 75;
+
+        stage.addChild(nameTag);
+      }
+    });
   }
 
 
