@@ -28,7 +28,6 @@ const Start = ({
     <div className="instructions content">
       <p><span>Move</span> with your mouse</p>
       <p><span>Click</span> or press <span>Space</span> to throw your spear</p>
-      <p>Hold <span>W</span> to put up your shield</p>
     </div>
 
     <div className="friends">
