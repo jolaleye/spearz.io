@@ -3,6 +3,7 @@ import React, { Component, createRef } from 'react';
 import config from '../../config';
 import playerSprite from '../../assets/player.png';
 import spearSprite from '../../assets/spear.png';
+import spearSpriteReleased from '../../assets/spear-released.png';
 
 const { Stage, Bitmap, Shape, Text, Container } = window.createjs;
 
@@ -15,11 +16,20 @@ class Canvas extends Component {
 
   componentDidMount() {
     this.initEasel();
+    // add event listeners
+    window.addEventListener('click', this.throw);
+    window.addEventListener('keydown', this.throw);
     // initialize the canvas
     this.resizeCanvas();
     window.addEventListener('resize', this.resizeCanvas);
     // start game cycle
     window.requestAnimationFrame(this.updateCycle);
+  }
+
+  componentWillUnmount() {
+    window.cancelAnimationFrame(this.cycle);
+    window.removeEventListener('click', this.throw);
+    window.removeEventListener('keydown', this.throw);
   }
 
 
@@ -39,15 +49,15 @@ class Canvas extends Component {
 
 
   updateCycle = () => {
-    window.requestAnimationFrame(this.updateCycle);
+    this.cycle = window.requestAnimationFrame(this.updateCycle);
     this.stage.removeAllChildren();
 
-    const target = {
+    this.target = {
       x: this.stage.mouseX + (this.state.pos.x - (this.stage.canvas.width / 2)),
       y: this.stage.mouseY + (this.state.pos.y - (this.stage.canvas.height / 2)),
     };
 
-    this.props.socket.emit('requestUpdate', target, data => {
+    this.props.socket.emit('requestUpdate', this.target, data => {
       this.setState({ pos: data.player.pos });
 
       this.drawBackground();
@@ -57,6 +67,12 @@ class Canvas extends Component {
 
       this.stage.update();
     });
+  }
+
+
+  throw = e => {
+    if (e.key && e.key !== ' ') return;
+    this.props.socket.emit('throw', this.target);
   }
 
 
@@ -80,7 +96,7 @@ class Canvas extends Component {
       playerBitmap.rotation = (player.direction * (180 / Math.PI)) + 90;
 
       // spear
-      const spearBitmap = new Bitmap(spearSprite);
+      const spearBitmap = new Bitmap(player.thrown ? spearSpriteReleased : spearSprite);
       spearBitmap.setBounds(0, 0, spearBitmap.image.width, spearBitmap.image.height);
       spearBitmap.regX = spearBitmap.getBounds().width / 2;
       spearBitmap.regY = spearBitmap.getBounds().height / 2;
@@ -113,7 +129,7 @@ class Canvas extends Component {
   }
 
 
-  // DRAW BACKGROUND CELLS AROUND THE PLAYER"S POSITION
+  // DRAW BACKGROUND CELLS AROUND THE PLAYER'S POSITION
   drawBackground = () => {
     const { stage } = this;
     const { pos } = this.state;
