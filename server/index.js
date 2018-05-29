@@ -75,7 +75,7 @@ io.on('connection', socket => {
 
   // PLAYER REQUESTS AN UPDATE - INITIALIZE SERVER LOGIC AND RESPOND WITH UPDATED DATA
   socket.on('requestUpdate', (target, callback) => {
-    socket.player.move(target);
+    socket.player.update(target);
 
     // respond with data needed by the canvas
     callback({
@@ -84,11 +84,12 @@ io.on('connection', socket => {
     });
 
     // emit other data
-    socket.emit('status', {
-      health: socket.player.health,
-      shield: socket.player.shield,
-    });
+    socket.emit('status', { health: socket.player.health });
   });
+
+
+  // PLAYER WANTS TO THROW THEIR SPEAR
+  socket.on('throw', target => socket.player.throw(target));
 
 
   // PLAYER DISCONNECTS
