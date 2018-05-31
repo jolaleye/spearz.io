@@ -1,8 +1,8 @@
 const _ = require('lodash');
+const { Vector, Polygon } = require('sat');
 
 const config = require('./config');
 const { getDistance } = require('./util');
-const { Vector, Polygon } = require('sat');
 
 class Spear {
   constructor(pos) {
@@ -41,7 +41,7 @@ class Player {
     this.id = id;
     this.name = name;
     this.room = room;
-    this.health = 80;
+    this.health = 100;
     this.direction = 0;
     this.outOfBounds = false;
     this.thrown = false;
@@ -61,7 +61,7 @@ class Player {
     this.hitbox = new Polygon(this.pos, []);
   }
 
-  update(target) {
+  update(target, room) {
     // distance and direction to the target
     const distance = getDistance(this.pos.x, target.x, this.pos.y, target.y);
     this.direction = Math.atan2(distance.y, distance.x);
@@ -95,18 +95,20 @@ class Player {
 
     // if the last spear throw was > throwCooldown seconds ago, reset the spear
     const timeSinceThrow = (Date.now() - this.thrown.at) / 1000;
-    if (this.thrown && timeSinceThrow > config.throwCooldown) this.thrown = false;
+    if (this.thrown && timeSinceThrow > config.throwCooldown) this.resetSpear();
 
-    // if the spear hasn't been thrown, position it according to the player
     if (!this.thrown) {
+      // if the spear hasn't been thrown, position it according to the player
       const angleToSpear = (this.direction + (Math.PI / 2));
       this.spear.pos.x = this.pos.x + (60 * Math.cos(angleToSpear));
       this.spear.pos.y = this.pos.y + (60 * Math.sin(angleToSpear));
       this.spear.direction = this.direction;
-      this.spear.dx = 0;
-      this.spear.dy = 0;
-      this.spear.update();
-    } else this.spear.update();
+    } else {
+      // otherwise check for hits
+      room.checkForHits(this);
+    }
+
+    this.spear.update();
 
     this.distanceToSpear = getDistance(
       this.pos.x, this.spear.pos.x,
@@ -118,6 +120,21 @@ class Player {
     if (this.thrown) return;
     this.thrown = { at: Date.now() };
     this.spear.throw(target);
+  }
+
+  resetSpear() {
+    this.thrown = false;
+    this.spear.dx = 0;
+    this.spear.dy = 0;
+  }
+
+  checkStatus() {
+    return this.health > 0;
+  }
+
+  takeHit(value) {
+    this.health -= value;
+    this.health = Math.max(this.health, 0);
   }
 }
 
