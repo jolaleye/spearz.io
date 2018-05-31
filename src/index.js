@@ -33,6 +33,9 @@ class App extends Component {
 
     // name submitted, ready to play
     socket.on('ready', () => this.changeView('game'));
+
+    // player died, move to restart screen
+    socket.on('dead', () => this.changeView('restart'));
   }
 
   loadAssets = async () => {
