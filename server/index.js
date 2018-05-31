@@ -75,7 +75,9 @@ io.on('connection', socket => {
 
   // PLAYER REQUESTS AN UPDATE - INITIALIZE SERVER LOGIC AND RESPOND WITH UPDATED DATA
   socket.on('requestUpdate', (target, callback) => {
-    socket.player.update(target);
+    if (!socket.player.checkStatus()) socket.emit('dead');
+
+    socket.player.update(target, socket.room);
 
     // respond with data needed by the canvas
     callback({
