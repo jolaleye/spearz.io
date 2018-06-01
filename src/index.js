@@ -5,7 +5,7 @@ import io from 'socket.io-client';
 import './main.css';
 import StartContainer from './components/Start/StartContainer';
 import Game from './components/Game/Game';
-import Restart from './components/Restart';
+import Restart from './components/Restart/Restart';
 import backgroundCell from './assets/bg-cell.png';
 
 const { LoadQueue } = window.createjs;
@@ -69,7 +69,7 @@ class App extends Component {
         ? <Game socket={socket} assets={assets} />
         : <div>loading</div>;
     }
-    return <Restart />;
+    return <Restart changeView={this.changeView} />;
   }
 }
 
