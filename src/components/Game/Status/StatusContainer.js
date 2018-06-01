@@ -9,9 +9,7 @@ class StatusContainer extends Component {
 
   componentDidMount() {
     this.props.socket.on('status', status => {
-      this.setState({
-        health: status.health,
-      });
+      if ((status.health !== this.state.health)) this.setState({ health: status.health });
     });
   }
 
