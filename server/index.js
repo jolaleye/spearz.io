@@ -87,6 +87,7 @@ io.on('connection', socket => {
 
     // emit other data
     socket.emit('status', { health: socket.player.health });
+    socket.emit('leaderboard', socket.room.createLeaderboard(socket.player));
   });
 
 
