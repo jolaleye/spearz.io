@@ -132,7 +132,7 @@ class Player {
     return this.health > 0;
   }
 
-  takeHit(value) {
+  takeDamage(value) {
     this.health -= value;
     this.health = Math.max(this.health, 0);
   }

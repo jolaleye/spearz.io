@@ -38,7 +38,7 @@ class Room {
       // test for collision between the spear and a player
       if (testPolygonPolygon(currentPlayer.spear.hitbox, otherPlayer.hitbox)) {
         currentPlayer.resetSpear();
-        otherPlayer.takeHit(25);
+        otherPlayer.takeDamage(25);
 
         // if the player is now dead, remove them from the room
         if (!otherPlayer.checkStatus()) {
