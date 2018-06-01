@@ -15,6 +15,7 @@ class Canvas extends Component {
   }
 
   componentDidMount() {
+    this.mounted = true;
     this.initEasel();
     // add event listeners
     window.addEventListener('click', this.throw);
@@ -27,6 +28,7 @@ class Canvas extends Component {
   }
 
   componentWillUnmount() {
+    this.mounted = false;
     window.cancelAnimationFrame(this.cycle);
     window.removeEventListener('click', this.throw);
     window.removeEventListener('keydown', this.throw);
@@ -58,7 +60,7 @@ class Canvas extends Component {
     };
 
     this.props.socket.emit('requestUpdate', this.target, data => {
-      this.setState({ pos: data.player.pos });
+      if (this.mounted) this.setState({ pos: data.player.pos });
 
       this.drawBackground();
       this.drawBoundary();
