@@ -42,6 +42,7 @@ class Player {
     this.name = name;
     this.room = room;
     this.health = 100;
+    this.score = 0;
     this.direction = 0;
     this.outOfBounds = false;
     this.thrown = false;
@@ -77,7 +78,7 @@ class Player {
 
       // lose 10 health every second out
       if ((Date.now() - this.outOfBounds.lastTick) / 1000 >= 1) {
-        this.takeDamage(10);
+        this.takeDamage(config.damageWhileOut);
         this.outOfBounds.lastTick = Date.now();
       }
     } else this.outOfBounds = false;
@@ -146,6 +147,10 @@ class Player {
   takeDamage(value) {
     this.health -= value;
     this.health = Math.max(this.health, 0);
+  }
+
+  increaseScore(value) {
+    this.score += value;
   }
 }
 
