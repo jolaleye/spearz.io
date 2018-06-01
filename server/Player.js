@@ -66,13 +66,23 @@ class Player {
     const distance = getDistance(this.pos.x, target.x, this.pos.y, target.y);
     this.direction = Math.atan2(distance.y, distance.x);
 
-    // if the player is out of bounds, calculate how long they've been out
+    // if the player is out of bounds...
     if (getDistance(this.pos.x, 0, this.pos.y, 0).total >= config.arenaRadius) {
-      if (!this.outOfBounds.at) this.outOfBounds = { at: Date.now() };
+      // if outOfBounds doesn't have values yet, set them
+      if (!this.outOfBounds) this.outOfBounds = { at: Date.now(), lastTick: Date.now() };
+
+      // calculate time out of bounds
       const elapsed = (Date.now() - this.outOfBounds.at) / 1000;
       this.outOfBounds.time = Number.parseFloat(elapsed).toFixed(2);
+
+      // lose 10 health every second out
+      if ((Date.now() - this.outOfBounds.lastTick) / 1000 >= 1) {
+        this.takeDamage(10);
+        this.outOfBounds.lastTick = Date.now();
+      }
     } else this.outOfBounds = false;
 
+    // set deltas
     let dx = 4 * Math.cos(this.direction);
     let dy = 4 * Math.sin(this.direction);
 
@@ -82,6 +92,7 @@ class Player {
       dy *= distance.total / 100;
     }
 
+    // move
     this.pos.x += dx;
     this.pos.y += dy;
 
@@ -97,8 +108,8 @@ class Player {
     const timeSinceThrow = (Date.now() - this.thrown.at) / 1000;
     if (this.thrown && timeSinceThrow > config.throwCooldown) this.resetSpear();
 
+    // if the spear hasn't been thrown, position it according to the player
     if (!this.thrown) {
-      // if the spear hasn't been thrown, position it according to the player
       const angleToSpear = (this.direction + (Math.PI / 2));
       this.spear.pos.x = this.pos.x + (60 * Math.cos(angleToSpear));
       this.spear.pos.y = this.pos.y + (60 * Math.sin(angleToSpear));
