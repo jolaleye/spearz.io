@@ -1,5 +1,7 @@
 const { testPolygonPolygon } = require('sat');
+const _ = require('lodash');
 
+const config = require('./config');
 const { id, getDistance } = require('./util');
 
 class Room {
@@ -8,44 +10,58 @@ class Room {
     this.players = [];
   }
 
-  fetchPlayers(currentPlayer) {
+  fetchPlayers(activePlayer) {
     // only include players within 2500 units of the current player
     // (this includes the current player)
     return this.players.filter(player => {
       const distance = getDistance(
-        currentPlayer.pos.x, player.pos.x,
-        currentPlayer.pos.y, player.pos.y,
+        activePlayer.pos.x, player.pos.x,
+        activePlayer.pos.y, player.pos.y,
       );
       return distance.total <= 2500;
     });
   }
 
-  fetchOtherPlayers(currentPlayer) {
+  fetchOtherPlayers(activePlayer) {
     // only include players within 2500 units of the current player
     // (not including the current player)
     return this.players.filter(player => {
       const distance = getDistance(
-        currentPlayer.pos.x, player.pos.x,
-        currentPlayer.pos.y, player.pos.y,
+        activePlayer.pos.x, player.pos.x,
+        activePlayer.pos.y, player.pos.y,
       );
-      return (distance.total <= 2500) && (player.id !== currentPlayer.id);
+      return (distance.total <= 2500) && (player.id !== activePlayer.id);
     });
   }
 
-  checkForHits(currentPlayer) {
-    const players = this.fetchOtherPlayers(currentPlayer);
+  checkForHits(activePlayer) {
+    const players = this.fetchOtherPlayers(activePlayer);
     players.forEach(otherPlayer => {
       // test for collision between the spear and a player
-      if (testPolygonPolygon(currentPlayer.spear.hitbox, otherPlayer.hitbox)) {
-        currentPlayer.resetSpear();
-        otherPlayer.takeDamage(25);
+      if (testPolygonPolygon(activePlayer.spear.hitbox, otherPlayer.hitbox)) {
+        activePlayer.resetSpear();
+        otherPlayer.takeDamage(config.damageOnHit);
 
-        // if the player is now dead, remove them from the room
+        // if the player is now dead
         if (!otherPlayer.checkStatus()) {
+          activePlayer.increaseScore(config.scorePerKil);
           this.players = this.players.filter(player => player.id !== otherPlayer.id);
         }
       }
     });
+  }
+
+  createLeaderboard(activePlayer) {
+    const leaders = _.sortBy(this.players, ['score']).reverse();
+    if (leaders.length > 10) leaders.splice(10);
+    if (!leaders.includes(activePlayer)) leaders.push(activePlayer);
+
+    return leaders.map((player, i) => ({
+      name: player.name === '' ? '<unnamed>' : player.name,
+      score: player.score,
+      rank: i + 1,
+      active: player.id === activePlayer.id,
+    }));
   }
 }
 
