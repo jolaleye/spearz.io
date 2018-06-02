@@ -63,7 +63,7 @@ io.on('connection', socket => {
   socket.on('joinGame', name => {
     console.log(`${name} wants to join room ${socket.room.id}`);
     // create a new player
-    const newPlayer = new Player(socket.id, name, socket.room.id);
+    const newPlayer = new Player(socket.id, name);
     // add them to their room
     socket.room.players.push(newPlayer);
     // assign this player to the socket
@@ -75,12 +75,14 @@ io.on('connection', socket => {
 
   // PLAYER REQUESTS AN UPDATE - INITIALIZE SERVER LOGIC AND RESPOND WITH UPDATED DATA
   socket.on('requestUpdate', (target, callback) => {
+    // check if the player is dead
     if (!socket.player.checkStatus()) {
       socket.room.removePlayer(socket.player.id);
       socket.emit('dead');
     }
 
     socket.player.update(target, socket.room);
+    socket.room.update(socket.player);
 
     // respond with data needed by the canvas
     callback({
@@ -99,8 +101,5 @@ io.on('connection', socket => {
 
 
   // PLAYER DISCONNECTS
-  socket.on('disconnect', () => {
-    // eslint-disable-next-line
-    socket.room.players = socket.room.players.filter(player => player.id !== socket.id);
-  });
+  socket.on('disconnect', () => socket.room.removePlayer(socket.player.id));
 });
