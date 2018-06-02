@@ -2,11 +2,11 @@ const { testPolygonPolygon } = require('sat');
 const _ = require('lodash');
 
 const config = require('./config');
-const { id, getDistance } = require('./util');
+const { createId, getDistance } = require('./util');
 
 class Room {
   constructor() {
-    this.id = id();
+    this.id = createId();
     this.players = [];
   }
 
@@ -34,6 +34,10 @@ class Room {
     });
   }
 
+  removePlayer(id) {
+    this.players = this.players.filter(player => player.id !== id);
+  }
+
   checkForHits(activePlayer) {
     const players = this.fetchOtherPlayers(activePlayer);
     players.forEach(otherPlayer => {
@@ -45,7 +49,7 @@ class Room {
         // if the player is now dead
         if (!otherPlayer.checkStatus()) {
           activePlayer.increaseScore(config.scorePerKil);
-          this.players = this.players.filter(player => player.id !== otherPlayer.id);
+          this.removePlayer(otherPlayer.id);
         }
       }
     });
