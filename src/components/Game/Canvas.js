@@ -64,8 +64,8 @@ class Canvas extends Component {
 
       this.drawBackground();
       this.drawBoundary();
-      this.drawWarning(data.player.outOfBounds ? data.player.outOfBounds.time : 0);
       this.drawPlayers(data.players);
+      if (data.player.outOfBounds) this.drawWarning(data.player.outOfBounds.time);
 
       this.stage.update();
     });
@@ -170,19 +170,14 @@ class Canvas extends Component {
   }
 
 
-  // DRAW WARNING PULSES WHILE OUT OF BOUNDS
+  // DRAW WARNING WHILE OUT OF BOUNDS
   drawWarning = timeOutOfBounds => {
     const { stage, warning } = this;
 
-    if (timeOutOfBounds === 0) return;
-    const alpha = Math.min(`.${timeOutOfBounds.toString().split('.')[1].slice(0, 3)}`, 0.8);
-
+    const alpha = timeOutOfBounds / 8;
     warning.graphics.clear();
-    warning.graphics.beginRadialGradientFill(
-      ['transparent', `rgba(189, 75, 104, ${alpha})`], [0.7, 1],
-      stage.canvas.width / 2, stage.canvas.height / 2, 0,
-      stage.canvas.width / 2, stage.canvas.height / 2, 900,
-    ).drawRect(0, 0, stage.canvas.width, stage.canvas.height);
+    warning.graphics.beginFill(`rgba(0, 0, 0, ${alpha})`)
+      .drawRect(0, 0, stage.canvas.width, stage.canvas.height);
 
     stage.addChild(warning);
   }
