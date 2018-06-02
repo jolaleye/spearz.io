@@ -5,4 +5,5 @@ module.exports = {
   damageOnHit: 25,
   damageWhileOut: 10,
   scorePerKil: 100,
+  maxTimeOutOfBounds: 5,
 };
