@@ -1,4 +1,6 @@
 const config = {
+  socketIO: process.env.NODE_ENV === 'production' ? window.location : 'http://localhost:3001',
+
   nativeWidth: 1920,
   nativeHeight: 1080,
 

@@ -4,6 +4,7 @@ import io from 'socket.io-client';
 import { Howler } from 'howler';
 
 import './main.css';
+import config from './config';
 import StartContainer from './components/Start/StartContainer';
 import Game from './components/Game/Game';
 import Restart from './components/Restart/Restart';
@@ -24,7 +25,7 @@ class App extends Component {
 
   async componentDidMount() {
     // connect to the server
-    await this.setState({ socket: io.connect('http://localhost:3001') });
+    await this.setState({ socket: io.connect(config.socketIO) });
     const { socket } = this.state;
 
     // load game assets

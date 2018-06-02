@@ -6,18 +6,16 @@ const config = require('./config');
 const Room = require('./Room');
 const Player = require('./Player');
 
+const server = app.listen(config.port, () => console.log('Server started on port 3001'));
+
+const io = require('socket.io')(server);
+
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(`${__dirname}/../build`));
   app.get('/', (req, res) => {
     res.sendFile(`${__dirname}/../build/index.html`);
   });
 }
-
-const server = app.listen(config.port, () => console.log('Server started on port 3001'));
-
-const io = require('socket.io')(server);
-
-io.origins('http://localhost:3000');
 
 // all of the game rooms
 const rooms = {};
