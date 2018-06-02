@@ -23,6 +23,11 @@ class Room {
           // if the player hit is now dead
           if (!otherPlayer.checkStatus()) {
             activePlayer.increaseScore(config.scorePerKil);
+            activePlayer.setMessage({
+              type: 'kill',
+              msg: 'You killed',
+              name: otherPlayer.name ? otherPlayer.name : '<unnamed>',
+            });
             this.removePlayer(otherPlayer.id);
           }
         }
