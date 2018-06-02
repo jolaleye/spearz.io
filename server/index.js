@@ -75,6 +75,7 @@ io.on('connection', socket => {
 
   // PLAYER REQUESTS AN UPDATE - INITIALIZE SERVER LOGIC AND RESPOND WITH UPDATED DATA
   socket.on('requestUpdate', (target, callback) => {
+    if (!(socket.player && socket.room)) return;
     // check if the player is dead
     if (!socket.player.checkStatus()) {
       socket.room.removePlayer(socket.player.id);
@@ -93,13 +94,22 @@ io.on('connection', socket => {
     // emit other data
     socket.emit('status', { health: socket.player.health });
     socket.emit('leaderboard', socket.room.createLeaderboard(socket.player));
+    // if there is a message to display send it
+    if (socket.player.message) socket.emit('message', socket.player.message);
+    else socket.emit('clearMessage');
   });
 
 
   // PLAYER WANTS TO THROW THEIR SPEAR
-  socket.on('throw', target => socket.player.throw(target));
+  socket.on('throw', target => {
+    if (!(socket.player && socket.room)) return;
+    socket.player.throw(target);
+  });
 
 
   // PLAYER DISCONNECTS
-  socket.on('disconnect', () => socket.room.removePlayer(socket.player.id));
+  socket.on('disconnect', () => {
+    if (!(socket.player && socket.room)) return;
+    socket.room.removePlayer(socket.player.id);
+  });
 });
