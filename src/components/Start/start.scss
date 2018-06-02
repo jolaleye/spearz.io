@@ -59,17 +59,28 @@
   }
 }
 
-.friends {
-  &__btn {
-    color: white;
-    border-color: white;
-    background-color: transparent;
-    font-weight: 300;
+.options {
+  width: 8em;
+  display: flex;
+  justify-content: space-evenly;
+}
 
-    &:hover, &:focus {
-      color: white;
-      border-color: white;
-      background-color: transparent;
-    }
+.friends {
+  &:hover {
+    cursor: pointer;
+  }
+
+  &__icon {
+    color: white;
+  }
+}
+
+.audio {
+  &:hover {
+    cursor: pointer;
+  }
+
+  &__icon {
+    color: white;
   }
 }

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import io from 'socket.io-client';
+import { Howler } from 'howler';
 
 import './main.css';
 import StartContainer from './components/Start/StartContainer';
@@ -18,6 +19,7 @@ class App extends Component {
     queue: null,
     assets: {},
     allLoaded: false,
+    audio: true,
   };
 
   async componentDidMount() {
@@ -30,10 +32,8 @@ class App extends Component {
 
     // receiving the current room id
     socket.on('roomId', id => this.setState({ room: id }));
-
     // name submitted, ready to play
     socket.on('ready', () => this.changeView('game'));
-
     // player died, move to restart screen
     socket.on('dead', () => this.changeView('restart'));
   }
@@ -59,11 +59,20 @@ class App extends Component {
 
   changeView = view => this.setState({ view });
 
+  toggleAudio = async () => {
+    await this.setState(prevState => ({ audio: !prevState.audio }));
+    Howler.mute(!this.state.audio);
+  }
+
   render = () => {
     const { socket, view, room, allLoaded, assets } = this.state;
 
     if (view === 'start') {
-      return <StartContainer socket={socket} room={room} />;
+      return (
+        <StartContainer socket={socket} room={room}
+          toggleAudio={this.toggleAudio} audio={this.state.audio}
+        />
+      );
     } else if (view === 'game') {
       return allLoaded
         ? <Game socket={socket} assets={assets} />

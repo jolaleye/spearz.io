@@ -5,7 +5,7 @@ import logo from '../../assets/logo.svg';
 import FriendModalContainer from './FriendModal/FriendModalContainer';
 
 const Start = ({
-  socket, handleNameChange, handleSubmit, name, room, toggleModal, modalOpen,
+  socket, handleNameChange, handleSubmit, name, room, toggleModal, modalOpen, toggleAudio, audio,
 }) => (
   <div className="start">
     <img className="logo" src={logo} alt="Spearz.io" />
@@ -30,11 +30,18 @@ const Start = ({
       <p><span>Click</span> or press <span>Space</span> to throw your spear</p>
     </div>
 
-    <div className="friends">
-      <button className="friends__btn button is-rounded" onClick={toggleModal}>
-        <span className="icon"><i className="fas fa-user-friends"></i></span>
-        <span>Play with friends!</span>
-      </button>
+    <div className="options">
+      <div className="audio" onClick={toggleAudio}>
+        <span className="audio__icon icon is-large">{
+          audio ? <i className="fas fa-volume-up fa-2x"></i>
+            : <i className="fas fa-volume-off fa-2x"></i>
+        }</span>
+      </div>
+      <div className="friends" onClick={toggleModal}>
+        <span className="friends__icon icon is-large">
+          <i className="fas fa-user-friends fa-2x"></i>
+        </span>
+      </div>
     </div>
 
     <FriendModalContainer socket={socket} active={modalOpen} toggle={toggleModal} room={room} />

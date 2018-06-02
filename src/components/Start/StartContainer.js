@@ -25,6 +25,7 @@ class StartContainer extends Component {
       handleSubmit={this.handleSubmit}
       room={this.props.room}
       toggleModal={this.toggleModal} modalOpen={this.state.modalOpen}
+      toggleAudio={this.props.toggleAudio} audio={this.props.audio}
     />
   );
 }
