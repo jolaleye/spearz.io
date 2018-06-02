@@ -13,7 +13,7 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-const server = app.listen(3001, () => console.log('Server started on port 3001'));
+const server = app.listen(config.port, () => console.log('Server started on port 3001'));
 
 const io = require('socket.io')(server);
 
