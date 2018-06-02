@@ -10,7 +10,8 @@
     "start:dev": "concurrently -k -n \"client,server,css\" -c \"cyan,magenta,blue\" \"npm run start:client\" \"npm run start:server\" \"npm run watch:css\"",
     "build": "npm run build:css && react-scripts build",
     "build:css": "node-sass-chokidar src/ -o src/ --include-path ./node_modules --include-path ./src --quiet",
-    "watch:css": "npm run build:css && node-sass-chokidar src/ -o src/ --watch --include-path ./node_modules --include-path ./src --quiet"
+    "watch:css": "npm run build:css && node-sass-chokidar src/ -o src/ --watch --include-path ./node_modules --include-path ./src --quiet",
+    "heroku-postbuild": "npm run build"
   },
   "dependencies": {
     "bulma": "^0.7.1",
