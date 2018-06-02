@@ -1,41 +1,63 @@
 import React, { Component, createRef } from 'react';
+import { Howl } from 'howler';
 
 import config from '../../config';
+// sprites
 import playerSprite from '../../assets/player.png';
 import spearSprite from '../../assets/spear.png';
 import spearSpriteReleased from '../../assets/spear-released.png';
+// sounds
+import throwSFXSrc from '../../assets/throw.wav';
+import heartbeatSFXSrc from '../../assets/heartbeat.wav';
+import hitSFXSrc from '../../assets/hit.wav';
+import soundtrackSrc from '../../assets/soundtrack.mp3';
 
 const { Stage, Bitmap, Shape, Text, Container } = window.createjs;
+
+// SFX
+const throwSFX = new Howl({ src: throwSFXSrc, volume: 0.2 });
+const heartbeatSFX = new Howl({ src: heartbeatSFXSrc, loop: true, volume: 0.6 });
+const hitSFX = new Howl({ src: hitSFXSrc, volume: 0.2 });
+const soundtrack = new Howl({ src: soundtrackSrc, loop: true, volume: 0.2 });
 
 class Canvas extends Component {
   canvas = createRef();
 
   state = {
     pos: { x: 0, y: 0 },
+    health: 100,
+    thrown: false,
   }
 
   componentDidMount() {
     this.mounted = true;
-    this.initEasel();
     // add event listeners
     window.addEventListener('click', this.throw);
     window.addEventListener('keydown', this.throw);
-    // initialize the canvas
+    // initialize
+    this.initEasel();
     this.resizeCanvas();
     window.addEventListener('resize', this.resizeCanvas);
-    // start game cycle
+    // start game
     window.requestAnimationFrame(this.updateCycle);
+    soundtrack.play();
   }
 
   componentWillUnmount() {
     this.mounted = false;
     window.cancelAnimationFrame(this.cycle);
+    // cancel event listeners
     window.removeEventListener('click', this.throw);
     window.removeEventListener('keydown', this.throw);
+
+    heartbeatSFX.stop();
   }
 
+  // the canvas component is not a normal React component and doesn't need to re-render
+  shouldComponentUpdate = () => false;
 
-  // SET UP EASEL JS OBJECTS
+
+  // set up Easel JS objects
   initEasel = () => {
     this.stage = new Stage(this.canvas.current);
     this.boundary = new Shape();
@@ -43,14 +65,16 @@ class Canvas extends Component {
   }
 
 
-  // SCALE TO THE CURRENT DEVICE
+  // scale to the current device
   resizeCanvas = () => {
     this.stage.canvas.width = Math.round(config.deviceWidth / config.scale);
     this.stage.canvas.height = Math.round(config.deviceHeight / config.scale);
   }
 
-
+  // update cycle run every animation frame
   updateCycle = () => {
+    if (!this.mounted) return;
+
     this.cycle = window.requestAnimationFrame(this.updateCycle);
     this.stage.removeAllChildren();
 
@@ -60,12 +84,24 @@ class Canvas extends Component {
     };
 
     this.props.socket.emit('requestUpdate', this.target, data => {
-      if (this.mounted) this.setState({ pos: data.player.pos });
+      // play the hit SFX when health goes down
+      if ((this.state.health !== data.player.health) && data.player.health !== 0) hitSFX.play();
+
+      this.setState({
+        pos: data.player.pos,
+        health: data.player.health,
+        thrown: data.player.thrown,
+      });
 
       this.drawBackground();
       this.drawBoundary();
       this.drawPlayers(data.players);
-      if (data.player.outOfBounds) this.drawWarning(data.player.outOfBounds.time);
+
+      // out of bounds
+      if (data.player.outOfBounds) {
+        if (!heartbeatSFX.playing()) heartbeatSFX.play();
+        this.drawWarning(data.player.outOfBounds.time);
+      } else heartbeatSFX.pause();
 
       this.stage.update();
     });
@@ -73,12 +109,15 @@ class Canvas extends Component {
 
 
   throw = e => {
-    if (e.key && e.key !== ' ') return;
+    // checks if the key was the spacebar and if the spear has already been thrown
+    if ((e.key && e.key !== ' ') || this.state.thrown) return;
+
     this.props.socket.emit('throw', this.target);
+    throwSFX.play();
   }
 
 
-  // DRAW PLAYERS, THEIR SPEAR, AND THEIR NAME
+  // draw all nearby players (including the current player), their spear, and their name
   drawPlayers = players => {
     const { stage } = this;
     const { pos } = this.state;
@@ -131,7 +170,7 @@ class Canvas extends Component {
   }
 
 
-  // DRAW BACKGROUND CELLS AROUND THE PLAYER'S POSITION
+  // draw background cells according to the player's position
   drawBackground = () => {
     const { stage } = this;
     const { pos } = this.state;
@@ -154,7 +193,7 @@ class Canvas extends Component {
   }
 
 
-  // DRAW THE BOUNDARY CIRCLE
+  // draw the boundary ring
   drawBoundary = () => {
     const { boundary, stage } = this;
     const { pos } = this.state;
@@ -170,7 +209,7 @@ class Canvas extends Component {
   }
 
 
-  // DRAW WARNING WHILE OUT OF BOUNDS
+  // gradually fade screen to black while out of bounds
   drawWarning = timeOutOfBounds => {
     const { stage, warning } = this;
 
