@@ -1,0 +1,21 @@
+.msg {
+  position: absolute;
+  top: 5em;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.25em 0.5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  font-weight: 100;
+  font-size: 35px;
+  text-transform: uppercase;
+  color: white;
+
+  &__name {
+    color: #FEE6CA;
+    margin-left: 0.5em;
+  }
+}
