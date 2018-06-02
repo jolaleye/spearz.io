@@ -75,7 +75,10 @@ io.on('connection', socket => {
 
   // PLAYER REQUESTS AN UPDATE - INITIALIZE SERVER LOGIC AND RESPOND WITH UPDATED DATA
   socket.on('requestUpdate', (target, callback) => {
-    if (!socket.player.checkStatus()) socket.emit('dead');
+    if (!socket.player.checkStatus()) {
+      socket.room.removePlayer(socket.player.id);
+      socket.emit('dead');
+    }
 
     socket.player.update(target, socket.room);
 
