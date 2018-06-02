@@ -1,6 +1,6 @@
 import React from 'react';
 
-import './start.css';
+import './Start.css';
 import logo from '../../assets/logo.svg';
 import FriendModalContainer from './FriendModal/FriendModalContainer';
 
