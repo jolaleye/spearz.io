@@ -164,7 +164,7 @@ class Canvas extends Component {
 
     boundary.graphics.clear();
     boundary.graphics.setStrokeStyle(10).beginStroke('rgba(255, 255, 255, 0.1)')
-      .drawCircle(-pos.x, -pos.y, 5500);
+      .drawCircle(-pos.x, -pos.y, 5000);
 
     stage.addChild(boundary);
   }
