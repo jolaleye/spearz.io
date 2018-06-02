@@ -84,8 +84,8 @@ class Player {
     } else this.outOfBounds = false;
 
     // set deltas
-    let dx = 4 * Math.cos(this.direction);
-    let dy = 4 * Math.sin(this.direction);
+    let dx = 4.5 * Math.cos(this.direction);
+    let dy = 4.5 * Math.sin(this.direction);
 
     // movement is slower when the target is close
     if (distance.total < 100) {
