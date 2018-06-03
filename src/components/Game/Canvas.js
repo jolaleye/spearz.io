@@ -1,24 +1,11 @@
 import React, { Component, createRef } from 'react';
-import { Howl } from 'howler';
 
 import config from '../../config';
-// sprites
-import playerSprite from '../../assets/player.png';
-import spearSprite from '../../assets/spear.png';
-import spearSpriteReleased from '../../assets/spear-released.png';
-// sounds
-import throwSFXSrc from '../../assets/throw.wav';
-import heartbeatSFXSrc from '../../assets/heartbeat.wav';
-import hitSFXSrc from '../../assets/hit.wav';
-import soundtrackSrc from '../../assets/soundtrack.mp3';
+import assetManager from '../../AssetManager';
 
 const { Stage, Bitmap, Shape, Text, Container } = window.createjs;
 
-// SFX
-const throwSFX = new Howl({ src: throwSFXSrc, volume: 0.2 });
-const heartbeatSFX = new Howl({ src: heartbeatSFXSrc, loop: true, volume: 0.6 });
-const hitSFX = new Howl({ src: hitSFXSrc, volume: 0.2 });
-const soundtrack = new Howl({ src: soundtrackSrc, loop: true, volume: 0.2 });
+const { sprites, sounds, assets } = assetManager;
 
 class Canvas extends Component {
   canvas = createRef();
@@ -40,7 +27,6 @@ class Canvas extends Component {
     window.addEventListener('resize', this.resizeCanvas);
     // start game
     window.requestAnimationFrame(this.updateCycle);
-    soundtrack.play();
   }
 
   componentWillUnmount() {
@@ -50,7 +36,7 @@ class Canvas extends Component {
     window.removeEventListener('click', this.throw);
     window.removeEventListener('keydown', this.throw);
 
-    heartbeatSFX.stop();
+    sounds.heartbeat.stop();
   }
 
   // the canvas component is not a normal React component and doesn't need to re-render
@@ -71,6 +57,7 @@ class Canvas extends Component {
     this.stage.canvas.height = Math.round(config.deviceHeight / config.scale);
   }
 
+
   // update cycle run every animation frame
   updateCycle = () => {
     if (!this.mounted) return;
@@ -84,9 +71,6 @@ class Canvas extends Component {
     };
 
     this.props.socket.emit('requestUpdate', this.target, data => {
-      // play the hit SFX when health goes down
-      if ((this.state.health !== data.player.health) && data.player.health !== 0) hitSFX.play();
-
       this.setState({
         pos: data.player.pos,
         health: data.player.health,
@@ -99,9 +83,9 @@ class Canvas extends Component {
 
       // out of bounds
       if (data.player.outOfBounds) {
-        if (!heartbeatSFX.playing()) heartbeatSFX.play();
+        if (!sounds.heartbeat.playing()) sounds.heartbeat.play();
         this.drawWarning(data.player.outOfBounds.time);
-      } else heartbeatSFX.pause();
+      } else sounds.heartbeat.pause();
 
       this.stage.update();
     });
@@ -113,7 +97,7 @@ class Canvas extends Component {
     if ((e.key && e.key !== ' ') || this.state.thrown) return;
 
     this.props.socket.emit('throw', this.target);
-    throwSFX.play();
+    sounds.throw.play();
   }
 
 
@@ -128,7 +112,7 @@ class Canvas extends Component {
 
     players.forEach(player => {
       // player
-      const playerBitmap = new Bitmap(playerSprite);
+      const playerBitmap = new Bitmap(sprites.player);
       playerBitmap.setBounds(0, 0, playerBitmap.image.width, playerBitmap.image.height);
       playerBitmap.regX = playerBitmap.getBounds().width / 2;
       playerBitmap.regY = playerBitmap.getBounds().height / 2;
@@ -137,7 +121,8 @@ class Canvas extends Component {
       playerBitmap.rotation = (player.direction * (180 / Math.PI)) + 90;
 
       // spear
-      const spearBitmap = new Bitmap(player.thrown ? spearSpriteReleased : spearSprite);
+      const spearBitmap = new Bitmap(player.thrown ?
+        sprites.spearReleased : sprites.spear);
       spearBitmap.setBounds(0, 0, spearBitmap.image.width, spearBitmap.image.height);
       spearBitmap.regX = spearBitmap.getBounds().width / 2;
       spearBitmap.regY = spearBitmap.getBounds().height / 2;
@@ -174,17 +159,16 @@ class Canvas extends Component {
   drawBackground = () => {
     const { stage } = this;
     const { pos } = this.state;
-    const { backgroundCell } = this.props.assets;
 
-    const xNumOfCells = Math.ceil(stage.canvas.width / backgroundCell.width) + 1;
-    const yNumOfCells = Math.ceil(stage.canvas.height / backgroundCell.height) + 1;
+    const xNumOfCells = Math.ceil(stage.canvas.width / assets.background.width) + 1;
+    const yNumOfCells = Math.ceil(stage.canvas.height / assets.background.height) + 1;
 
-    const xOffset = pos.x % backgroundCell.width;
-    const yOffset = pos.y % backgroundCell.height;
+    const xOffset = pos.x % assets.background.width;
+    const yOffset = pos.y % assets.background.height;
 
     for (let x = -xNumOfCells; x < xNumOfCells; x += 1) {
       for (let y = -yNumOfCells; y < yNumOfCells; y += 1) {
-        const cell = new Bitmap(backgroundCell);
+        const cell = new Bitmap(assets.background);
         cell.x = -xOffset + (x * cell.getBounds().width);
         cell.y = -yOffset + (y * cell.getBounds().height);
         stage.addChild(cell);
