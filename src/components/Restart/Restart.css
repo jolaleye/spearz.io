@@ -1,9 +1,0 @@
-.restart {
-  height: 100vh;
-  width: 100vw;
-  background: #FFCCA1;
-  background: url("../../assets/menu-bg.svg") no-repeat center/cover;
-  display: flex;
-  flex-flow: column nowrap;
-  justify-content: center;
-  align-items: center; }
