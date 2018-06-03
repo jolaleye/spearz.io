@@ -60,8 +60,6 @@ class Canvas extends Component {
 
   // update cycle run every animation frame
   updateCycle = () => {
-    if (!this.mounted) return;
-
     this.cycle = window.requestAnimationFrame(this.updateCycle);
     this.stage.removeAllChildren();
 
@@ -71,11 +69,13 @@ class Canvas extends Component {
     };
 
     this.props.socket.emit('requestUpdate', this.target, data => {
-      this.setState({
-        pos: data.player.pos,
-        health: data.player.health,
-        thrown: data.player.thrown,
-      });
+      if (this.mounted) {
+        this.setState({
+          pos: data.player.pos,
+          health: data.player.health,
+          thrown: data.player.thrown,
+        });
+      }
 
       this.drawBackground();
       this.drawBoundary();
