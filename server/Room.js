@@ -32,6 +32,8 @@ class Room {
               msg: 'You killed',
               name: otherPlayer.name ? otherPlayer.name : '<unnamed>',
             });
+            // eslint-disable-next-line
+            otherPlayer.killedBy = activePlayer.name ? activePlayer.name : '<unnamed>';
             this.removePlayer(otherPlayer.id);
           }
         }
