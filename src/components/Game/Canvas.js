@@ -3,9 +3,9 @@ import React, { Component, createRef } from 'react';
 import config from '../../config';
 import assetManager from '../../AssetManager';
 
-const { Stage, Bitmap, Shape, Text, Container } = window.createjs;
+const { Stage, Bitmap, Shape, Text, Container, Sprite, Ticker } = window.createjs;
 
-const { sprites, sounds, assets } = assetManager;
+const { sprites, spritesheets, sounds } = assetManager;
 
 class Canvas extends Component {
   canvas = createRef();
@@ -26,17 +26,16 @@ class Canvas extends Component {
     this.resizeCanvas();
     window.addEventListener('resize', this.resizeCanvas);
     // start game
-    window.requestAnimationFrame(this.updateCycle);
+    Ticker.timingMode = Ticker.RAF;
+    Ticker.on('tick', this.updateCycle);
   }
 
   componentWillUnmount() {
     this.mounted = false;
-    window.cancelAnimationFrame(this.cycle);
-    // cancel event listeners
+    Ticker.reset();
+    sounds.heartbeat.stop();
     window.removeEventListener('click', this.throw);
     window.removeEventListener('keydown', this.throw);
-
-    sounds.heartbeat.stop();
   }
 
   // the canvas component is not a normal React component and doesn't need to re-render
@@ -48,6 +47,16 @@ class Canvas extends Component {
     this.stage = new Stage(this.canvas.current);
     this.boundary = new Shape();
     this.warning = new Shape();
+    this.bgcell = new Bitmap(assetManager.misc.background);
+
+    this.player = new Bitmap(sprites.player);
+    this.player.regX = 44;
+    this.player.regY = 40;
+    this.spear = new Sprite(spritesheets.spear, 0);
+
+    this.nameTag = new Container();
+    this.name = new Text(null, '18px Roboto', 'white');
+    this.nameBackground = new Shape();
   }
 
 
@@ -59,8 +68,7 @@ class Canvas extends Component {
 
 
   // update cycle run every animation frame
-  updateCycle = () => {
-    this.cycle = window.requestAnimationFrame(this.updateCycle);
+  updateCycle = event => {
     this.stage.removeAllChildren();
 
     this.target = {
@@ -87,7 +95,7 @@ class Canvas extends Component {
         this.drawWarning(data.player.outOfBounds.time);
       } else sounds.heartbeat.pause();
 
-      this.stage.update();
+      this.stage.update(event);
     });
   }
 
@@ -95,7 +103,6 @@ class Canvas extends Component {
   throw = e => {
     // checks if the key was the spacebar and if the spear has already been thrown
     if ((e.key && e.key !== ' ') || this.state.thrown) return;
-
     this.props.socket.emit('throw', this.target);
     sounds.throw.play();
   }
@@ -111,44 +118,38 @@ class Canvas extends Component {
     const yOffset = pos.y - (stage.canvas.height / 2);
 
     players.forEach(player => {
-      // player
-      const playerBitmap = new Bitmap(sprites.player);
-      playerBitmap.setBounds(0, 0, playerBitmap.image.width, playerBitmap.image.height);
-      playerBitmap.regX = playerBitmap.getBounds().width / 2;
-      playerBitmap.regY = playerBitmap.getBounds().height / 2;
-      playerBitmap.x = player.pos.x - xOffset;
-      playerBitmap.y = player.pos.y - yOffset;
-      playerBitmap.rotation = (player.direction * (180 / Math.PI)) + 90;
+      const playerSprite = this.player.clone();
+      playerSprite.x = player.pos.x - xOffset;
+      playerSprite.y = player.pos.y - yOffset;
+      playerSprite.rotation = (player.direction * (180 / Math.PI)) + 90;
 
-      // spear
-      const spearBitmap = new Bitmap(player.thrown ?
-        sprites.spearReleased : sprites.spear);
-      spearBitmap.setBounds(0, 0, spearBitmap.image.width, spearBitmap.image.height);
-      spearBitmap.regX = spearBitmap.getBounds().width / 2;
-      spearBitmap.regY = spearBitmap.getBounds().height / 2;
-      spearBitmap.x = playerBitmap.x + player.distanceToSpear.x;
-      spearBitmap.y = playerBitmap.y + player.distanceToSpear.y;
-      spearBitmap.rotation = (player.spear.direction * (180 / Math.PI)) + 90;
+      const spearSprite = this.spear.clone();
+      spearSprite.gotoAndStop(player.thrown ? 1 : 0);
+      spearSprite.x = playerSprite.x + player.distanceToSpear.x;
+      spearSprite.y = playerSprite.y + player.distanceToSpear.y;
+      spearSprite.rotation = (player.spear.direction * (180 / Math.PI)) + 90;
 
-      stage.addChild(playerBitmap, spearBitmap);
+      stage.addChild(playerSprite, spearSprite);
 
       // name tag
       if (player.name) {
-        const name = new Text(player.name, '18px Roboto', 'white');
-        const nameBackground = new Shape();
-        const nameTag = new Container();
+        const name = this.name.clone();
+        const nameBackground = this.nameBackground.clone();
+        const nameTag = this.nameTag.clone();
         nameTag.addChild(name);
         nameTag.addChild(nameBackground);
 
+        name.text = player.name;
         name.textBaseline = 'middle';
         name.y = nameTag.getBounds().height / 2;
         nameBackground.graphics.clear();
         nameBackground.graphics.beginFill('rgba(0, 0, 0, 0.1)')
           .drawRect(-10, -5, nameTag.getBounds().width + 20, nameTag.getBounds().height + 10);
         nameTag.regX = nameTag.getBounds().width / 2;
-        nameTag.x = playerBitmap.x;
-        nameTag.y = playerBitmap.y + 75;
+        nameTag.x = playerSprite.x;
+        nameTag.y = playerSprite.y + 75;
 
+        nameTag.cache(-5, -5, nameTag.getBounds().width + 10, nameTag.getBounds().height + 10);
         stage.addChild(nameTag);
       }
     });
@@ -159,16 +160,17 @@ class Canvas extends Component {
   drawBackground = () => {
     const { stage } = this;
     const { pos } = this.state;
+    const { background } = assetManager.misc;
 
-    const xNumOfCells = Math.ceil(stage.canvas.width / assets.background.width) + 1;
-    const yNumOfCells = Math.ceil(stage.canvas.height / assets.background.height) + 1;
+    const xNumOfCells = Math.ceil(stage.canvas.width / background.width) + 1;
+    const yNumOfCells = Math.ceil(stage.canvas.height / background.height) + 1;
 
-    const xOffset = pos.x % assets.background.width;
-    const yOffset = pos.y % assets.background.height;
+    const xOffset = pos.x % background.width;
+    const yOffset = pos.y % background.height;
 
     for (let x = -xNumOfCells; x < xNumOfCells; x += 1) {
       for (let y = -yNumOfCells; y < yNumOfCells; y += 1) {
-        const cell = new Bitmap(assets.background);
+        const cell = this.bgcell.clone();
         cell.x = -xOffset + (x * cell.getBounds().width);
         cell.y = -yOffset + (y * cell.getBounds().height);
         stage.addChild(cell);
