@@ -11,7 +11,9 @@ import assetManager from './AssetManager';
 class App extends Component {
   state = {
     socket: null,
+    room: '',
     view: 'start',
+    killedBy: '',
   };
 
   async componentDidMount() {
@@ -25,26 +27,31 @@ class App extends Component {
     // load game assets
     await assetManager.loadAssets();
 
+    // recieving room id
+    socket.on('roomId', id => this.setState({ room: id }));
     // name submitted, ready to play
     socket.on('ready', () => this.changeView('game'));
     // player died, move to restart screen
-    socket.on('dead', () => this.changeView('restart'));
+    socket.on('dead', killedBy => {
+      this.changeView('restart');
+      this.setState({ killedBy });
+    });
   }
 
   changeView = view => this.setState({ view });
 
   render = () => {
-    const { socket, view } = this.state;
+    const { socket, room, view, killedBy } = this.state;
 
     if (!socket) return <div></div>;
 
     switch (view) {
       case 'start':
-        return <StartContainer socket={socket} />;
+        return <StartContainer socket={socket} room={room} />;
       case 'game':
         return <Game socket={socket} />;
       case 'restart':
-        return <Restart changeView={this.changeView} />;
+        return <Restart changeView={this.changeView} killedBy={killedBy} />;
       default:
         return <div></div>;
     }
