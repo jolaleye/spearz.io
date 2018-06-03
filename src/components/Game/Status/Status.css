@@ -1,0 +1,21 @@
+.status {
+  width: 100%;
+  height: 5%;
+  position: absolute;
+  bottom: 0.75em;
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: space-evenly;
+  align-items: center; }
+  .status__bar {
+    width: 45%;
+    margin: 0 !important; }
+  .status__health::-webkit-progress-bar {
+    background-color: rgba(255, 255, 255, 0.2); }
+  .status__health::-webkit-progress-value {
+    background-color: #F5437E; }
+  .status__health::-moz-progress-bar {
+    background-color: #F5437E; }
+  .status__health::-ms-fill {
+    background-color: #F5437E;
+    border: none; }

@@ -1,0 +1,65 @@
+.start {
+  height: 100vh;
+  width: 100vw;
+  background: #FFCCA1;
+  background: url("../../assets/menu-bg.svg") no-repeat center/cover;
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: flex-start;
+  align-items: center; }
+
+.logo {
+  width: 45em;
+  margin: 10em 0 6em 0; }
+
+.form {
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1.5em; }
+  .form__name {
+    width: 18.4em;
+    height: 3.3em;
+    border-radius: 8px;
+    color: #777d88 !important;
+    font-weight: 300; }
+  .form__btn {
+    color: white;
+    border-color: white;
+    background-color: transparent;
+    width: 8em;
+    height: 4.2rem;
+    font-size: 1.4em !important; }
+    .form__btn:hover, .form__btn:focus {
+      color: white;
+      border-color: white;
+      background-color: transparent; }
+
+.instructions {
+  color: white;
+  font-weight: 300;
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1.5em !important; }
+  .instructions span {
+    font-weight: 400; }
+
+.options {
+  width: 8em;
+  display: flex;
+  justify-content: space-evenly; }
+
+.friends:hover {
+  cursor: pointer; }
+
+.friends__icon {
+  color: white; }
+
+.audio:hover {
+  cursor: pointer; }
+
+.audio__icon {
+  color: white; }
