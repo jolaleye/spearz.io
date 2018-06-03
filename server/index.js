@@ -15,70 +15,64 @@ if (process.env.NODE_ENV === 'production') {
   app.get('/', (req, res) => res.sendFile(path.join(__dirname, '..', 'build', 'index.html')));
 }
 
-// all of the game rooms
 const rooms = {};
-// starter room
-let newRoom = new Room();
-rooms[newRoom.id] = newRoom;
 
+/* eslint no-param-reassign: "off" */
 io.on('connection', socket => {
   console.log(`Connection made: ${socket.id}`);
 
-  // INITIAL ROOM CONNECTION
-  let roomList = Object.values(rooms);
-  let newestRoom = roomList[roomList.length - 1];
-  // check if the newest room is full
-  if (newestRoom.players.length >= config.maxPlayers) {
-    newRoom = new Room();
-    rooms[newRoom.id] = newRoom;
+  // remove empty rooms
+  Object.values(rooms).forEach(roomToCheck => {
+    if (roomToCheck.connections === 0) delete rooms[roomToCheck.id];
+  });
 
-    roomList = Object.values(rooms);
-    newestRoom = roomList[roomList.length - 1];
-  }
-  // connect the player to the newest room
-  socket.join(newestRoom.id, () => socket.emit('roomId', Object.values(socket.rooms)[1]));
-  // assign the room to the socket
-  socket.room = newestRoom; // eslint-disable-line
+  // initial room connection - try to find a room with space
+  let room = Object.values(rooms).find(candidate => candidate.connections < config.maxPlayers);
+  // if they're all full make a new one
+  if (!room) room = new Room(io);
+  rooms[room.id] = room;
+  // connect the player to the room
+  socket.join(room.id, () => socket.emit('roomId', room.id));
+  socket.room = room;
+  socket.room.connections += 1;
 
-
-  // PLAYER REQUESTS TO JOIN A ROOM
+  // player requests to join a specific room
   socket.on('joinRoom', id => {
-    if (!rooms[id]) socket.emit('invalidRoom');
-    else {
+    if (!rooms[id]) socket.emit('invalidRoom', 'Invalid room code');
+    else if (rooms[id].connections >= config.maxPlayers) {
+      socket.emit('invalidRoom', 'Room is full');
+    } else {
       // leave current room
-      socket.leave(Object.values(socket.rooms)[1]);
+      socket.leave(socket.room.id);
       // join requested room
-      socket.join(id, () => socket.emit('roomId', Object.values(socket.rooms)[1]));
-      // assign the room to the socket
-      socket.room = rooms[id]; // eslint-disable-line
+      socket.join(id, () => socket.emit('roomId', id));
+      socket.room = rooms[id];
+      socket.room.connections += 1;
     }
   });
 
-
-  // PLAYER JOINS THE GAME
+  // player joins the game
   socket.on('joinGame', name => {
-    console.log(`${name} wants to join room ${socket.room.id}`);
     // create a new player
     const newPlayer = new Player(socket.id, name);
     // add them to their room
     socket.room.players.push(newPlayer);
-    // assign this player to the socket
-    socket.player = newPlayer; // eslint-disable-line
     // give them the good to go
+    socket.player = newPlayer;
     socket.emit('ready');
   });
 
-
-  // PLAYER REQUESTS AN UPDATE - INITIALIZE SERVER LOGIC AND RESPOND WITH UPDATED DATA
+  // player requests an update - respond with updated data
   socket.on('requestUpdate', (target, callback) => {
     if (!(socket.player && socket.room)) return;
+
     // check if the player is dead
     if (!socket.player.checkStatus()) {
       socket.room.removePlayer(socket.player.id);
       socket.emit('dead');
     }
 
-    socket.player.update(target, socket.room);
+    socket.player.update(target);
     socket.room.update(socket.player);
 
     // respond with data needed by the canvas
@@ -90,22 +84,20 @@ io.on('connection', socket => {
     // emit other data
     socket.emit('status', { health: socket.player.health });
     socket.emit('leaderboard', socket.room.createLeaderboard(socket.player));
-    // if there is a message to display send it
+    // if there is a message to display, send it
     if (socket.player.message) socket.emit('message', socket.player.message);
     else socket.emit('clearMessage');
   });
 
-
-  // PLAYER WANTS TO THROW THEIR SPEAR
+  // player wants to throw their spear
   socket.on('throw', target => {
     if (!(socket.player && socket.room)) return;
     socket.player.throw(target);
   });
 
-
-  // PLAYER DISCONNECTS
+  // player disconnects
   socket.on('disconnect', () => {
-    if (!(socket.player && socket.room)) return;
-    socket.room.removePlayer(socket.player.id);
+    if (socket.player) socket.room.removePlayer(socket.player.id);
+    if (socket.room) socket.room.connections -= 1;
   });
 });
