@@ -5,9 +5,11 @@ const config = require('./config');
 const { createId, getDistance } = require('./util');
 
 class Room {
-  constructor() {
+  constructor(io) {
     this.id = createId();
+    this.connections = 0;
     this.players = [];
+    this.io = io;
   }
 
   update(activePlayer) {
@@ -17,6 +19,8 @@ class Room {
       players.forEach(otherPlayer => {
         // test for collision between the spear and a player
         if (testPolygonPolygon(activePlayer.spear.hitbox, otherPlayer.hitbox)) {
+          this.io.sockets.to(activePlayer.id).emit('hit');
+          this.io.sockets.to(otherPlayer.id).emit('hit');
           activePlayer.resetSpear();
           otherPlayer.takeDamage(config.damageOnHit);
 
