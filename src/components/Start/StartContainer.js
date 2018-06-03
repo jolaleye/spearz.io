@@ -8,18 +8,9 @@ import FriendModalContainer from './FriendModal/FriendModalContainer';
 class StartContainer extends Component {
   state = {
     name: '',
-    room: '',
     friendModalState: false,
     audio: true,
   };
-
-  componentDidMount() {
-    this.props.socket.on('roomId', id => this.setState({ room: id }));
-  }
-
-  componentWillUnmount() {
-    this.props.socket.off('roomId');
-  }
 
   handleNameChange = e => this.setState({ name: e.target.value });
 
@@ -43,7 +34,7 @@ class StartContainer extends Component {
       handleSubmit={this.handleSubmit} toggleAudio={this.toggleAudio} audio={this.state.audio}
       toggleModal={this.toggleModal}
     >
-      <FriendModalContainer socket={this.props.socket} room={this.state.room}
+      <FriendModalContainer socket={this.props.socket} room={this.props.room}
         toggleModal={this.toggleModal} modalState={this.state.friendModalState}
       />
     </Start>
