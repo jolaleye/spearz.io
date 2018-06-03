@@ -69,7 +69,7 @@ io.on('connection', socket => {
     // check if the player is dead
     if (!socket.player.checkStatus()) {
       socket.room.removePlayer(socket.player.id);
-      socket.emit('dead');
+      socket.emit('dead', socket.player.killedBy);
     }
 
     socket.player.update(target);
