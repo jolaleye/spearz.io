@@ -2,10 +2,9 @@ import React from 'react';
 
 import './Start.css';
 import logo from '../../assets/logo.svg';
-import FriendModalContainer from './FriendModal/FriendModalContainer';
 
 const Start = ({
-  socket, handleNameChange, handleSubmit, name, room, toggleModal, modalOpen, toggleAudio, audio,
+  name, handleNameChange, handleSubmit, audio, toggleAudio, toggleModal, children,
 }) => (
   <div className="start">
     <img className="logo" src={logo} alt="Spearz.io" />
@@ -44,7 +43,7 @@ const Start = ({
       </div>
     </div>
 
-    <FriendModalContainer socket={socket} active={modalOpen} toggle={toggleModal} room={room} />
+    {children}
   </div>
 );
 

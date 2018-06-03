@@ -1,13 +1,25 @@
 import React, { Component } from 'react';
 import _ from 'lodash';
+import { Howler } from 'howler';
 
 import Start from './Start';
+import FriendModalContainer from './FriendModal/FriendModalContainer';
 
 class StartContainer extends Component {
   state = {
     name: '',
-    modalOpen: false,
+    room: '',
+    friendModalState: false,
+    audio: true,
   };
+
+  componentDidMount() {
+    this.props.socket.on('roomId', id => this.setState({ room: id }));
+  }
+
+  componentWillUnmount() {
+    this.props.socket.off('roomId');
+  }
 
   handleNameChange = e => this.setState({ name: e.target.value });
 
@@ -17,16 +29,24 @@ class StartContainer extends Component {
     this.setState({ name: '' });
   }
 
-  toggleModal = () => this.setState(prevState => ({ modalOpen: !prevState.modalOpen }));
+  toggleModal = () => {
+    this.setState(prevState => ({ friendModalState: !prevState.friendModalState }));
+  }
+
+  toggleAudio = async () => {
+    await this.setState(prevState => ({ audio: !prevState.audio }));
+    Howler.mute(!this.state.audio);
+  }
 
   render = () => (
-    <Start socket={this.props.socket}
-      name={this.state.name} handleNameChange={this.handleNameChange}
-      handleSubmit={this.handleSubmit}
-      room={this.props.room}
-      toggleModal={this.toggleModal} modalOpen={this.state.modalOpen}
-      toggleAudio={this.props.toggleAudio} audio={this.props.audio}
-    />
+    <Start name={this.state.name} handleNameChange={this.handleNameChange}
+      handleSubmit={this.handleSubmit} toggleAudio={this.toggleAudio} audio={this.state.audio}
+      toggleModal={this.toggleModal}
+    >
+      <FriendModalContainer socket={this.props.socket} room={this.state.room}
+        toggleModal={this.toggleModal} modalState={this.state.friendModalState}
+      />
+    </Start>
   );
 }
 
