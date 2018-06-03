@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require('express');
 const io = require('socket.io')();
 
@@ -10,8 +11,8 @@ const server = app.listen(config.port);
 io.attach(server);
 
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(`${__dirname}/../build`));
-  app.get('/', (req, res) => res.sendFile(`${__dirname}/../build/index.html`));
+  app.use(express.static(path.join(__dirname, '..', 'build')));
+  app.get('/', (req, res) => res.sendFile(path.join(__dirname, '..', 'build', 'index.html')));
 }
 
 // all of the game rooms
