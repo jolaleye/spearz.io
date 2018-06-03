@@ -3,21 +3,29 @@ import { Howl } from 'howler';
 import background from './assets/bg-cell.png';
 import player from './assets/player.png';
 import spear from './assets/spear.png';
-import spearReleased from './assets/spear-released.png';
 import heartbeat from './assets/heartbeat.wav';
 import hit from './assets/hit.wav';
 import soundtrack from './assets/soundtrack.mp3';
 import throwSFX from './assets/throw.wav';
 
-const { LoadQueue } = window.createjs;
+const { LoadQueue, SpriteSheet } = window.createjs;
 
 class AssetManager {
   constructor() {
     this.queue = new LoadQueue(false);
     this.queue.on('fileload', this.handleLoad, this);
 
-    this.assets = {};
-    this.sprites = { player, spear, spearReleased };
+    this.misc = {};
+
+    this.spritesheets = {
+      spear: new SpriteSheet({
+        images: [spear],
+        frames: { width: 18, height: 106, regX: 9, regY: 53, spacing: 5 },
+      }),
+    };
+
+    this.sprites = { player };
+
     this.sounds = {
       heartbeat: new Howl({ src: heartbeat }),
       hit: new Howl({ src: hit, volume: 0.2 }),
@@ -38,7 +46,7 @@ class AssetManager {
   }
 
   handleLoad = e => {
-    this.assets[e.item.id] = e.result;
+    this.misc[e.item.id] = e.result;
   }
 }
 
