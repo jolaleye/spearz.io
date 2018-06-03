@@ -1,18 +1,32 @@
-import React from 'react';
+import React, { Component } from 'react';
 
 import './Game.css';
 import Canvas from './Canvas';
 import LeaderboardContainer from './Leaderboard/LeaderboardContainer';
 import StatusContainer from './Status/StatusContainer';
 import Message from './Message/Message';
+import assetManager from '../../AssetManager';
 
-const Game = ({ socket, assets }) => (
-  <div className="game">
-    <Canvas socket={socket} assets={assets} />
-    <LeaderboardContainer socket={socket} />
-    <StatusContainer socket={socket} />
-    <Message socket={socket} />
-  </div>
-);
+const { sounds } = assetManager;
+
+class Game extends Component {
+  componentDidMount() {
+    sounds.soundtrack.play();
+    this.props.socket.on('hit', () => sounds.hit.play());
+  }
+
+  componentWillUnmount() {
+    this.props.socket.off('hit');
+  }
+
+  render = () => (
+    <div className="game">
+      <Canvas socket={this.props.socket} />
+      <LeaderboardContainer socket={this.props.socket} />
+      <StatusContainer socket={this.props.socket} />
+      <Message socket={this.props.socket} />
+    </div>
+  );
+}
 
 export default Game;
