@@ -12,8 +12,7 @@ const { LoadQueue, SpriteSheet } = window.createjs;
 
 class AssetManager {
   constructor() {
-    this.queue = new LoadQueue(false);
-    this.queue.on('fileload', this.handleLoad, this);
+    this.assets = new LoadQueue(false);
 
     this.misc = {};
 
@@ -35,18 +34,14 @@ class AssetManager {
   }
 
   loadAssets = () => {
-    this.queue.loadManifest([
+    this.assets.loadManifest([
       { id: 'background', src: background },
     ]);
 
     return new Promise((resolve, reject) => {
-      this.queue.on('complete', resolve, this);
-      this.queue.on('error', reject, this);
+      this.assets.on('complete', resolve, this);
+      this.assets.on('error', reject, this);
     });
-  }
-
-  handleLoad = e => {
-    this.misc[e.item.id] = e.result;
   }
 }
 
