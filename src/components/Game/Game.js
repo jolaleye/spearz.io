@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 
 import './Game.css';
-import Canvas from './Canvas';
+import Canvas from './Canvas/Canvas';
 import LeaderboardContainer from './Leaderboard/LeaderboardContainer';
 import StatusContainer from './Status/StatusContainer';
 import Message from './Message/Message';
