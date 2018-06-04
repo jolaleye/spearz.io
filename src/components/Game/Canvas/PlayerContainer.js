@@ -15,6 +15,8 @@ class PlayerContainer {
 
     this.spearSprite = new Sprite(spritesheets.spear);
 
+    this.hitboxTrace = new Shape();
+
     if (name) {
       this.nameTag = new Container();
       this.name = new Text(name, '18px Roboto', 'white');
@@ -49,6 +51,30 @@ class PlayerContainer {
       nameTag.x = playerSprite.x;
       nameTag.y = playerSprite.y + 75;
     }
+  }
+
+  drawHitbox = (player, offset, subject) => {
+    const { hitboxTrace } = this;
+    this.container.addChild(hitboxTrace);
+
+    const { hitbox } = subject === 'player' ? player : player.spear;
+
+    hitboxTrace.graphics.clear().beginStroke('magenta').moveTo(
+      (hitbox.pos.x + hitbox.calcPoints[0].x) - offset.x,
+      (hitbox.pos.y + hitbox.calcPoints[0].y) - offset.y,
+    );
+
+    hitbox.calcPoints.forEach(point => {
+      hitboxTrace.graphics.lineTo(
+        (hitbox.pos.x - offset.x) + point.x,
+        (hitbox.pos.y - offset.y) + point.y,
+      );
+    });
+
+    hitboxTrace.graphics.lineTo(
+      (hitbox.pos.x + hitbox.calcPoints[0].x) - offset.x,
+      (hitbox.pos.y + hitbox.calcPoints[0].y) - offset.y,
+    ).endStroke();
   }
 }
 
