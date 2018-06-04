@@ -15,8 +15,7 @@ class Room {
   update(activePlayer) {
     // if the active player has thrown their spear check for hits
     if (activePlayer.thrown) {
-      const players = this.fetchOtherPlayers(activePlayer);
-      players.forEach(otherPlayer => {
+      this.fetchPlayers(activePlayer, false).forEach(otherPlayer => {
         // test for collision between the spear and a player
         if (testPolygonPolygon(activePlayer.spear.hitbox, otherPlayer.hitbox)) {
           this.io.sockets.to(activePlayer.id).emit('hit');
@@ -27,11 +26,12 @@ class Room {
           // if the player hit is now dead
           if (!otherPlayer.checkStatus()) {
             activePlayer.increaseScore(config.scorePerKil);
-            activePlayer.setMessage({
+            this.io.sockets.to(activePlayer.id).emit('message', {
               type: 'kill',
-              msg: 'You killed',
               name: otherPlayer.name ? otherPlayer.name : '<unnamed>',
+              duration: 3,
             });
+
             // eslint-disable-next-line
             otherPlayer.deathMsg = {
               type: 'player',
@@ -44,27 +44,15 @@ class Room {
     }
   }
 
-  fetchPlayers(activePlayer) {
-    // only include players within 2000 units of the current player
-    // (this includes the current player)
+  fetchPlayers(activePlayer, include) {
+    // fetches players within 1250 units of the active player
+    // includes / doesn't include the active player based on include param
     return this.players.filter(player => {
       const distance = getDistance(
         activePlayer.pos.x, player.pos.x,
         activePlayer.pos.y, player.pos.y,
       );
-      return distance.total <= 2000;
-    });
-  }
-
-  fetchOtherPlayers(activePlayer) {
-    // only include players within 2000 units of the current player
-    // (not including the current player)
-    return this.players.filter(player => {
-      const distance = getDistance(
-        activePlayer.pos.x, player.pos.x,
-        activePlayer.pos.y, player.pos.y,
-      );
-      return (distance.total <= 2000) && (player.id !== activePlayer.id);
+      return (distance.total <= 1250) && (include ? true : player.id !== activePlayer.id);
     });
   }
 
