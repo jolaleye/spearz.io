@@ -1,37 +1,46 @@
 import React, { Component } from 'react';
-import _ from 'lodash';
 
 import './Message.css';
 
 class Message extends Component {
   state = {
-    message: false,
+    message: {},
+    showing: false,
   }
 
   componentDidMount() {
     this.props.socket.on('message', message => {
-      if (!_.isEqual(message, this.state.message)) this.setState({ message });
-    });
+      if (message.type === 'clear' && this.state.message.type === message.target) {
+        this.setState({ message: '', showing: false });
+      } else if (message.type !== 'clear') {
+        this.setState({ message, showing: true });
 
-    this.props.socket.on('clearMessage', () => {
-      if (this.state.message) this.setState({ message: false });
+        if (message.duration) {
+          window.setTimeout(() => {
+            this.setState({ showing: false });
+          }, message.duration * 1000);
+        }
+      }
     });
   }
 
   componentWillUnmount() {
     this.props.socket.off('message');
-    this.props.socket.off('clearMessage');
   }
 
   render = () => {
-    const { message } = this.state;
+    const { message, showing } = this.state;
+    if (!showing) return null;
 
-    return message ? (
-      <div className="msg">
-        <span>{message.msg}</span>
-        {message.type === 'kill' ? <span className="msg__name">{message.name}</span> : null}
-      </div>
-    ) : null;
+    return (
+      <div className="msg">{
+        message.type === 'kill' ? (
+          <span>You killed <span className="msg__name">{message.name}</span></span>
+        ) : (
+          <span>{message.msg}</span>
+        )
+      }</div>
+    );
   };
 }
 
