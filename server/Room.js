@@ -33,7 +33,10 @@ class Room {
               name: otherPlayer.name ? otherPlayer.name : '<unnamed>',
             });
             // eslint-disable-next-line
-            otherPlayer.killedBy = activePlayer.name ? activePlayer.name : '<unnamed>';
+            otherPlayer.deathMsg = {
+              type: 'player',
+              name: activePlayer.name ? activePlayer.name : '<unnamed>',
+            };
             this.removePlayer(otherPlayer.id);
           }
         }
@@ -42,26 +45,26 @@ class Room {
   }
 
   fetchPlayers(activePlayer) {
-    // only include players within 2500 units of the current player
+    // only include players within 2000 units of the current player
     // (this includes the current player)
     return this.players.filter(player => {
       const distance = getDistance(
         activePlayer.pos.x, player.pos.x,
         activePlayer.pos.y, player.pos.y,
       );
-      return distance.total <= 2500;
+      return distance.total <= 2000;
     });
   }
 
   fetchOtherPlayers(activePlayer) {
-    // only include players within 2500 units of the current player
+    // only include players within 2000 units of the current player
     // (not including the current player)
     return this.players.filter(player => {
       const distance = getDistance(
         activePlayer.pos.x, player.pos.x,
         activePlayer.pos.y, player.pos.y,
       );
-      return (distance.total <= 2500) && (player.id !== activePlayer.id);
+      return (distance.total <= 2000) && (player.id !== activePlayer.id);
     });
   }
 
