@@ -12,7 +12,6 @@ class Canvas extends Component {
 
   state = {
     pos: { x: 0, y: 0 },
-    health: 100,
     thrown: false,
   }
 
@@ -41,13 +40,14 @@ class Canvas extends Component {
   // the canvas component is not a normal React component and doesn't need to re-render
   shouldComponentUpdate = () => false;
 
-
   // set up Easel JS objects
   initEasel = () => {
     this.stage = new Stage(this.canvas.current);
+
     this.boundary = new Shape();
     this.warning = new Shape();
-    this.bgcell = new Bitmap(assetManager.misc.background);
+    this.bgContainer = new Container();
+    this.bgCell = new Bitmap(assetManager.assets.getResult('background'));
 
     this.player = new Bitmap(sprites.player);
     this.player.regX = 44;
@@ -59,28 +59,27 @@ class Canvas extends Component {
     this.nameBackground = new Shape();
   }
 
-
   // scale to the current device
   resizeCanvas = () => {
     this.stage.canvas.width = Math.round(config.deviceWidth / config.scale);
     this.stage.canvas.height = Math.round(config.deviceHeight / config.scale);
   }
 
-
   // update cycle run every animation frame
   updateCycle = event => {
-    this.stage.removeAllChildren();
+    const { stage, mounted } = this;
+
+    stage.removeAllChildren();
 
     this.target = {
-      x: this.stage.mouseX + (this.state.pos.x - (this.stage.canvas.width / 2)),
-      y: this.stage.mouseY + (this.state.pos.y - (this.stage.canvas.height / 2)),
+      x: stage.mouseX + (this.state.pos.x - (stage.canvas.width / 2)),
+      y: stage.mouseY + (this.state.pos.y - (stage.canvas.height / 2)),
     };
 
     this.props.socket.emit('requestUpdate', this.target, data => {
-      if (this.mounted) {
+      if (mounted) {
         this.setState({
           pos: data.player.pos,
-          health: data.player.health,
           thrown: data.player.thrown,
         });
       }
@@ -89,16 +88,14 @@ class Canvas extends Component {
       this.drawBoundary();
       this.drawPlayers(data.players);
 
-      // out of bounds
       if (data.player.outOfBounds) {
         if (!sounds.heartbeat.playing()) sounds.heartbeat.play();
         this.drawWarning(data.player.outOfBounds.time);
       } else sounds.heartbeat.pause();
 
-      this.stage.update(event);
+      stage.update(event);
     });
   }
-
 
   throw = e => {
     // checks if the key was the spacebar and if the spear has already been thrown
@@ -106,7 +103,6 @@ class Canvas extends Component {
     this.props.socket.emit('throw', this.target);
     sounds.throw.play();
   }
-
 
   // draw all nearby players (including the current player), their spear, and their name
   drawPlayers = players => {
@@ -155,29 +151,30 @@ class Canvas extends Component {
     });
   }
 
-
   // draw background cells according to the player's position
   drawBackground = () => {
-    const { stage } = this;
+    const { stage, bgContainer, bgCell } = this;
     const { pos } = this.state;
-    const { background } = assetManager.misc;
 
-    const xNumOfCells = Math.ceil(stage.canvas.width / background.width) + 1;
-    const yNumOfCells = Math.ceil(stage.canvas.height / background.height) + 1;
+    const xNumOfCells = Math.ceil(stage.canvas.width / bgCell.image.width) + 1;
+    const yNumOfCells = Math.ceil(stage.canvas.height / bgCell.image.height) + 1;
 
-    const xOffset = pos.x % background.width;
-    const yOffset = pos.y % background.height;
+    const xOffset = pos.x % bgCell.image.width;
+    const yOffset = pos.y % bgCell.image.height;
+
+    bgContainer.removeAllChildren();
 
     for (let x = -xNumOfCells; x < xNumOfCells; x += 1) {
       for (let y = -yNumOfCells; y < yNumOfCells; y += 1) {
-        const cell = this.bgcell.clone();
+        const cell = bgCell.clone();
         cell.x = -xOffset + (x * cell.getBounds().width);
         cell.y = -yOffset + (y * cell.getBounds().height);
-        stage.addChild(cell);
+        bgContainer.addChild(cell);
       }
     }
-  }
 
+    stage.addChild(bgContainer);
+  }
 
   // draw the boundary ring
   drawBoundary = () => {
@@ -194,7 +191,6 @@ class Canvas extends Component {
     stage.addChild(boundary);
   }
 
-
   // gradually fade screen to black while out of bounds
   drawWarning = timeOutOfBounds => {
     const { stage, warning } = this;
@@ -206,7 +202,6 @@ class Canvas extends Component {
 
     stage.addChild(warning);
   }
-
 
   render = () => <canvas ref={this.canvas} />;
 }
