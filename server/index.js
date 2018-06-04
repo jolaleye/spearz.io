@@ -54,7 +54,7 @@ io.on('connection', socket => {
   // player joins the game
   socket.on('joinGame', name => {
     // create a new player
-    const newPlayer = new Player(socket.id, name);
+    const newPlayer = new Player(socket.id, io, name);
     // add them to their room
     socket.room.players.push(newPlayer);
     // give them the good to go
@@ -77,16 +77,13 @@ io.on('connection', socket => {
 
     // respond with data needed by the canvas
     callback({
-      player: socket.player,
-      players: socket.room.fetchPlayers(socket.player),
+      player: socket.player.getData(),
+      players: socket.room.fetchPlayers(socket.player).map(player => player.getData()),
     });
 
     // emit other data
     socket.emit('status', { health: socket.player.health });
     socket.emit('leaderboard', socket.room.createLeaderboard(socket.player));
-    // if there is a message to display, send it
-    if (socket.player.message) socket.emit('message', socket.player.message);
-    else socket.emit('clearMessage');
   });
 
   // player wants to throw their spear
