@@ -6,15 +6,15 @@ const { getDistance } = require('./util');
 const Spear = require('./Spear');
 
 class Player {
-  constructor(id, name) {
+  constructor(id, io, name) {
     this.id = id;
+    this.io = io;
     this.name = name;
     this.health = 100;
     this.score = 0;
     this.direction = 0;
     this.outOfBounds = false;
     this.thrown = false;
-    this.message = false;
     this.deathMsg = {};
 
     // random initial position within the arena (a circle)
@@ -27,9 +27,25 @@ class Player {
     );
 
     this.spear = new Spear(this.pos);
+    this.distanceToSpear = {};
 
     // hit box points are hard coded to fit sprite size
     this.hitbox = new Polygon(this.pos, []);
+  }
+
+  // return data that the client needs
+  getData() {
+    return {
+      id: this.id,
+      name: this.name,
+      pos: this.pos,
+      spear: this.spear,
+      distanceToSpear: this.distanceToSpear,
+      direction: this.direction,
+      outOfBounds: this.outOfBounds,
+      thrown: this.thrown,
+      hitbox: this.hitbox,
+    };
   }
 
   update(target) {
@@ -37,21 +53,7 @@ class Player {
     const distance = getDistance(this.pos.x, target.x, this.pos.y, target.y);
     this.direction = Math.atan2(distance.y, distance.x);
 
-    if (getDistance(this.pos.x, 0, this.pos.y, 0).total >= config.arenaRadius) {
-      this.setMessage({ type: 'out', msg: 'Get back into the fight!' });
-      // if outOfBounds doesn't have values yet, set them
-      if (!this.outOfBounds) this.outOfBounds = { at: Date.now(), lastTick: Date.now() };
-      // calculate time out of bounds
-      this.outOfBounds.time = (Date.now() - this.outOfBounds.at) / 1000;
-      // if the player is out for too long, they die
-      if (this.outOfBounds.time >= config.maxTimeOutOfBounds) {
-        this.takeDamage(100);
-        this.deathMsg = { type: 'environment' };
-      }
-    } else {
-      this.outOfBounds = false;
-      if (this.message.type === 'out') this.message = false;
-    }
+    this.checkBoundary();
 
     let dx = 4.5 * Math.cos(this.direction);
     let dy = 4.5 * Math.sin(this.direction);
@@ -74,7 +76,30 @@ class Player {
     this.hitbox.rotate(this.direction + (Math.PI / 2));
 
     this.updateSpear();
-    this.updateMessage();
+  }
+
+  checkBoundary() {
+    if (getDistance(this.pos.x, 0, this.pos.y, 0).total >= config.arenaRadius) {
+      if (!this.outOfBounds) {
+        // player just passed the boundary
+        this.outOfBounds = { at: Date.now() };
+        this.io.sockets.to(this.id).emit('message', {
+          type: 'outOfBounds',
+          msg: 'Get back into the fight!',
+        });
+      }
+      // calculate time out of bounds
+      this.outOfBounds.time = (Date.now() - this.outOfBounds.at) / 1000;
+      // if the player is out for too long, they die
+      if (this.outOfBounds.time >= config.maxTimeOutOfBounds) {
+        this.takeDamage(100);
+        this.deathMsg = { type: 'environment' };
+      }
+    } else if (this.outOfBounds) {
+      // player just came back in bounds
+      this.io.sockets.to(this.id).emit('message', { type: 'clear', target: 'outOfBounds' });
+      this.outOfBounds = false;
+    }
   }
 
   updateSpear() {
@@ -121,20 +146,6 @@ class Player {
 
   increaseScore(value) {
     this.score += value;
-  }
-
-  setMessage(data) {
-    // if the message is new, update
-    if (data.msg !== this.message.msg) {
-      this.message = { ...data, timestamp: Date.now() };
-    }
-  }
-
-  updateMessage() {
-    if (!this.message) return;
-    // expire messages based on their type
-    const messageAge = (Date.now() - this.message.timestamp) / 1000;
-    if (this.message.type === 'kill' && messageAge > 3) this.message = false;
   }
 }
 
