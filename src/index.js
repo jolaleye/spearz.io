@@ -13,7 +13,7 @@ class App extends Component {
     socket: null,
     room: '',
     view: 'start',
-    killedBy: '',
+    deathMsg: '',
   };
 
   async componentDidMount() {
@@ -32,16 +32,16 @@ class App extends Component {
     // name submitted, ready to play
     socket.on('ready', () => this.changeView('game'));
     // player died, move to restart screen
-    socket.on('dead', killedBy => {
+    socket.on('dead', deathMsg => {
       this.changeView('restart');
-      this.setState({ killedBy });
+      this.setState({ deathMsg });
     });
   }
 
   changeView = view => this.setState({ view });
 
   render = () => {
-    const { socket, room, view, killedBy } = this.state;
+    const { socket, room, view, deathMsg } = this.state;
 
     if (!socket) return <div></div>;
 
@@ -51,7 +51,7 @@ class App extends Component {
       case 'game':
         return <Game socket={socket} />;
       case 'restart':
-        return <Restart changeView={this.changeView} killedBy={killedBy} />;
+        return <Restart changeView={this.changeView} deathMsg={deathMsg} />;
       default:
         return <div></div>;
     }

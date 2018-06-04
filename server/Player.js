@@ -15,6 +15,7 @@ class Player {
     this.outOfBounds = false;
     this.thrown = false;
     this.message = false;
+    this.deathMsg = {};
 
     // random initial position within the arena (a circle)
     // origin is at the center of the arena
@@ -43,8 +44,10 @@ class Player {
       // calculate time out of bounds
       this.outOfBounds.time = (Date.now() - this.outOfBounds.at) / 1000;
       // if the player is out for too long, they die
-      if (this.outOfBounds.time >= config.maxTimeOutOfBounds) this.takeDamage(100);
-      this.killedBy = 'the world';
+      if (this.outOfBounds.time >= config.maxTimeOutOfBounds) {
+        this.takeDamage(100);
+        this.deathMsg = { type: 'environment' };
+      }
     } else {
       this.outOfBounds = false;
       if (this.message.type === 'out') this.message = false;
