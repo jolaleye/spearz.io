@@ -16,6 +16,7 @@ class Player {
     this.outOfBounds = false;
     this.thrown = false;
     this.deathMsg = {};
+    this.quick = false;
 
     // random initial position within the arena (a circle)
     // origin is at the center of the arena
@@ -45,6 +46,7 @@ class Player {
       outOfBounds: this.outOfBounds,
       thrown: this.thrown,
       hitbox: this.hitbox,
+      quick: this.quick,
     };
   }
 
@@ -55,14 +57,15 @@ class Player {
 
     this.checkBoundary();
 
-    let dx = 4.5 * Math.cos(this.direction);
-    let dy = 4.5 * Math.sin(this.direction);
+    let dx = 5 * Math.cos(this.direction);
+    let dy = 5 * Math.sin(this.direction);
 
     // movement is slower when the target is close
     if (distance.total < 100) {
       dx *= distance.total / 100;
       dy *= distance.total / 100;
-    }
+      this.quick = false;
+    } else this.quick = true;
 
     this.pos.x += dx;
     this.pos.y += dy;
@@ -142,6 +145,7 @@ class Player {
   takeDamage(value) {
     this.health -= value;
     this.health = Math.max(this.health, 0);
+    this.io.sockets.to(this.id).emit('health', this.health);
   }
 
   increaseScore(value) {
