@@ -77,8 +77,12 @@ io.on('connection', socket => {
 
     // respond with data needed by the canvas
     callback({
-      player: socket.player.getData(),
-      players: socket.room.fetchPlayers(socket.player).map(player => player.getData()),
+      player: {
+        pos: socket.player.pos,
+        thrown: socket.player.thrown,
+        outOfBounds: socket.player.outOfBounds,
+      },
+      players: socket.room.fetchPlayers(socket.player, true).map(player => player.getData()),
     });
 
     // emit other data
