@@ -1,6 +1,9 @@
 @import 'bulma/sass/utilities/initial-variables';
 
 html { overflow: hidden !important; }
+*::selection {
+  background: rgba(242, 111, 142, 0.5);
+}
 
 $family-sans-serif: 'Roboto', sans-serif;
 
