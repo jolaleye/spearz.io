@@ -13,7 +13,7 @@ class PlayerContainer {
     this.playerSprite.regX = 44;
     this.playerSprite.regY = 40;
 
-    this.spearSprite = new Sprite(spritesheets.spear);
+    this.spearSprite = new Sprite(spritesheets.spear, 'holding');
 
     this.hitboxTrace = new Shape();
 
@@ -45,7 +45,9 @@ class PlayerContainer {
     spearSprite.x = playerSprite.x + player.distanceToSpear.x;
     spearSprite.y = playerSprite.y + player.distanceToSpear.y;
     spearSprite.rotation = (player.spear.direction * (180 / Math.PI)) + 90;
-    spearSprite.gotoAndStop(player.thrown ? 1 : 0);
+    if (player.thrown && (spearSprite.currentAnimation !== 'flying')) {
+      spearSprite.gotoAndPlay('flying');
+    } else if (!player.thrown) spearSprite.gotoAndStop('holding');
 
     if (nameTag) {
       nameTag.x = playerSprite.x;

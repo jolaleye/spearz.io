@@ -19,7 +19,14 @@ class AssetManager {
     this.spritesheets = {
       spear: new SpriteSheet({
         images: [spear],
-        frames: { width: 18, height: 106, regX: 9, regY: 53, spacing: 5 },
+        frames: { width: 20, height: 120, regX: 10, regY: 60, spacing: 5 },
+        animations: {
+          holding: 0,
+          flying: {
+            frames: [1, 2, 3, 4, 5, 4, 3, 2],
+            speed: 0.1,
+          },
+        },
       }),
     };
 
