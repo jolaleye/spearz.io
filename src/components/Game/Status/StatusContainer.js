@@ -4,17 +4,15 @@ import Status from './Status';
 
 class StatusContainer extends Component {
   state = {
-    health: 0,
+    health: 100,
   }
 
   componentDidMount() {
-    this.props.socket.on('status', status => {
-      if ((status.health !== this.state.health)) this.setState({ health: status.health });
-    });
+    this.props.socket.on('health', health => this.setState({ health }));
   }
 
   componentWillUnmount() {
-    this.props.socket.off('status');
+    this.props.socket.off('health');
   }
 
   render = () => <Status health={this.state.health} />;
