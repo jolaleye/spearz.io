@@ -60,6 +60,7 @@ io.on('connection', socket => {
     // give them the good to go
     socket.player = newPlayer;
     socket.emit('ready');
+    socket.emit('leaderboard', socket.room.leaderboard);
   });
 
   // player requests an update - respond with updated data
@@ -74,6 +75,7 @@ io.on('connection', socket => {
 
     socket.player.update(target);
     socket.room.update(socket.player);
+    socket.room.updateLeaderboard(socket.player);
 
     // respond with data needed by the canvas
     callback({
@@ -84,10 +86,6 @@ io.on('connection', socket => {
       },
       players: socket.room.fetchPlayers(socket.player, true).map(player => player.getData()),
     });
-
-    // emit other data
-    socket.emit('status', { health: socket.player.health });
-    socket.emit('leaderboard', socket.room.createLeaderboard(socket.player));
   });
 
   // player wants to throw their spear

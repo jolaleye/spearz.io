@@ -10,6 +10,7 @@ class Room {
     this.connections = 0;
     this.players = [];
     this.io = io;
+    this.leaderboard = [];
   }
 
   update(activePlayer) {
@@ -60,18 +61,23 @@ class Room {
     this.players = this.players.filter(player => player.id !== id);
   }
 
-  createLeaderboard(activePlayer) {
+  updateLeaderboard(activePlayer) {
     const leaders = _.sortBy(this.players, ['score']).reverse();
     if (leaders.length > 10) leaders.splice(10);
     // if the active player is not in the top 10, add them to the bottom
     if (!leaders.includes(activePlayer)) leaders.push(activePlayer);
 
-    return leaders.map((player, i) => ({
+    const newLeaderboard = leaders.map((player, i) => ({
       name: player.name === '' ? '<unnamed>' : player.name,
       score: player.score,
       rank: i + 1,
       active: player.id === activePlayer.id,
     }));
+
+    if (!_.isEqual(newLeaderboard, this.leaderboard)) {
+      this.leaderboard = newLeaderboard;
+      this.io.sockets.to(activePlayer.id).emit('leaderboard', this.leaderboard);
+    }
   }
 }
 
