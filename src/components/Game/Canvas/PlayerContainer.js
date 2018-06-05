@@ -1,17 +1,15 @@
 import assetManager from '../../../AssetManager';
 
-const { Bitmap, Sprite, Container, Shape, Text } = window.createjs;
+const { Sprite, Container, Shape, Text } = window.createjs;
 
-const { sprites, spritesheets } = assetManager;
+const { spritesheets } = assetManager;
 
 class PlayerContainer {
   constructor(id, name) {
     this.id = id;
     this.container = new Container();
 
-    this.playerSprite = new Bitmap(sprites.player);
-    this.playerSprite.regX = 44;
-    this.playerSprite.regY = 40;
+    this.playerSprite = new Sprite(spritesheets.player, 'still');
 
     this.spearSprite = new Sprite(spritesheets.spear, 'holding');
 
@@ -41,6 +39,9 @@ class PlayerContainer {
     playerSprite.x = player.pos.x - offset.x;
     playerSprite.y = player.pos.y - offset.y;
     playerSprite.rotation = (player.direction * (180 / Math.PI)) + 90;
+    if (player.quick && (playerSprite.currentAnimation !== 'moving')) {
+      playerSprite.gotoAndPlay('moving');
+    } else if (!player.quick) playerSprite.gotoAndStop('still');
 
     spearSprite.x = playerSprite.x + player.distanceToSpear.x;
     spearSprite.y = playerSprite.y + player.distanceToSpear.y;

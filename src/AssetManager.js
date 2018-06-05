@@ -28,9 +28,18 @@ class AssetManager {
           },
         },
       }),
+      player: new SpriteSheet({
+        images: [player],
+        frames: { width: 110, height: 130, regX: 55, regY: 45, spacing: 5 },
+        animations: {
+          still: 0,
+          moving: {
+            frames: [1, 2, 3, 2],
+            speed: 0.1,
+          },
+        },
+      }),
     };
-
-    this.sprites = { player };
 
     this.sounds = {
       heartbeat: new Howl({ src: heartbeat }),
