@@ -30,13 +30,14 @@ class AssetManager {
       }),
       player: new SpriteSheet({
         images: [player],
-        frames: { width: 110, height: 130, regX: 55, regY: 45, spacing: 5 },
+        frames: { width: 150, height: 150, regX: 75, regY: 46, spacing: 5 },
         animations: {
           still: 0,
           moving: {
             frames: [1, 2, 3, 2],
             speed: 0.1,
           },
+          disintegrate: [4, 11, null, 0.1],
         },
       }),
     };

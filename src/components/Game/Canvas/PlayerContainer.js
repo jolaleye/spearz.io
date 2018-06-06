@@ -34,14 +34,18 @@ class PlayerContainer {
   }
 
   update = (player, offset) => {
-    const { playerSprite, spearSprite, nameTag } = this;
+    const { container, playerSprite, spearSprite, nameTag } = this;
 
     playerSprite.x = player.pos.x - offset.x;
     playerSprite.y = player.pos.y - offset.y;
     playerSprite.rotation = (player.direction * (180 / Math.PI)) + 90;
-    if (player.quick && (playerSprite.currentAnimation !== 'moving')) {
+
+    if (player.dead && (playerSprite.currentAnimation !== 'disintegrate')) {
+      container.removeChild(spearSprite, nameTag);
+      playerSprite.gotoAndPlay('disintegrate');
+    } else if (player.quick && (playerSprite.currentAnimation === 'still')) {
       playerSprite.gotoAndPlay('moving');
-    } else if (!player.quick) playerSprite.gotoAndStop('still');
+    } else if (!player.quick && !player.dead) playerSprite.gotoAndStop('still');
 
     spearSprite.x = playerSprite.x + player.distanceToSpear.x;
     spearSprite.y = playerSprite.y + player.distanceToSpear.y;
@@ -57,8 +61,8 @@ class PlayerContainer {
   }
 
   drawHitbox = (player, offset, subject) => {
-    const { hitboxTrace } = this;
-    this.container.addChild(hitboxTrace);
+    const { container, hitboxTrace } = this;
+    container.addChild(hitboxTrace);
 
     const { hitbox } = subject === 'player' ? player : player.spear;
 

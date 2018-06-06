@@ -14,6 +14,7 @@ class Canvas extends Component {
   state = {
     pos: { x: 0, y: 0 },
     thrown: false,
+    dead: false,
   }
 
   componentDidMount() {
@@ -21,10 +22,10 @@ class Canvas extends Component {
     // add event listeners
     window.addEventListener('click', this.throw);
     window.addEventListener('keydown', this.throw);
+    window.addEventListener('resize', this.resizeCanvas);
     // initialize
     this.initEasel();
     this.resizeCanvas();
-    window.addEventListener('resize', this.resizeCanvas);
     // canvas counterparts to players
     this.playerContainers = [];
     // start game
@@ -34,10 +35,11 @@ class Canvas extends Component {
 
   componentWillUnmount() {
     this.mounted = false;
-    Ticker.reset();
-    sounds.heartbeat.stop();
     window.removeEventListener('click', this.throw);
     window.removeEventListener('keydown', this.throw);
+    window.removeEventListener('resize', this.resizeCanvas);
+    Ticker.reset();
+    sounds.heartbeat.stop();
   }
 
   // the canvas component is not a normal React component and doesn't need to re-render
@@ -52,9 +54,7 @@ class Canvas extends Component {
     this.bgContainer = new Container();
     this.bgCell = new Bitmap(assetManager.assets.getResult('background'));
 
-    this.stage.addChild(this.bgContainer);
-    this.stage.addChild(this.boundary);
-    this.stage.addChild(this.warning);
+    this.stage.addChild(this.bgContainer, this.boundary, this.warning);
   }
 
   // scale to the current device
@@ -65,7 +65,7 @@ class Canvas extends Component {
 
   // update cycle run every animation frame
   updateCycle = event => {
-    const { stage, mounted } = this;
+    const { stage } = this;
 
     this.target = {
       x: stage.mouseX + (this.state.pos.x - (stage.canvas.width / 2)),
@@ -73,11 +73,12 @@ class Canvas extends Component {
     };
 
     this.props.socket.emit('requestUpdate', this.target, data => {
-      if (!mounted) return;
+      if (!this.mounted) return;
 
       this.setState({
         pos: data.player.pos,
         thrown: data.player.thrown,
+        dead: data.player.dead,
       });
 
       this.boundary.graphics.clear();
@@ -98,7 +99,7 @@ class Canvas extends Component {
 
   throw = e => {
     // checks if the key was the spacebar and if the spear has already been thrown
-    if ((e.key && e.key !== ' ') || this.state.thrown) return;
+    if ((e.key && e.key !== ' ') || this.state.thrown || this.state.dead) return;
     this.props.socket.emit('throw', this.target);
     sounds.throw.play();
   }
@@ -112,10 +113,10 @@ class Canvas extends Component {
     this.playerContainers.forEach(container => {
       // if a player has the same id as this container leave it alone
       if (players.some(player => player.id === container.id)) return;
-
+      // otherwise...
       // remove it from the stage
-      const index = container.container.parent.children.indexOf(container.container);
-      container.container.parent.removeChildAt(index);
+      const index = stage.children.indexOf(container.container);
+      stage.removeChildAt(index);
       // remove it from playerContainers
       this.playerContainers = this.playerContainers.filter(playerContainer => (
         playerContainer.id !== container.id
@@ -128,6 +129,7 @@ class Canvas extends Component {
       if (!playerContainer) {
         playerContainer = new PlayerContainer(player.id, player.name);
         this.playerContainers.push(playerContainer);
+        stage.addChild(playerContainer.container);
       }
 
       const offset = {
@@ -136,8 +138,14 @@ class Canvas extends Component {
       };
 
       playerContainer.update(player, offset);
+    });
 
-      stage.addChild(playerContainer.container);
+    // find this client's player and wait for the disintegration animation
+    const thisPlayerContainer = this.playerContainers.find(container => (
+      container.id === this.props.socket.id
+    ));
+    thisPlayerContainer.playerSprite.on('animationend', e => {
+      if (e.name === 'disintegrate') this.props.socket.emit('removePlayer');
     });
   }
 
