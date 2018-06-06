@@ -45,7 +45,7 @@ class AssetManager {
     this.sounds = {
       heartbeat: new Howl({ src: heartbeat }),
       hit: new Howl({ src: hit, volume: 0.2 }),
-      soundtrack: new Howl({ src: soundtrack, loop: true, volume: 0.2 }),
+      soundtrack: new Howl({ src: soundtrack, loop: true, volume: 0.5 }),
       throw: new Howl({ src: throwSFX, volume: 0.2 }),
     };
   }
