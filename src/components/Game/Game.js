@@ -11,7 +11,7 @@ const { sounds } = assetManager;
 
 class Game extends Component {
   componentDidMount() {
-    sounds.soundtrack.play();
+    if (!sounds.soundtrack.playing()) sounds.soundtrack.play();
     this.props.socket.on('hit', () => sounds.hit.play());
   }
 
