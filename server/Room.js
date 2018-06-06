@@ -14,35 +14,49 @@ class Room {
   }
 
   update(activePlayer) {
+    this.checkHits(activePlayer);
+    this.clearPlayers();
+    this.updateLeaderboard(activePlayer);
+  }
+
+  checkHits(activePlayer) {
     // if the active player has thrown their spear check for hits
     if (activePlayer.thrown) {
       this.fetchPlayers(activePlayer, false).forEach(otherPlayer => {
         // test for collision between the spear and a player
         if (testPolygonPolygon(activePlayer.spear.hitbox, otherPlayer.hitbox)) {
-          this.io.sockets.to(activePlayer.id).emit('hit');
-          this.io.sockets.to(otherPlayer.id).emit('hit');
+          this.io.sockets.to(activePlayer.id).to(otherPlayer.id).emit('hit');
           activePlayer.resetSpear();
           otherPlayer.takeDamage(config.damageOnHit);
 
           // if the player hit is now dead
-          if (!otherPlayer.checkStatus()) {
+          if (!otherPlayer.health > 0) {
             activePlayer.increaseScore(config.scorePerKil);
             this.io.sockets.to(activePlayer.id).emit('message', {
               type: 'kill',
               name: otherPlayer.name ? otherPlayer.name : '<unnamed>',
               duration: 3,
             });
-
             // eslint-disable-next-line
             otherPlayer.deathMsg = {
               type: 'player',
               name: activePlayer.name ? activePlayer.name : '<unnamed>',
             };
-            this.removePlayer(otherPlayer.id);
           }
         }
       });
     }
+  }
+
+  // check for players that are dead but haven't been removed
+  clearPlayers() {
+    this.players.forEach(player => {
+      if (!player.dead) return;
+      if (((Date.now() - player.dead) / 1000) > 3) {
+        this.removePlayer(player.id);
+        this.io.to(player.id).emit('dead', player.deathMsg);
+      }
+    });
   }
 
   fetchPlayers(activePlayer, include) {
