@@ -17,6 +17,7 @@ class Player {
     this.thrown = false;
     this.deathMsg = {};
     this.quick = false;
+    this.dead = false;
 
     // random initial position within the arena (a circle)
     // origin is at the center of the arena
@@ -47,6 +48,7 @@ class Player {
       thrown: this.thrown,
       hitbox: this.hitbox,
       quick: this.quick,
+      dead: this.dead,
     };
   }
 
@@ -138,14 +140,11 @@ class Player {
     this.spear.dy = 0;
   }
 
-  checkStatus() {
-    return this.health > 0;
-  }
-
   takeDamage(value) {
     this.health -= value;
     this.health = Math.max(this.health, 0);
     this.io.sockets.to(this.id).emit('health', this.health);
+    if ((!this.health > 0) && !this.dead) this.dead = Date.now();
   }
 
   increaseScore(value) {
