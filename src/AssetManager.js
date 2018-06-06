@@ -3,10 +3,10 @@ import { Howl } from 'howler';
 import background from './assets/bg-cell.png';
 import player from './assets/player.png';
 import spear from './assets/spear.png';
-import heartbeat from './assets/heartbeat.wav';
-import hit from './assets/hit.wav';
+import heartbeat from './assets/heartbeat.mp3';
+import hit from './assets/hit.mp3';
 import soundtrack from './assets/soundtrack.mp3';
-import throwSFX from './assets/throw.wav';
+import throwSFX from './assets/throw.mp3';
 
 const { LoadQueue, SpriteSheet } = window.createjs;
 
