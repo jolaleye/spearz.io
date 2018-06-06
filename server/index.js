@@ -67,15 +67,8 @@ io.on('connection', socket => {
   socket.on('requestUpdate', (target, callback) => {
     if (!(socket.player && socket.room)) return;
 
-    // check if the player is dead
-    if (!socket.player.checkStatus()) {
-      socket.room.removePlayer(socket.player.id);
-      socket.emit('dead', socket.player.deathMsg);
-    }
-
-    socket.player.update(target);
+    if (!socket.player.dead) socket.player.update(target);
     socket.room.update(socket.player);
-    socket.room.updateLeaderboard(socket.player);
 
     // respond with data needed by the canvas
     callback({
@@ -83,6 +76,7 @@ io.on('connection', socket => {
         pos: socket.player.pos,
         thrown: socket.player.thrown,
         outOfBounds: socket.player.outOfBounds,
+        dead: socket.player.dead,
       },
       players: socket.room.fetchPlayers(socket.player, true).map(player => player.getData()),
     });
@@ -92,6 +86,13 @@ io.on('connection', socket => {
   socket.on('throw', target => {
     if (!(socket.player && socket.room)) return;
     socket.player.throw(target);
+  });
+
+  // client death procedures done, player is ready to be removed
+  socket.on('removePlayer', () => {
+    if (!(socket.player && socket.room)) return;
+    socket.room.removePlayer(socket.id);
+    socket.emit('dead', socket.player.deathMsg);
   });
 
   // player disconnects
