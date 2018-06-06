@@ -1,0 +1,24 @@
+.mobile {
+  width: 100vw;
+  height: 100vh;
+  background: url('../../assets/menu-bg.svg') no-repeat center / cover;
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: flex-start;
+  align-items: center;
+
+  & .content {
+    margin-top: 5em;
+    text-align: center;
+    width: 80%;
+    color: white;
+    font-weight: 100;
+    font-size: 2em;
+  }
+
+  & .logo {
+    width: 80%;
+    margin: 0;
+    transform: translateX(0.5em);
+  }
+}

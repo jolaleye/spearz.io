@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import ReactDOM from 'react-dom';
 import io from 'socket.io-client';
 
@@ -6,6 +6,7 @@ import './main.css';
 import StartContainer from './components/Start/StartContainer';
 import Game from './components/Game/Game';
 import Restart from './components/Restart/Restart';
+import Mobile from './components/Mobile/Mobile';
 import assetManager from './AssetManager';
 
 class App extends Component {
@@ -40,10 +41,8 @@ class App extends Component {
 
   changeView = view => this.setState({ view });
 
-  render = () => {
+  getView = () => {
     const { socket, room, view, deathMsg } = this.state;
-
-    if (!socket) return <div></div>;
 
     switch (view) {
       case 'start':
@@ -55,6 +54,21 @@ class App extends Component {
       default:
         return <div></div>;
     }
+  }
+
+  render = () => {
+    if (!this.state.socket) return <div></div>;
+
+    return (
+      <Fragment>
+        <div className="is-hidden-mobile">
+          {this.getView()}
+        </div>
+        <div className="is-hidden-tablet">
+          <Mobile />
+        </div>
+      </Fragment>
+    );
   }
 }
 
