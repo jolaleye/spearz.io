@@ -1,101 +1,113 @@
 const path = require('path');
 const express = require('express');
-const io = require('socket.io')();
+const WebSocket = require('uws');
 
 const config = require('./config');
+const { ID } = require('./services/util');
+const { encode, decode } = require('./services/parser');
 const Room = require('./Room');
 const Player = require('./Player');
 
 const app = express();
 const server = app.listen(config.port);
-io.attach(server);
+const ws = new WebSocket.Server({ server });
 
-app.use(express.static(path.join(__dirname, '..', 'build')));
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, '..', 'build', 'index.html')));
+app.use(express.static(path.join(__dirname, '../build')));
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../build', 'index.html')));
 
 const rooms = {};
 
-/* eslint no-param-reassign: "off" */
-io.on('connection', socket => {
-  console.log(`Connection made: ${socket.id}`);
+ws.on('connection', socket => {
+  socket.id = ID(2);
+  socket.send(encode('id', { id: socket.id }));
 
   // remove empty rooms
-  Object.values(rooms).forEach(roomToCheck => {
-    if (roomToCheck.connections === 0) delete rooms[roomToCheck.id];
+  Object.values(rooms).forEach(room => {
+    if (room.connections === 0) delete rooms[room.id];
   });
 
-  // initial room connection - try to find a room with space
+  // find a room with space
   let room = Object.values(rooms).find(candidate => candidate.connections < config.maxPlayers);
   // if they're all full make a new one
-  if (!room) room = new Room(io);
+  if (!room) room = new Room();
   rooms[room.id] = room;
   // connect the player to the room
-  socket.join(room.id, () => socket.emit('roomId', room.id));
   socket.room = room;
   socket.room.connections += 1;
+  socket.send(encode('roomId', { id: socket.room.id }));
 
   // player requests to join a specific room
-  socket.on('joinRoom', id => {
-    if (!rooms[id]) socket.emit('invalidRoom', 'Invalid room code');
+  const joinRoom = id => {
+    if (!rooms[id]) socket.send(encode('invalidRoom', { reason: 'Invalid room code' }));
     else if (rooms[id].connections >= config.maxPlayers) {
-      socket.emit('invalidRoom', 'Room is full');
+      socket.send(encode('invalidRoom', { reason: 'Room is full' }));
     } else {
-      // leave current room
-      socket.leave(socket.room.id);
       // join requested room
-      socket.join(id, () => socket.emit('roomId', id));
       socket.room = rooms[id];
       socket.room.connections += 1;
+      socket.send(encode('roomId', { id: socket.room.id }));
     }
-  });
+  };
 
   // player joins the game
-  socket.on('joinGame', name => {
+  const joinGame = name => {
     // create a new player
-    const newPlayer = new Player(socket.id, io, name);
+    const newPlayer = new Player(socket.id, name, socket);
+    socket.player = newPlayer;
     // add them to their room
     socket.room.players.push(newPlayer);
     // give them the good to go
-    socket.player = newPlayer;
-    socket.emit('ready');
-    socket.emit('leaderboard', socket.room.leaderboard);
-  });
+    socket.send(encode('ready'));
+    socket.room.updateLeaderboard(socket.player);
+  };
 
-  // player requests an update - respond with updated data
-  socket.on('requestUpdate', (target, callback) => {
+  // player wants to throw their spear
+  const throwSpear = target => {
+    if (!(socket.player && socket.room)) return;
+    socket.player.throw(target);
+  };
+
+  // client death procedures done, player is ready to be removed
+  const removePlayer = () => {
+    if (!(socket.player && socket.room)) return;
+    socket.room.removePlayer(socket.id);
+    socket.send(encode('dead', { ...socket.player.deathMsg }));
+  };
+
+  // update requested by the client
+  const update = target => {
     if (!(socket.player && socket.room)) return;
 
     if (!socket.player.dead) socket.player.update(target);
     socket.room.update(socket.player);
 
-    // respond with data needed by the canvas
-    callback({
-      player: {
-        pos: socket.player.pos,
-        thrown: socket.player.thrown,
-        outOfBounds: socket.player.outOfBounds,
-        dead: socket.player.dead,
-      },
+    sendData();
+  };
+
+  // send data to the client
+  const sendData = () => {
+    socket.send(encode('update', {
+      player: socket.player.getData(),
       players: socket.room.fetchPlayers(socket.player, true).map(player => player.getData()),
-    });
-  });
+    }));
+  };
 
-  // player wants to throw their spear
-  socket.on('throw', target => {
-    if (!(socket.player && socket.room)) return;
-    socket.player.throw(target);
-  });
-
-  // client death procedures done, player is ready to be removed
-  socket.on('removePlayer', () => {
-    if (!(socket.player && socket.room)) return;
-    socket.room.removePlayer(socket.id);
-    socket.emit('dead', socket.player.deathMsg);
+  socket.on('message', data => {
+    const message = decode(data);
+    if (message._type === 'joinRoom') joinRoom(message.id);
+    if (message._type === 'joinGame') joinGame(message.name);
+    if (message._type === 'requestUpdate') update(message.target);
+    if (message._type === 'throw') throwSpear(message.target);
+    if (message._type === 'removePlayer') removePlayer();
   });
 
   // player disconnects
-  socket.on('disconnect', () => {
+  socket.onclose = () => {
+    // clearInterval(heartbeat);
     if (socket.player) socket.room.removePlayer(socket.player.id);
     if (socket.room) socket.room.connections -= 1;
-  });
+  };
 });
+
+/* eslint no-param-reassign: off */
+/* eslint no-use-before-define: off */

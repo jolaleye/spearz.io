@@ -2,14 +2,15 @@ const _ = require('lodash');
 const { Vector, Polygon } = require('sat');
 
 const config = require('./config');
-const { getDistance } = require('./util');
+const { encode } = require('./services/parser');
+const { getDistance } = require('./services/util');
 const Spear = require('./Spear');
 
 class Player {
-  constructor(id, io, name) {
+  constructor(id, name, socket) {
     this.id = id;
-    this.io = io;
     this.name = name;
+    this.socket = socket;
     this.health = 100;
     this.score = 0;
     this.direction = 0;
@@ -41,14 +42,15 @@ class Player {
       id: this.id,
       name: this.name,
       pos: this.pos,
-      spear: this.spear,
+      spear: {
+        direction: this.spear.direction,
+      },
       distanceToSpear: this.distanceToSpear,
       direction: this.direction,
-      outOfBounds: this.outOfBounds,
-      thrown: this.thrown,
-      hitbox: this.hitbox,
+      outOfBounds: this.outOfBounds ? this.outOfBounds : { at: 0, time: 0 },
+      thrown: Boolean(this.thrown),
       quick: this.quick,
-      dead: this.dead,
+      dead: Boolean(this.dead),
     };
   }
 
@@ -88,21 +90,28 @@ class Player {
       if (!this.outOfBounds) {
         // player just passed the boundary
         this.outOfBounds = { at: Date.now() };
-        this.io.sockets.to(this.id).emit('message', {
+        this.socket.send(encode('message', {
           type: 'outOfBounds',
-          msg: 'Get back into the fight!',
-        });
+          target: '',
+          duration: 0,
+          msg: 'Get back into the fight',
+        }));
       }
       // calculate time out of bounds
       this.outOfBounds.time = (Date.now() - this.outOfBounds.at) / 1000;
       // if the player is out for too long, they die
       if (this.outOfBounds.time >= config.maxTimeOutOfBounds) {
         this.takeDamage(100);
-        this.deathMsg = { type: 'environment' };
+        this.deathMsg = { type: 'bounds', name: '' };
       }
     } else if (this.outOfBounds) {
       // player just came back in bounds
-      this.io.sockets.to(this.id).emit('message', { type: 'clear', target: 'outOfBounds' });
+      this.socket.send(encode('message', {
+        type: 'clear',
+        target: 'outOfBounds',
+        duration: 0,
+        msg: '',
+      }));
       this.outOfBounds = false;
     }
   }
@@ -143,7 +152,7 @@ class Player {
   takeDamage(value) {
     this.health -= value;
     this.health = Math.max(this.health, 0);
-    this.io.sockets.to(this.id).emit('health', this.health);
+    this.socket.send(encode('health', { health: this.health }));
     if ((!this.health > 0) && !this.dead) this.dead = Date.now();
   }
 

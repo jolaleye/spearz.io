@@ -2,14 +2,14 @@ const { testPolygonPolygon } = require('sat');
 const _ = require('lodash');
 
 const config = require('./config');
-const { createId, getDistance } = require('./util');
+const { ID, getDistance } = require('./services/util');
+const { encode } = require('./services/parser');
 
 class Room {
-  constructor(io) {
-    this.id = createId();
+  constructor() {
+    this.id = ID();
     this.connections = 0;
     this.players = [];
-    this.io = io;
     this.leaderboard = [];
   }
 
@@ -25,18 +25,22 @@ class Room {
       this.fetchPlayers(activePlayer, false).forEach(otherPlayer => {
         // test for collision between the spear and a player
         if (testPolygonPolygon(activePlayer.spear.hitbox, otherPlayer.hitbox)) {
-          this.io.sockets.to(activePlayer.id).to(otherPlayer.id).emit('hit');
+          activePlayer.socket.send(encode('hit'));
+          otherPlayer.socket.send(encode('hit'));
+
           activePlayer.resetSpear();
           otherPlayer.takeDamage(config.damageOnHit);
 
           // if the player hit is now dead
           if (!otherPlayer.health > 0) {
             activePlayer.increaseScore(config.scorePerKil);
-            this.io.sockets.to(activePlayer.id).emit('message', {
+            activePlayer.socket.send(encode('message', {
               type: 'kill',
-              name: otherPlayer.name ? otherPlayer.name : '<unnamed>',
+              target: '',
               duration: 3,
-            });
+              msg: otherPlayer.name ? otherPlayer.name : '<unnamed>',
+            }));
+
             // eslint-disable-next-line
             otherPlayer.deathMsg = {
               type: 'player',
@@ -54,7 +58,7 @@ class Room {
       if (!player.dead) return;
       if (((Date.now() - player.dead) / 1000) > 3) {
         this.removePlayer(player.id);
-        this.io.to(player.id).emit('dead', player.deathMsg);
+        player.socket.send(encode('dead', { ...player.deathMsg }));
       }
     });
   }
@@ -90,7 +94,7 @@ class Room {
 
     if (!_.isEqual(newLeaderboard, this.leaderboard)) {
       this.leaderboard = newLeaderboard;
-      this.io.sockets.to(activePlayer.id).emit('leaderboard', this.leaderboard);
+      activePlayer.socket.send(encode('leaderboard', { leaderboard: this.leaderboard }));
     }
   }
 }

@@ -2,8 +2,11 @@ import React, { Component } from 'react';
 import _ from 'lodash';
 import { Howler } from 'howler';
 
+import parser from '../../services/parser';
 import Start from './Start';
 import FriendModalContainer from './FriendModal/FriendModalContainer';
+
+const { encode } = parser;
 
 class StartContainer extends Component {
   state = {
@@ -16,7 +19,7 @@ class StartContainer extends Component {
 
   handleSubmit = e => {
     e.preventDefault();
-    this.props.socket.emit('joinGame', _.trim(this.state.name));
+    this.props.socket.send(encode('joinGame', { name: _.trim(this.state.name) }));
     this.setState({ name: '' });
   }
 

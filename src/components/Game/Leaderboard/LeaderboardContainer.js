@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
-import _ from 'lodash';
 
+import parser from '.././../../services/parser';
 import Leaderboard from './Leaderboard';
+
+const { decode } = parser;
 
 class LeaderboardContainer extends Component {
   state = {
@@ -9,13 +11,10 @@ class LeaderboardContainer extends Component {
   }
 
   componentDidMount() {
-    this.props.socket.on('leaderboard', leaderboard => {
-      if (!_.isEqual(leaderboard, this.state.leaderboard)) this.setState({ leaderboard });
+    this.props.socket.addEventListener('message', ({ data }) => {
+      const message = decode(data);
+      if (message._type === 'leaderboard') this.setState({ leaderboard: message.leaderboard });
     });
-  }
-
-  componentWillUnmount() {
-    this.props.socket.off('leaderboard');
   }
 
   render = () => <Leaderboard leaders={this.state.leaderboard} />;

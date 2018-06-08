@@ -1,12 +1,14 @@
 import React, { Component, createRef } from 'react';
 
 import config from '../../../config';
-import assetManager from '../../../AssetManager';
+import assetManager from '../../../services/assetManager';
+import parser from '../../../services/parser';
 import PlayerContainer from './PlayerContainer';
 
 const { Stage, Bitmap, Shape, Container, Ticker } = window.createjs;
 
 const { sounds } = assetManager;
+const { encode, decode } = parser;
 
 class Canvas extends Component {
   canvas = createRef();
@@ -30,7 +32,14 @@ class Canvas extends Component {
     this.playerContainers = [];
     // start game
     Ticker.timingMode = Ticker.RAF;
-    Ticker.on('tick', this.updateCycle);
+    Ticker.on('tick', this.requestUpdate);
+
+    this.props.socket.addEventListener('message', ({ data }) => {
+      const message = decode(data);
+      if (message._type === 'update') this.update(message);
+    });
+
+    this.props.socket.addEventListener('close', Ticker.reset);
   }
 
   componentWillUnmount() {
@@ -63,8 +72,8 @@ class Canvas extends Component {
     this.stage.canvas.height = Math.round(config.deviceHeight / config.scale);
   }
 
-  // update cycle run every animation frame
-  updateCycle = event => {
+  // sends the server the target every animation frame
+  requestUpdate = event => {
     const { stage } = this;
 
     this.target = {
@@ -72,35 +81,36 @@ class Canvas extends Component {
       y: stage.mouseY + (this.state.pos.y - (stage.canvas.height / 2)),
     };
 
-    this.props.socket.emit('requestUpdate', this.target, data => {
-      if (!this.mounted) return;
+    this.props.socket.send(encode('requestUpdate', { target: this.target }));
+    this.stage.update(event);
+  }
 
-      this.setState({
-        pos: data.player.pos,
-        thrown: data.player.thrown,
-        dead: data.player.dead,
-      });
+  update = data => {
+    if (!this.mounted) return;
 
-      this.boundary.graphics.clear();
-      this.warning.graphics.clear();
-
-      this.drawBackground();
-      this.drawBoundary();
-      this.updatePlayers(data.players);
-
-      if (data.player.outOfBounds) {
-        if (!sounds.heartbeat.playing()) sounds.heartbeat.play();
-        this.drawWarning(data.player.outOfBounds.time);
-      } else sounds.heartbeat.pause();
-
-      stage.update(event);
+    this.setState({
+      pos: data.player.pos,
+      thrown: data.player.thrown,
+      dead: data.player.dead,
     });
+
+    this.boundary.graphics.clear();
+    this.warning.graphics.clear();
+
+    this.drawBackground();
+    this.drawBoundary();
+    this.updatePlayers(data.players);
+
+    if (data.player.outOfBounds.time > 0) {
+      if (!sounds.heartbeat.playing()) sounds.heartbeat.play();
+      this.drawWarning(data.player.outOfBounds.time);
+    } else sounds.heartbeat.pause();
   }
 
   throw = e => {
     // checks if the key was the spacebar and if the spear has already been thrown
     if ((e.key && e.key !== ' ') || this.state.thrown || this.state.dead) return;
-    this.props.socket.emit('throw', this.target);
+    this.props.socket.send(encode('throw', { target: this.target }));
     sounds.throw.play();
   }
 
@@ -145,7 +155,7 @@ class Canvas extends Component {
       container.id === this.props.socket.id
     ));
     thisPlayerContainer.playerSprite.on('animationend', e => {
-      if (e.name === 'disintegrate') this.props.socket.emit('removePlayer');
+      if (e.name === 'disintegrate') this.props.socket.send(encode('removePlayer'));
     });
   }
 
