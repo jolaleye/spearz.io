@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 
+import parser from '../../../services/parser';
 import FriendModal from './FriendModal';
+
+const { encode, decode } = parser;
 
 class FriendModalContainer extends Component {
   state = {
@@ -9,11 +12,10 @@ class FriendModalContainer extends Component {
   };
 
   componentDidMount() {
-    this.props.socket.on('invalidRoom', reason => this.setState({ invalid: reason }));
-  }
-
-  componentWillUnmount() {
-    this.props.socket.off('invalidRoom');
+    this.props.socket.addEventListener('message', ({ data }) => {
+      const message = decode(data);
+      if (message._type === 'invalidRoom') this.setState({ invalid: message.reason });
+    });
   }
 
   handleCodeChange = e => this.setState({ roomCode: e.target.value });
@@ -23,7 +25,7 @@ class FriendModalContainer extends Component {
     e.preventDefault();
 
     if (roomCode) {
-      this.props.socket.emit('joinRoom', roomCode);
+      this.props.socket.send(encode('joinRoom', { id: roomCode }));
       this.setState({ roomCode: '', invalid: false });
     }
   }

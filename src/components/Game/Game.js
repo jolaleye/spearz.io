@@ -5,18 +5,19 @@ import Canvas from './Canvas/Canvas';
 import LeaderboardContainer from './Leaderboard/LeaderboardContainer';
 import StatusContainer from './Status/StatusContainer';
 import Message from './Message/Message';
-import assetManager from '../../AssetManager';
+import assetManager from '../../services/assetManager';
+import parser from '../../services/parser';
 
 const { sounds } = assetManager;
+const { decode } = parser;
 
 class Game extends Component {
   componentDidMount() {
     if (!sounds.soundtrack.playing()) sounds.soundtrack.play();
-    this.props.socket.on('hit', () => sounds.hit.play());
-  }
-
-  componentWillUnmount() {
-    this.props.socket.off('hit');
+    this.props.socket.addEventListener('message', ({ data }) => {
+      const message = decode(data);
+      if (message._type === 'hit') sounds.hit.play();
+    });
   }
 
   render = () => (

@@ -1,6 +1,6 @@
 const { Vector, Polygon } = require('sat');
 
-const { getDistance } = require('./util');
+const { getDistance } = require('./services/util');
 
 class Spear {
   constructor(pos) {

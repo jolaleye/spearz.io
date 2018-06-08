@@ -4,7 +4,7 @@ import './Restart.css';
 
 const Restart = ({ changeView, deathMsg }) => (
   <div className="restart">
-    {deathMsg.type === 'environment' ? (
+    {deathMsg.type === 'bounds' ? (
       <span className="restart__death">You left the fight... (－‸ლ)</span>
     ) : (
       <span className="restart__death">

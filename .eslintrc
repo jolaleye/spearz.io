@@ -4,7 +4,8 @@
     "linebreak-style": ["error", "windows"],
     "no-console": "off",
     "arrow-parens": "off",
-    "object-curly-newline": "off"
+    "object-curly-newline": "off",
+    "no-underscore-dangle": "off"
   },
   "env": {
     "browser": true
