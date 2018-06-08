@@ -1,4 +1,4 @@
-import assetManager from '../../../AssetManager';
+import assetManager from '../../../services/assetManager';
 
 const { Sprite, Container, Shape, Text } = window.createjs;
 
@@ -12,8 +12,6 @@ class PlayerContainer {
     this.playerSprite = new Sprite(spritesheets.player, 'still');
 
     this.spearSprite = new Sprite(spritesheets.spear, 'holding');
-
-    this.hitboxTrace = new Shape();
 
     if (name) {
       this.nameTag = new Container();
@@ -58,30 +56,6 @@ class PlayerContainer {
       nameTag.x = playerSprite.x;
       nameTag.y = playerSprite.y + 75;
     }
-  }
-
-  drawHitbox = (player, offset, subject) => {
-    const { container, hitboxTrace } = this;
-    container.addChild(hitboxTrace);
-
-    const { hitbox } = subject === 'player' ? player : player.spear;
-
-    hitboxTrace.graphics.clear().beginStroke('magenta').moveTo(
-      (hitbox.pos.x + hitbox.calcPoints[0].x) - offset.x,
-      (hitbox.pos.y + hitbox.calcPoints[0].y) - offset.y,
-    );
-
-    hitbox.calcPoints.forEach(point => {
-      hitboxTrace.graphics.lineTo(
-        (hitbox.pos.x - offset.x) + point.x,
-        (hitbox.pos.y - offset.y) + point.y,
-      );
-    });
-
-    hitboxTrace.graphics.lineTo(
-      (hitbox.pos.x + hitbox.calcPoints[0].x) - offset.x,
-      (hitbox.pos.y + hitbox.calcPoints[0].y) - offset.y,
-    ).endStroke();
   }
 }
 
