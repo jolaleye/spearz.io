@@ -14,7 +14,7 @@ class Player {
     this.health = 100;
     this.score = 0;
     this.direction = 0;
-    this.outOfBounds = false;
+    this.outOfBounds = { at: 0, time: 0 };
     this.thrown = false;
     this.deathMsg = {};
     this.quick = false;
@@ -47,7 +47,7 @@ class Player {
       },
       distanceToSpear: this.distanceToSpear,
       direction: this.direction,
-      outOfBounds: this.outOfBounds ? this.outOfBounds : { at: 0, time: 0 },
+      outOfBounds: this.outOfBounds,
       thrown: Boolean(this.thrown),
       quick: this.quick,
       dead: Boolean(this.dead),
@@ -87,14 +87,14 @@ class Player {
 
   checkBoundary() {
     if (getDistance(this.pos.x, 0, this.pos.y, 0).total >= config.arenaRadius) {
-      if (!this.outOfBounds) {
+      if (this.outOfBounds.at === 0) {
         // player just passed the boundary
-        this.outOfBounds = { at: Date.now() };
+        this.outOfBounds.at = Date.now();
         this.socket.send(encode('message', {
           type: 'outOfBounds',
           target: '',
           duration: 0,
-          msg: 'Get back into the fight',
+          msg: 'Get back into the fight!',
         }));
       }
       // calculate time out of bounds
@@ -104,7 +104,7 @@ class Player {
         this.takeDamage(100);
         this.deathMsg = { type: 'bounds', name: '' };
       }
-    } else if (this.outOfBounds) {
+    } else if (this.outOfBounds.at !== 0) {
       // player just came back in bounds
       this.socket.send(encode('message', {
         type: 'clear',
@@ -112,7 +112,7 @@ class Player {
         duration: 0,
         msg: '',
       }));
-      this.outOfBounds = false;
+      this.outOfBounds = { at: 0, time: 0 };
     }
   }
 
