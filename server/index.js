@@ -18,6 +18,7 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../build', 'index.
 const rooms = {};
 
 ws.on('connection', socket => {
+  // assign the socket an ID
   socket.id = ID(2);
   socket.send(encode('id', { id: socket.id }));
 
@@ -87,7 +88,6 @@ ws.on('connection', socket => {
   // send data to the client
   const sendData = () => {
     socket.send(encode('update', {
-      player: socket.player.getData(),
       players: socket.room.fetchPlayers(socket.player, true).map(player => player.getData()),
     }));
   };
@@ -103,7 +103,6 @@ ws.on('connection', socket => {
 
   // player disconnects
   socket.onclose = () => {
-    // clearInterval(heartbeat);
     if (socket.player) socket.room.removePlayer(socket.player.id);
     if (socket.room) socket.room.connections -= 1;
   };

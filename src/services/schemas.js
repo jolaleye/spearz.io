@@ -38,18 +38,6 @@ schemas.requestUpdate = sp.build({
 
 schemas.update = sp.build({
   _type: 'uint8',
-  player: {
-    id: 'string',
-    name: 'string',
-    pos: { x: 'float64', y: 'float64' },
-    spear: { direction: 'float64' },
-    distanceToSpear: { x: 'float64', y: 'float64', total: 'float64' },
-    direction: 'float64',
-    outOfBounds: { at: 'float64', time: 'float64' },
-    thrown: 'boolean',
-    quick: 'boolean',
-    dead: 'boolean',
-  },
   players: [{
     id: 'string',
     name: 'string',
