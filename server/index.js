@@ -93,12 +93,15 @@ ws.on('connection', socket => {
   };
 
   socket.on('message', data => {
-    const message = decode(data);
-    if (message._type === 'joinRoom') joinRoom(message.id);
-    if (message._type === 'joinGame') joinGame(message.name);
-    if (message._type === 'requestUpdate') update(message.target);
-    if (message._type === 'throw') throwSpear(message.target);
-    if (message._type === 'removePlayer') removePlayer();
+    const packet = decode(data);
+    switch (packet._type) {
+      case 'joinRoom': return joinRoom(packet.id);
+      case 'joinGame': return joinGame(packet.name);
+      case 'requestUpdate': return update(packet.target);
+      case 'throw': return throwSpear(packet.target);
+      case 'removePlayer': return removePlayer();
+      default: return null;
+    }
   });
 
   // player disconnects

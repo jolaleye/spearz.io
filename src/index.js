@@ -32,16 +32,21 @@ class App extends Component {
 
     socket.addEventListener('message', ({ data }) => {
       const packet = decode(data);
-      // recieving client id
-      if (packet._type === 'id') socket.id = packet.id;
-      // recieving room id
-      if (packet._type === 'roomId') this.setState({ room: packet.id });
-      // name submitted, ready to play
-      if (packet._type === 'ready') this.changeView('game');
-      // player died, move to restart screen
-      if (packet._type === 'dead') {
-        this.changeView('restart');
-        this.setState({ deathMsg: { type: packet.type, name: packet.name } });
+      switch (packet._type) {
+        // recieving socket id
+        case 'id':
+          socket.id = packet.id;
+          break;
+        // recieving room id
+        case 'roomId': return this.setState({ room: packet.id });
+        // name submitted, ready to play
+        case 'ready': return this.changeView('game');
+        // player died, move to restart screen
+        case 'dead':
+          this.changeView('restart');
+          this.setState({ deathMsg: { type: packet.type, name: packet.name } });
+          break;
+        default: return null;
       }
     });
 
