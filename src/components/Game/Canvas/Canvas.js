@@ -15,6 +15,8 @@ class Canvas extends Component {
 
   state = {
     pos: { x: 0, y: 0 },
+    thrown: false,
+    dead: false,
   }
 
   componentDidMount() {
