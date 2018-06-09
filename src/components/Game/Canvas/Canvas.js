@@ -37,8 +37,8 @@ class Canvas extends Component {
     Ticker.on('tick', this.tick);
 
     this.props.socket.addEventListener('message', ({ data }) => {
-      const decoded = decode(data);
-      if (decoded._type === 'update') this.update(decoded);
+      const packet = decode(data);
+      if (packet._type === 'update') this.update(packet);
     });
     this.props.socket.addEventListener('close', Ticker.reset);
   }
@@ -51,7 +51,6 @@ class Canvas extends Component {
     window.removeEventListener('resize', this.resizeCanvas);
 
     Ticker.reset();
-    sounds.heartbeat.stop();
   }
 
   // component doesn't need to re-render
@@ -89,7 +88,7 @@ class Canvas extends Component {
     });
 
     if (activePlayer.outOfBounds.time > 0 && !sounds.heartbeat.playing()) sounds.heartbeat.play();
-    else sounds.heartbeat.pause();
+    else if (activePlayer.outOfBounds.time === 0) sounds.heartbeat.pause();
 
     // update the background, boundary, and boundary warning
     arenaManager.update(stage.canvas, pos, activePlayer.outOfBounds.time);
