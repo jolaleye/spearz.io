@@ -1,16 +1,15 @@
 import assetManager from '../../../services/assetManager';
 
-const { Sprite, Container, Shape, Text } = window.createjs;
-
+const { Container, Sprite, Shape, Text } = window.createjs;
 const { spritesheets } = assetManager;
 
-class PlayerContainer {
+// manages the player sprite, spear sprite, and name tag
+class PlayerManager {
   constructor(id, name) {
     this.id = id;
+
     this.container = new Container();
-
     this.playerSprite = new Sprite(spritesheets.player, 'still');
-
     this.spearSprite = new Sprite(spritesheets.spear, 'holding');
 
     if (name) {
@@ -19,11 +18,13 @@ class PlayerContainer {
       this.name.textBaseline = 'middle';
       this.nameBackground = new Shape();
       this.nameTag.addChild(this.name, this.nameBackground);
+
       this.name.y = this.nameTag.getBounds().height / 2;
-      this.nameBackground.graphics.beginFill('rgba(0, 0, 0, 0.1)').drawRect(
-        -10, -5,
-        this.nameTag.getBounds().width + 20, this.nameTag.getBounds().height + 10,
-      );
+      this.nameBackground.graphics.beginFill('rgba(0, 0, 0, 0.1)')
+        .drawRect(
+          -10, -5,
+          this.nameTag.getBounds().width + 20, this.nameTag.getBounds().height + 10,
+        );
       this.nameTag.regX = this.nameTag.getBounds().width / 2;
     }
 
@@ -31,6 +32,7 @@ class PlayerContainer {
     if (this.nameTag) this.container.addChild(this.nameTag);
   }
 
+  // update the position of the player, including its spear and name tag
   update = (player, offset) => {
     const { container, playerSprite, spearSprite, nameTag } = this;
 
@@ -48,6 +50,7 @@ class PlayerContainer {
     spearSprite.x = playerSprite.x + player.distanceToSpear.x;
     spearSprite.y = playerSprite.y + player.distanceToSpear.y;
     spearSprite.rotation = (player.spear.direction * (180 / Math.PI)) + 90;
+
     if (player.thrown && (spearSprite.currentAnimation !== 'flying')) {
       spearSprite.gotoAndPlay('flying');
     } else if (!player.thrown) spearSprite.gotoAndStop('holding');
@@ -59,4 +62,4 @@ class PlayerContainer {
   }
 }
 
-export default PlayerContainer;
+export default PlayerManager;
