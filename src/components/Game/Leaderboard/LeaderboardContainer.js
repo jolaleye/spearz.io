@@ -12,8 +12,8 @@ class LeaderboardContainer extends Component {
 
   componentDidMount() {
     this.props.socket.addEventListener('message', ({ data }) => {
-      const message = decode(data);
-      if (message._type === 'leaderboard') this.setState({ leaderboard: message.leaderboard });
+      const packet = decode(data);
+      if (packet._type === 'leaderboard') this.setState({ leaderboard: packet.leaderboard });
     });
   }
 

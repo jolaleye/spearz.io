@@ -13,8 +13,8 @@ class FriendModalContainer extends Component {
 
   componentDidMount() {
     this.props.socket.addEventListener('message', ({ data }) => {
-      const message = decode(data);
-      if (message._type === 'invalidRoom') this.setState({ invalid: message.reason });
+      const packet = decode(data);
+      if (packet._type === 'invalidRoom') this.setState({ invalid: packet.reason });
     });
   }
 

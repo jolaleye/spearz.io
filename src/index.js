@@ -22,24 +22,26 @@ class App extends Component {
   async componentDidMount() {
     // connect to the server
     await this.setState({
-      socket: process.env.NODE_ENV === 'production' ?
-        new WebSocket(`ws://${window.location.host}`) : new WebSocket('ws://localhost:3001'),
+      socket: process.env.NODE_ENV === 'production'
+        ? new WebSocket(`${window.location.protocol === 'https:' ?
+          'wss' : 'ws'}://${window.location.host}`)
+        : new WebSocket('ws://localhost:3001'),
     });
     const { socket } = this.state;
     socket.binaryType = 'arraybuffer';
 
     socket.addEventListener('message', ({ data }) => {
-      const message = decode(data);
+      const packet = decode(data);
       // recieving client id
-      if (message._type === 'id') socket.id = message.id;
+      if (packet._type === 'id') socket.id = packet.id;
       // recieving room id
-      if (message._type === 'roomId') this.setState({ room: message.id });
+      if (packet._type === 'roomId') this.setState({ room: packet.id });
       // name submitted, ready to play
-      if (message._type === 'ready') this.changeView('game');
+      if (packet._type === 'ready') this.changeView('game');
       // player died, move to restart screen
-      if (message._type === 'dead') {
+      if (packet._type === 'dead') {
         this.changeView('restart');
-        this.setState({ deathMsg: { type: message.type, name: message.name } });
+        this.setState({ deathMsg: { type: packet.type, name: packet.name } });
       }
     });
 

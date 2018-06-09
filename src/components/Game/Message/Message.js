@@ -13,18 +13,18 @@ class Message extends Component {
 
   componentDidMount() {
     this.props.socket.addEventListener('message', ({ data }) => {
-      const message = decode(data);
-      if (message._type !== 'message') return;
+      const packet = decode(data);
+      if (packet._type !== 'message') return;
 
-      if (message.type === 'clear' && this.state.message.type === message.target) {
+      if (packet.type === 'clear' && this.state.message.type === packet.target) {
         this.setState({ message: '', showing: false });
-      } else if (message.type !== 'clear') {
-        this.setState({ message, showing: true });
+      } else if (packet.type !== 'clear') {
+        this.setState({ message: packet, showing: true });
 
-        if (message.duration > 0) {
+        if (packet.duration > 0) {
           window.setTimeout(() => {
             this.setState({ showing: false });
-          }, message.duration * 1000);
+          }, packet.duration * 1000);
         }
       }
     });

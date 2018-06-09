@@ -12,8 +12,8 @@ class StatusContainer extends Component {
 
   componentDidMount() {
     this.props.socket.addEventListener('message', ({ data }) => {
-      const message = decode(data);
-      if (message._type === 'health') this.setState({ health: message.health });
+      const packet = decode(data);
+      if (packet._type === 'health') this.setState({ health: packet.health });
     });
   }
 

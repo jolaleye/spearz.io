@@ -15,8 +15,8 @@ class Game extends Component {
   componentDidMount() {
     if (!sounds.soundtrack.playing()) sounds.soundtrack.play();
     this.props.socket.addEventListener('message', ({ data }) => {
-      const message = decode(data);
-      if (message._type === 'hit') sounds.hit.play();
+      const packet = decode(data);
+      if (packet._type === 'hit') sounds.hit.play();
     });
   }
 
