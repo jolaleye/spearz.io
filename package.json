@@ -9,8 +9,8 @@
     "start:dev": "concurrently -k -n \"client,server,css\" -c \"cyan,magenta,blue\" \"npm run start:client\" \"npm run start:server\" \"npm run watch:css\"",
     "start:prod": "set \"NODE_ENV=production\" && npm run start",
     "build": "npm run build:css && react-scripts build",
-    "build:css": "node-sass-chokidar ./src -o ./src --include-path ./node_modules --include-path ./src -q",
-    "watch:css": "node-sass-chokidar ./src -o ./src -w --include-path ./node_modules --include-path ./src -q"
+    "build:css": "node-sass-chokidar --quiet src/ -o src/ --include-path ./node_modules --include-path ./src",
+    "watch:css": "npm run build:css && node-sass-chokidar --quiet src/ -o src/ --watch --recursive --include-path ./node_modules --include-path ./src --usePolling --polling-interval 500"
   },
   "dependencies": {
     "express": "^4.16.3",
