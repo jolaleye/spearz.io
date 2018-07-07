@@ -28,6 +28,11 @@ ws.on('connection', client => {
         lobby.joinRoom(client, data.key);
         break;
 
+      case 'joinGame':
+        if (!(client && data.nickname)) break;
+        lobby.joinGame(client, data.nickname);
+        break;
+
       default: break;
     }
   });

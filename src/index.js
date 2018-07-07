@@ -3,19 +3,22 @@ import ReactDOM from 'react-dom';
 
 import './main.css';
 import StartContainer from './components/Start/StartContainer';
+import Game from './components/Game/Game';
 import { unpack } from './services/cereal';
 
 class App extends Component {
   state = {
     socket: null,
+    mode: 'start',
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     // WebSocket connection
     const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
     const host = process.env.NODE_ENV === 'production' ? window.location.host : 'localhost:3001';
     const socket = new WebSocket(`${protocol}://${host}`);
-    this.setState({ socket });
+    await this.setState({ socket });
+    this.handleSocket();
   }
 
   handleSocket = () => {
@@ -23,18 +26,36 @@ class App extends Component {
 
     socket.addEventListener('message', packet => {
       const data = unpack(packet.data);
-      if (data._ === 'id') {
-        socket.id = data.id;
-        this.setState({ socket });
+      switch (data._) {
+        case 'id':
+          socket.id = data.id;
+          this.setState({ socket });
+          break;
+
+        case 'ready':
+          this.changeMode('game');
+          break;
+
+        default: break;
       }
     });
   }
 
-  render = () => (
-    this.state.socket
-      ? <StartContainer socket={this.state.socket} />
-      : <div>Connecting...</div>
-  );
+  changeMode = mode => {
+    this.setState({ mode });
+  }
+
+  render = () => {
+    if (!this.state.socket) {
+      return <div>Connecting...</div>;
+    } else if (this.state.mode === 'start') {
+      return <StartContainer socket={this.state.socket} />;
+    } else if (this.state.mode === 'game') {
+      return <Game />;
+    }
+
+    return null;
+  };
 }
 
 ReactDOM.render(<App />, document.getElementById('root'));
