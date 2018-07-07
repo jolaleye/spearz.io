@@ -24,12 +24,11 @@ ws.on('connection', client => {
     const data = unpack(packet);
     switch (data._) {
       case 'joinRoom':
-        if (!(client && data.key)) break;
+        if (!data.key) break;
         lobby.joinRoom(client, data.key);
         break;
 
       case 'joinGame':
-        if (!(client && data.nickname)) break;
         lobby.joinGame(client, data.nickname);
         break;
 
