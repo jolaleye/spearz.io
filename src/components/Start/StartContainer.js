@@ -26,7 +26,7 @@ class StartContainer extends Component {
     <Fragment>
       <Start nickname={this.state.nickname} handleNameChange={this.handleNameChange}
         audio={this.state.audio} toggleAudio={this.toggleAudio} toggleModal={this.toggleModal} />
-      <RoomModalContainer currentKey={'87asf0978ay'} modal={this.state.modal}
+      <RoomModalContainer socket={this.props.socket} modal={this.state.modal}
         toggleModal={this.toggleModal} />
     </Fragment>
   );
