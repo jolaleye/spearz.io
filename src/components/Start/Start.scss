@@ -99,7 +99,7 @@
   
     background: transparent;
 
-    &:hover {
+    &:hover, &:focus {
       font-weight: 500;
       color: white;
   
