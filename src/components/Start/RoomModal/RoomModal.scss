@@ -1,0 +1,70 @@
+.room-modal {
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+  justify-content: center;
+
+  color: black;
+
+  padding-top: 1.75em;
+  padding-bottom: 1.75em;
+  border-radius: 15px;
+}
+
+.room-modal__header {
+  font-weight: 500;
+  font-size: 2em;
+}
+
+.room-modal__text {
+  font-weight: 200;
+  font-size: 1.5em;
+}
+
+.room-modal__key {
+  font-weight: 200;
+  font-size: 3em;
+
+  margin: 0.5em 0;
+}
+
+.room-modal__form {
+  margin: 1em 0;
+
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+
+  input {
+    width: 18em;
+    height: auto;
+  
+    font-size: 1.2em;
+
+    padding: 0.75em 0.9em;
+    margin-bottom: 0.75em;
+    
+    &::placeholder {
+      font-weight: 200;
+      color: #99A2B0;
+    }
+  }
+
+  button {
+    width: 8em;
+    height: auto;
+
+    font-size: 1.2em;
+    color: #F69993;
+
+    padding-top: 0.6em;
+    padding-bottom: 0.6em;
+    border: 1px solid #F69993;
+
+    &:hover {
+      font-weight: 500;
+      color: #F69993;
+      border: 1px solid #F69993;
+    }
+  }
+}

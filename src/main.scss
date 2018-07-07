@@ -1,0 +1,16 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  overflow: hidden !important;
+}
+
+// Bulma
+@import 'bulma/sass/utilities/initial-variables';
+
+$family-sans-serif: 'Poppins', sans-serif;
+
+@import 'bulma/bulma';
