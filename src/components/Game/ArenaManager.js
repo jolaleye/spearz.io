@@ -13,6 +13,10 @@ class ArenaManager {
     this.background.width = screen.width;
     this.background.height = screen.height;
   }
+
+  updateBackground = pos => {
+    this.background.tilePosition.set(-pos.x, -pos.y);
+  }
 }
 
 export default ArenaManager;
