@@ -65,14 +65,14 @@ class Game extends Component {
 
 
   renderX = () => {
-    const thisManager = this.playerManagers.find(mngr => mngr.id === this.props.socket.id);
-    if (thisManager) this.arenaManager.updateBackground(thisManager.local.pos);
+    const activeManager = this.playerManagers.find(mngr => mngr.id === this.props.socket.id);
+    if (activeManager) this.arenaManager.updateBackground(activeManager.local.pos);
 
     this.sinceSnapshot += this.app.ticker.elapsedMS;
 
     this.playerManagers.forEach(manager => {
       // interpolate other players (the curent player uses prediction)
-      if (manager.id !== thisManager.id) {
+      if (manager.id !== activeManager.id) {
         if (!manager.origin || !manager.next) return;
 
         // interpolate between the origin and next states
@@ -86,20 +86,21 @@ class Game extends Component {
   }
 
   getTarget = () => {
-    const thisManager = this.playerManagers.find(mngr => mngr.id === this.props.socket.id);
-    if (!thisManager) return;
+    this.tick += 1;
+    const activeManager = this.playerManagers.find(mngr => mngr.id === this.props.socket.id);
+
+    if (!activeManager || !this.tick) return;
 
     const mouse = this.app.renderer.plugins.interaction.mouse.global;
     const target = {
-      x: mouse.x + (thisManager.local.pos.x - (this.app.screen.width / 2)),
-      y: mouse.y + (thisManager.local.pos.y - (this.app.screen.height / 2)),
+      x: mouse.x + (activeManager.local.pos.x - (this.app.screen.width / 2)),
+      y: mouse.y + (activeManager.local.pos.y - (this.app.screen.height / 2)),
     };
 
     // send the target to the server and simulate the effects locally
     this.props.socket.send(pack({ _: 'target', target, tick: this.tick }));
-    thisManager.predict(target);
-
-    this.tick += 1;
+    activeManager.predict(target);
+    activeManager.history.push({ target, tick: this.tick });
   }
 
   // new snapshot received
@@ -124,6 +125,11 @@ class Game extends Component {
       }
 
       manager.sync(player, snapshot.timestamp);
+
+      // fix potential prediction errors
+      if (manager.id === this.props.socket.id && snapshot.last) {
+        manager.reconcile(player, snapshot.last);
+      }
     });
 
     this.sinceSnapshot = 0;
