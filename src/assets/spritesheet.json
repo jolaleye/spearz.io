@@ -2,11 +2,11 @@
 
 "player":
 {
-	"frame": {"x":0,"y":0,"w":85,"h":78},
+	"frame": {"x":0,"y":0,"w":76,"h":68},
 	"rotated": false,
 	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":85,"h":78},
-	"sourceSize": {"w":85,"h":78},
+	"spriteSourceSize": {"x":0,"y":0,"w":76,"h":68},
+	"sourceSize": {"w":76,"h":68},
 	"pivot": {"x":0.5,"y":0.5}
 }},
 "meta": {
@@ -14,8 +14,8 @@
 	"version": "1.0",
 	"image": "spritesheet.png",
 	"format": "RGBA8888",
-	"size": {"w":85,"h":78},
+	"size": {"w":76,"h":68},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:f55636e5aabd8647266f1a8622fc0b04:10542d3a4bbbfbd4b6ab52aeef322442:729adc6043343cfda41c447ce8f464d6$"
+	"smartupdate": "$TexturePacker:SmartUpdate:3eca1348714245cd705d48ffa5adaf71:2abd208c63ccb445f0767e45ace0885c:729adc6043343cfda41c447ce8f464d6$"
 }
 }
