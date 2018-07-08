@@ -81,7 +81,7 @@ class Game extends Component {
         manager.interpolate(_.clamp(delta, 1));
       }
 
-      manager.update();
+      manager.update(this.app.screen);
     });
   }
 
@@ -110,6 +110,7 @@ class Game extends Component {
       if (snapshot.players.some(player => player.id === manager.id)) return;
 
       // remove the manager if no player shares the id
+      manager.player.visible = false; // eslint-disable-line
       this.playerManagers.splice(i, 1);
     });
 
@@ -121,6 +122,7 @@ class Game extends Component {
       // create one if needed
       if (!manager) {
         manager = new PlayerManager(player.id);
+        this.app.stage.addChild(manager.player);
         this.playerManagers.push(manager);
       }
 

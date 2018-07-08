@@ -1,11 +1,16 @@
 import _ from 'lodash';
+import * as PIXI from 'pixi.js';
 
 import { lerp, angularLerp, getDistance } from '../../services/util';
+import assetManager from '../../assetManager';
 
 class PlayerManager {
   constructor(id) {
     this.id = id;
     this.history = [];
+
+    this.player = new PIXI.Sprite(assetManager.textures.player);
+    this.player.anchor.set(0.5, 0.5);
   }
 
   sync = (player, timestamp) => {
@@ -79,8 +84,16 @@ class PlayerManager {
     }
   }
 
-  update = () => {
+  update = screen => {
+    if (!this.local) return;
 
+    const offset = {
+      x: this.local.pos.x - (screen.width / 2),
+      y: this.local.pos.y - (screen.height / 2),
+    };
+
+    this.player.position.set(this.local.pos.x - offset.x, this.local.pos.y - offset.y);
+    this.player.rotation = this.local.direction + (Math.PI / 2);
   }
 }
 
