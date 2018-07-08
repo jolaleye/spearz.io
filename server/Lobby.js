@@ -54,7 +54,7 @@ class Lobby {
   // connect a client to a room
   connect(client, key) {
     // check for a client and key, that the room exists, and that the room has space
-    if (!(client && key) || !this.rooms[key] || this.rooms[key].connections >= config.playerLimit) {
+    if (!client || !key || !this.rooms[key] || this.rooms[key].connections >= config.playerLimit) {
       return;
     }
 
@@ -65,9 +65,7 @@ class Lobby {
 
   // disconnect a client from their room
   disconnect(client) {
-    this.rooms[client.room].connections -= 1;
     this.rooms[client.room].removeClient(client.id);
-
     // remove empty rooms
     this.rooms = _.omitBy(this.rooms, room => room.connections === 0);
   }
@@ -75,7 +73,7 @@ class Lobby {
   // enter a client into their room's game
   joinGame(client, nickname) {
     client.player = new Player(client.id, nickname);
-    this.rooms[client.room].clients.push(client);
+    this.rooms[client.room].clients[client.id] = client;
     client.send(pack({ _: 'ready' }));
   }
 }
