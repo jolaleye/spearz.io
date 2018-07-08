@@ -10,6 +10,7 @@ import assetManager from './assetManager';
 class App extends Component {
   state = {
     socket: null,
+    socketOpen: false,
     mode: 'start',
     loaded: false,
   }
@@ -19,6 +20,7 @@ class App extends Component {
     const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
     const host = process.env.NODE_ENV === 'production' ? window.location.host : 'localhost:3001';
     const socket = new WebSocket(`${protocol}://${host}`);
+    socket.addEventListener('open', () => this.setState({ socketOpen: true }));
     await this.setState({ socket });
     this.handleSocket();
 
@@ -52,12 +54,12 @@ class App extends Component {
   }
 
   render = () => {
-    if (!this.state.socket) {
+    if (!this.state.socket || !this.state.socketOpen) {
       return <div>Connecting...</div>;
     } else if (this.state.mode === 'start') {
       return <StartContainer socket={this.state.socket} />;
     } else if (this.state.mode === 'game') {
-      return this.state.loaded ? <Game /> : <div>Loading...</div>;
+      return this.state.loaded ? <Game socket={this.state.socket} /> : <div>Loading...</div>;
     }
 
     return null;
