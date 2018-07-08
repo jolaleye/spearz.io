@@ -23,8 +23,8 @@ class Player {
     const distance = getDistance(this.pos.x, target.x, this.pos.y, target.y);
     this.direction = Math.atan2(distance.y, distance.x);
 
-    let dx = 5 * Math.cos(this.direction);
-    let dy = 5 * Math.sin(this.direction);
+    let dx = 6.5 * Math.cos(this.direction);
+    let dy = 6.5 * Math.sin(this.direction);
 
     // movement is slower when the target is closer
     if (distance.total < 100) {

@@ -31,8 +31,8 @@ class PlayerManager {
     const distance = getDistance(this.local.pos.x, target.x, this.local.pos.y, target.y);
     this.local.direction = Math.atan2(distance.y, distance.x);
 
-    let dx = 5 * Math.cos(this.local.direction);
-    let dy = 5 * Math.sin(this.local.direction);
+    let dx = 6.5 * Math.cos(this.local.direction);
+    let dy = 6.5 * Math.sin(this.local.direction);
 
     // movement is slower when the target is closer
     if (distance.total < 100) {
@@ -54,8 +54,8 @@ class PlayerManager {
       const distance = getDistance(serverState.pos.x, target.x, serverState.pos.y, target.y);
       serverState.direction = Math.atan2(distance.y, distance.x);
 
-      let dx = 5 * Math.cos(serverState.direction);
-      let dy = 5 * Math.sin(serverState.direction);
+      let dx = 6.5 * Math.cos(serverState.direction);
+      let dy = 6.5 * Math.sin(serverState.direction);
 
       if (distance.total < 100) {
         dx *= distance.total / 100;
@@ -73,7 +73,10 @@ class PlayerManager {
     };
 
     // adopt the server's authoritative state if the disparity is large enough
-    if (disparity.pos.total > 3) this.local = serverState;
+    // threshold = maximum distance traveled in one tick... bc it seems right
+    if (disparity.pos.total > 6.5) {
+      this.local = serverState;
+    }
   }
 
   update = () => {
