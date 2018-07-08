@@ -5,11 +5,13 @@ import './main.css';
 import StartContainer from './components/Start/StartContainer';
 import Game from './components/Game/Game';
 import { unpack } from './services/cereal';
+import assetManager from './assetManager';
 
 class App extends Component {
   state = {
     socket: null,
     mode: 'start',
+    loaded: false,
   }
 
   async componentDidMount() {
@@ -19,6 +21,10 @@ class App extends Component {
     const socket = new WebSocket(`${protocol}://${host}`);
     await this.setState({ socket });
     this.handleSocket();
+
+    // assets
+    await assetManager.load();
+    this.setState({ loaded: true });
   }
 
   handleSocket = () => {
@@ -51,7 +57,7 @@ class App extends Component {
     } else if (this.state.mode === 'start') {
       return <StartContainer socket={this.state.socket} />;
     } else if (this.state.mode === 'game') {
-      return <Game />;
+      return this.state.loaded ? <Game /> : <div>Loading...</div>;
     }
 
     return null;
