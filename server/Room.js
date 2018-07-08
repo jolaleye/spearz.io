@@ -40,7 +40,7 @@ class Room {
     // find each client's last command
     Object.values(this.clients).forEach(client => {
       const last = _.findLastIndex(this.queue, command => command.clientID === client.id);
-      client.last = this.queue[last].tick;
+      if (this.queue[last]) client.last = this.queue[last].tick;
     });
 
     this.queue.forEach((command, i) => {
