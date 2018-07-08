@@ -84,13 +84,8 @@ class PlayerManager {
     }
   }
 
-  update = screen => {
+  update = offset => {
     if (!this.local) return;
-
-    const offset = {
-      x: this.local.pos.x - (screen.width / 2),
-      y: this.local.pos.y - (screen.height / 2),
-    };
 
     this.player.position.set(this.local.pos.x - offset.x, this.local.pos.y - offset.y);
     this.player.rotation = this.local.direction + (Math.PI / 2);

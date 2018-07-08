@@ -81,7 +81,12 @@ class Game extends Component {
         manager.interpolate(_.clamp(delta, 1));
       }
 
-      manager.update(this.app.screen);
+      const offset = {
+        x: activeManager.local.pos.x - (this.app.screen.width / 2),
+        y: activeManager.local.pos.y - (this.app.screen.height / 2),
+      };
+
+      manager.update(offset);
     });
   }
 
