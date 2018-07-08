@@ -3,6 +3,7 @@ import * as PIXI from 'pixi.js';
 
 import './Game.css';
 import ArenaManager from './ArenaManager';
+import { pack } from '../../services/cereal';
 
 class Game extends Component {
   canvasRef = createRef();
@@ -24,10 +25,19 @@ class Game extends Component {
     this.arenaManager = new ArenaManager(this.app.screen);
     this.app.stage.addChild(this.arenaManager.background);
 
+    this.tick = 0;
+
     // render loop
     this.app.ticker.add(this.renderX);
+    // target tracking
+    this.getTargetInterval = setInterval(this.getTarget, 15);
 
     this.resize();
+  }
+
+  componentWillUnmount() {
+    this.app.ticker.stop();
+    clearInterval(this.getTargetInterval);
   }
 
   resize = () => {
@@ -44,6 +54,13 @@ class Game extends Component {
 
   renderX = () => {
 
+  }
+
+  getTarget = () => {
+    const target = this.app.renderer.plugins.interaction.mouse.global;
+    this.props.socket.send(pack({ _: 'target', target, tick: this.tick }));
+
+    this.tick += 1;
   }
 }
 

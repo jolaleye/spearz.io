@@ -32,6 +32,11 @@ ws.on('connection', client => {
         lobby.joinGame(client, data.nickname);
         break;
 
+      case 'target':
+        if (!data.target || !data.tick) break;
+        lobby.rooms[client.room].addToQueue(client.id, data);
+        break;
+
       default: break;
     }
   });
