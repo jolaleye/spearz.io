@@ -1,6 +1,8 @@
-import { loader } from 'pixi.js';
+import * as PIXI from 'pixi.js';
 
 import backgroundCell from './assets/background-cell.png';
+import spriteAtlas from './assets/spritesheet.json';
+import spritesheet from './assets/spritesheet.png';
 
 class AssetManager {
   constructor() {
@@ -8,8 +10,16 @@ class AssetManager {
   }
 
   load = () => new Promise(resolve => {
-    loader.add(backgroundCell).load(() => {
-      this.textures.backgroundCell = loader.resources[backgroundCell].texture;
+    PIXI.loader.add([backgroundCell, spritesheet]).load(() => {
+      const { resources } = PIXI.loader;
+
+      this.textures.backgroundCell = resources[backgroundCell].texture;
+
+      const sprites = new PIXI.Spritesheet(resources[spritesheet].texture.baseTexture, spriteAtlas);
+      sprites.parse(textures => {
+        this.textures = { ...this.textures, ...textures };
+      });
+
       resolve();
     });
   });

@@ -71,7 +71,7 @@ class Game extends Component {
     this.sinceSnapshot += this.app.ticker.elapsedMS;
 
     this.playerManagers.forEach(manager => {
-      // interpolate other players (the curent player uses prediction)
+      // interpolate other players (the current player uses prediction)
       if (manager.id !== activeManager.id) {
         if (!manager.origin || !manager.next) return;
 
