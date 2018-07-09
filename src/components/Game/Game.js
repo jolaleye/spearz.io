@@ -3,6 +3,7 @@ import * as PIXI from 'pixi.js';
 import _ from 'lodash';
 
 import './Game.css';
+import HUD from './HUD/HUD';
 import ArenaManager from './ArenaManager';
 import { pack, unpack } from '../../services/cereal';
 import PlayerManager from './PlayerManager';
@@ -60,19 +61,17 @@ class Game extends Component {
   render = () => (
     <div className="game">
       <canvas ref={this.canvasRef} />
+      <HUD socket={this.props.socket} />
     </div>
   );
 
 
   renderX = () => {
     const activeManager = this.playerManagers.find(mngr => mngr.id === this.props.socket.id);
-    if (activeManager) {
-      this.arenaManager.updateBackground(activeManager.local.pos);
-      this.arenaManager.updateBoundary(activeManager.local.pos, this.app.screen);
-    }
 
     this.sinceSnapshot += this.app.ticker.elapsedMS;
 
+    // player rendering
     this.playerManagers.forEach(manager => {
       // interpolate other players (the current player uses prediction)
       if (manager.id !== activeManager.id) {
@@ -91,6 +90,10 @@ class Game extends Component {
 
       manager.update(offset);
     });
+
+    // arena rendering
+    this.arenaManager.updateBackground(activeManager.local.pos);
+    this.arenaManager.updateBoundary(activeManager.local.pos, this.app.screen);
   }
 
   getTarget = () => {
