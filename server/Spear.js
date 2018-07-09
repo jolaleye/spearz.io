@@ -2,9 +2,6 @@ class Spear {
   constructor(pos) {
     this.pos = { x: pos.x, y: pos.y };
     this.direction = 0;
-
-    // distance from the player
-    this.distance = { x: 0, y: 0, total: 0 };
   }
 
   // follow the player's position
