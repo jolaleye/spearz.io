@@ -21,6 +21,8 @@ class Player {
 
     this.spear = new Spear(this.pos);
     this.released = false;
+
+    this.health = 100;
   }
 
   move(target) {

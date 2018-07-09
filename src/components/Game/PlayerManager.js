@@ -14,6 +14,13 @@ class PlayerManager {
 
     this.spear = new PIXI.Sprite(assetManager.textures.spear);
     this.spear.anchor.set(0.5, 0.5);
+
+    this.healthBarBg = new PIXI.Sprite(assetManager.textures['health-bar-bg']);
+    this.healthBarFill = new PIXI.Sprite(assetManager.textures['health-bar']);
+
+    this.healthBar = new PIXI.Container();
+    this.healthBar.addChild(this.healthBarBg, this.healthBarFill);
+    this.healthBar.pivot.set(this.healthBar.width / 2, this.healthBar.height / 2);
   }
 
   sync = (player, timestamp) => {
@@ -23,6 +30,9 @@ class PlayerManager {
 
     // set local data if needed
     if (!this.local) this.local = player;
+
+    // state that should be immediately synced
+    this.local.health = player.health;
   }
 
   interpolate = delta => {
@@ -87,6 +97,9 @@ class PlayerManager {
 
     this.spear.position.set(this.local.spear.pos.x - offset.x, this.local.spear.pos.y - offset.y);
     this.spear.rotation = this.local.spear.direction + (Math.PI / 2);
+
+    this.healthBar.position.set(this.player.position.x, this.player.position.y + 60);
+    this.healthBarFill.width = this.local.health;
   }
 }
 

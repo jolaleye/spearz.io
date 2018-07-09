@@ -127,7 +127,7 @@ class Game extends Component {
       // create one if needed
       if (!manager) {
         manager = new PlayerManager(player.id);
-        this.app.stage.addChild(manager.player, manager.spear);
+        this.app.stage.addChild(manager.player, manager.spear, manager.healthBar);
         this.playerManagers.push(manager);
       }
 
