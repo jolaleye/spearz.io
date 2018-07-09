@@ -2,6 +2,7 @@ const _ = require('lodash');
 
 const config = require('./config');
 const { getDistance } = require('./services/util');
+const Spear = require('./Spear');
 
 class Player {
   constructor(id, nickname) {
@@ -17,6 +18,9 @@ class Player {
     };
 
     this.direction = 0;
+
+    this.spear = new Spear(this.pos);
+    this.released = false;
   }
 
   move(target) {
@@ -34,6 +38,11 @@ class Player {
 
     this.pos.x += dx;
     this.pos.y += dy;
+
+    // bring the spear with if it hasn't been released
+    if (!this.released) {
+      this.spear.follow(this.pos, this.direction);
+    }
   }
 }
 

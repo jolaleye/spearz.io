@@ -2,11 +2,20 @@
 
 "player":
 {
-	"frame": {"x":0,"y":0,"w":76,"h":68},
+	"frame": {"x":2,"y":2,"w":76,"h":68},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":76,"h":68},
 	"sourceSize": {"w":76,"h":68},
+	"pivot": {"x":0.5,"y":0.5}
+},
+"spear":
+{
+	"frame": {"x":80,"y":2,"w":17,"h":106},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":17,"h":106},
+	"sourceSize": {"w":17,"h":106},
 	"pivot": {"x":0.5,"y":0.5}
 }},
 "meta": {
@@ -14,8 +23,8 @@
 	"version": "1.0",
 	"image": "spritesheet.png",
 	"format": "RGBA8888",
-	"size": {"w":76,"h":68},
+	"size": {"w":99,"h":110},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:3eca1348714245cd705d48ffa5adaf71:2abd208c63ccb445f0767e45ace0885c:729adc6043343cfda41c447ce8f464d6$"
+	"smartupdate": "$TexturePacker:SmartUpdate:dcddb8e0936f26e915ff0bef462c4f29:1d66c078be31462134effaf4324dac1a:729adc6043343cfda41c447ce8f464d6$"
 }
 }
