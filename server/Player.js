@@ -3,6 +3,7 @@ const _ = require('lodash');
 const config = require('./config');
 const { getDistance } = require('./services/util');
 const Spear = require('./Spear');
+const { pack } = require('./services/cereal');
 
 class Player {
   constructor(client, nickname) {
@@ -65,10 +66,12 @@ class Player {
       if (!this.outOfBounds.timestamp) {
         // just went out
         this.outOfBounds.timestamp = Date.now();
+        this.client.send(pack({ _: 'message', type: 'bounds' }));
       }
     } else if (this.outOfBounds.timestamp) {
       // just came back in
       this.outOfBounds.timestamp = 0;
+      this.client.send(pack({ _: 'clearMessage', type: 'bounds' }));
     }
   }
 }
