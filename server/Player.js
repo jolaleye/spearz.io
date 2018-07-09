@@ -63,7 +63,7 @@ class Player {
     const distanceFromCenter = getDistance(this.pos.x, 0, this.pos.y, 0);
     if (distanceFromCenter.total >= config.arenaRadius && !this.outOfBounds.out) {
       // just went out of bounds - take damage every second
-      this.outOfBounds.interval = setInterval(() => this.damage(10), 1000);
+      this.outOfBounds.interval = setInterval(() => this.damage(10, 'bounds'), 1000);
       this.outOfBounds.out = true;
       // inform the client
       this.client.send(pack({ _: 'message', type: 'bounds' }));
@@ -76,9 +76,13 @@ class Player {
     }
   }
 
-  damage(value) {
+  damage(value, from) {
     this.health -= value;
     this.health = Math.max(this.health, 0);
+    // inform the client if they die
+    if (this.health === 0) {
+      this.client.send(pack({ _: 'dead', from }));
+    }
   }
 }
 
