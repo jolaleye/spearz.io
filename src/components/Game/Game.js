@@ -104,7 +104,7 @@ class Game extends Component {
 
     // send the target to the server and simulate the effects locally
     this.props.socket.send(pack({ _: 'target', target, tick: this.tick }));
-    activeManager.predict(target);
+    activeManager.emulate(activeManager.local, target);
     activeManager.history.push({ target, tick: this.tick });
   }
 
@@ -127,7 +127,7 @@ class Game extends Component {
       // create one if needed
       if (!manager) {
         manager = new PlayerManager(player.id);
-        this.app.stage.addChild(manager.player);
+        this.app.stage.addChild(manager.player, manager.spear);
         this.playerManagers.push(manager);
       }
 
