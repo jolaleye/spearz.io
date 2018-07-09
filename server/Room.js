@@ -33,7 +33,7 @@ class Room {
 
   // bring a client into the game
   joinGame(client, nickname) {
-    client.player = new Player(client.id, nickname);
+    client.player = new Player(client, nickname);
     // add the client and player
     this.clients[client.id] = client;
     this.players.push(client.player);
@@ -74,7 +74,7 @@ class Room {
         _: 'snapshot',
         timestamp: Date.now(),
         last: client.last,
-        players: this.getNearbyPlayers(client),
+        players: this.getNearbyPlayers(client).map(player => player.retrieve()),
       }));
     });
   }
