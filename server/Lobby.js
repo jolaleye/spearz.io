@@ -4,7 +4,6 @@ const config = require('./config');
 const { ID } = require('./services/util');
 const { pack } = require('./services/cereal');
 const Room = require('./Room');
-const Player = require('./Player');
 
 class Lobby {
   constructor() {
@@ -64,15 +63,6 @@ class Lobby {
     this.rooms[client.room].removeClient(client.id);
     // remove empty rooms
     this.rooms = _.omitBy(this.rooms, room => room.connections === 0);
-  }
-
-  // enter a client into their room's game
-  joinGame(client, nickname) {
-    client.player = new Player(client.id, nickname);
-    // add the client and their player to the room
-    this.rooms[client.room].clients[client.id] = client;
-    this.rooms[client.room].players.push(client.player);
-    client.send(pack({ _: 'ready' }));
   }
 }
 

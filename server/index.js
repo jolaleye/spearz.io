@@ -29,7 +29,7 @@ ws.on('connection', client => {
         break;
 
       case 'joinGame':
-        lobby.joinGame(client, data.nickname);
+        lobby.rooms[client.room].joinGame(client, data.nickname);
         break;
 
       case 'target':

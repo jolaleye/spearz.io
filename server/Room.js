@@ -3,6 +3,7 @@ const _ = require('lodash');
 const config = require('./config');
 const { ID, getDistance } = require('./services/util');
 const { pack } = require('./services/cereal');
+const Player = require('./Player');
 
 class Room {
   constructor() {
@@ -28,6 +29,15 @@ class Room {
     this.clients = _.omitBy(this.clients, client => client.id === id);
     this.players = this.players.filter(player => player.id !== id);
     this.connections -= 1;
+  }
+
+  // bring a client into the game
+  joinGame(client, nickname) {
+    client.player = new Player(client.id, nickname);
+    // add the client and player
+    this.clients[client.id] = client;
+    this.players.push(client.player);
+    client.send(pack({ _: 'ready' }));
   }
 
   addToQueue(clientID, data) {
