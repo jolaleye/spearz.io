@@ -115,7 +115,12 @@ class Game extends Component {
       if (snapshot.players.some(player => player.id === manager.id)) return;
 
       // remove the manager if no player shares the id
-      manager.player.visible = false; // eslint-disable-line
+      /* eslint-disable */
+      manager.player.visible = false;
+      manager.spear.visible = false;
+      manager.healthBar.visible = false;
+      manager.nameTag.visible = false;
+      /* eslint-enable */
       this.playerManagers.splice(i, 1);
     });
 
@@ -126,8 +131,8 @@ class Game extends Component {
 
       // create one if needed
       if (!manager) {
-        manager = new PlayerManager(player.id);
-        this.app.stage.addChild(manager.player, manager.spear, manager.healthBar);
+        manager = new PlayerManager(player.id, player.name);
+        this.app.stage.addChild(manager.player, manager.spear, manager.healthBar, manager.nameTag);
         this.playerManagers.push(manager);
       }
 
