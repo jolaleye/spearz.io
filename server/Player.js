@@ -23,9 +23,13 @@ class Player {
     this.released = false;
 
     this.health = 100;
+
+    this.outOfBounds = { timestamp: 0 };
   }
 
   move(target) {
+    this.checkBoundary();
+
     const distance = getDistance(this.pos.x, target.x, this.pos.y, target.y);
     this.direction = Math.atan2(distance.y, distance.x);
 
@@ -44,6 +48,20 @@ class Player {
     // bring the spear with if it hasn't been released
     if (!this.released) {
       this.spear.follow(this.pos, this.direction);
+    }
+  }
+
+  checkBoundary() {
+    const distanceFromCenter = getDistance(this.pos.x, 0, this.pos.y, 0);
+    if (distanceFromCenter.total >= config.arenaRadius) {
+      // out of bounds
+      if (!this.outOfBounds.timestamp) {
+        // just went out
+        this.outOfBounds.timestamp = Date.now();
+      }
+    } else if (this.outOfBounds.timestamp) {
+      // just came back in
+      this.outOfBounds.timestamp = 0;
     }
   }
 }
