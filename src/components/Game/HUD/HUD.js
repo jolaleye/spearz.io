@@ -2,10 +2,12 @@ import React, { Component, Fragment } from 'react';
 
 import { unpack } from '../../../services/cereal';
 import Message from './Message/Message';
+import Death from './Death/Death';
 
 class HUD extends Component {
   state = {
     message: false,
+    dead: false,
   }
 
   componentDidMount() {
@@ -18,6 +20,10 @@ class HUD extends Component {
 
         case 'clearMessage':
           this.clearMessage(data.type);
+          break;
+
+        case 'dead':
+          this.showDeathOverlay(data.from);
           break;
 
         default: break;
@@ -38,10 +44,21 @@ class HUD extends Component {
     }
   }
 
+  showDeathOverlay = from => {
+    let msg;
+    if (from === 'bounds') msg = 'You were out of bounds... (－‸ლ)';
+
+    this.setState({ dead: { from, msg } });
+  }
+
   render = () => (
-    <Fragment>
-      {this.state.message ? <Message message={this.state.message} /> : null}
-    </Fragment>
+    this.state.dead ? (
+      <Death dead={this.state.dead} />
+    ) : (
+      <Fragment>
+        {this.state.message ? <Message message={this.state.message} /> : null}
+      </Fragment>
+    )
   );
 }
 
