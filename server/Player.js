@@ -25,6 +25,7 @@ class Player {
     this.released = false;
 
     this.health = 100;
+    this.dead = false;
 
     this.outOfBounds = { timestamp: 0 };
   }
@@ -80,7 +81,8 @@ class Player {
     this.health -= value;
     this.health = Math.max(this.health, 0);
     // inform the client if they die
-    if (this.health === 0) {
+    if (this.health === 0 && !this.dead) {
+      this.dead = true;
       this.client.send(pack({ _: 'dead', from }));
     }
   }
