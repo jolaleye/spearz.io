@@ -25,7 +25,7 @@ class Game extends Component {
 
     // manager for arena related rendering
     this.arenaManager = new ArenaManager(this.app.screen);
-    this.app.stage.addChild(this.arenaManager.background);
+    this.app.stage.addChild(this.arenaManager.background, this.arenaManager.boundary);
 
     // managers for player rendering
     this.playerManagers = [];
@@ -66,7 +66,10 @@ class Game extends Component {
 
   renderX = () => {
     const activeManager = this.playerManagers.find(mngr => mngr.id === this.props.socket.id);
-    if (activeManager) this.arenaManager.updateBackground(activeManager.local.pos);
+    if (activeManager) {
+      this.arenaManager.updateBackground(activeManager.local.pos);
+      this.arenaManager.updateBoundary(activeManager.local.pos, this.app.screen);
+    }
 
     this.sinceSnapshot += this.app.ticker.elapsedMS;
 
