@@ -5,8 +5,9 @@ const { getDistance } = require('./services/util');
 const Spear = require('./Spear');
 
 class Player {
-  constructor(id, nickname) {
-    this.id = id;
+  constructor(client, nickname) {
+    this.client = client;
+    this.id = client.id;
     this.name = nickname;
 
     // random initial position within the circular arena with origin (0,0)
@@ -27,14 +28,20 @@ class Player {
     this.outOfBounds = { timestamp: 0 };
   }
 
+  // get player data needed on the client
+  retrieve() {
+    const { id, name, health, pos, direction, spear } = this;
+    return { id, name, health, pos, direction, spear };
+  }
+
   move(target) {
     this.checkBoundary();
 
     const distance = getDistance(this.pos.x, target.x, this.pos.y, target.y);
     this.direction = Math.atan2(distance.y, distance.x);
 
-    let dx = 6.5 * Math.cos(this.direction);
-    let dy = 6.5 * Math.sin(this.direction);
+    let dx = 7 * Math.cos(this.direction);
+    let dy = 7 * Math.sin(this.direction);
 
     // movement is slower when the target is closer
     if (distance.total < 100) {
