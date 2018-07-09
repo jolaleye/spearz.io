@@ -5,8 +5,9 @@ import { lerp, angularLerp, getDistance } from '../../services/util';
 import assetManager from '../../assetManager';
 
 class PlayerManager {
-  constructor(id) {
+  constructor(id, name) {
     this.id = id;
+    this.name = name;
     this.history = [];
 
     this.player = new PIXI.Sprite(assetManager.textures.player);
@@ -21,6 +22,14 @@ class PlayerManager {
     this.healthBar = new PIXI.Container();
     this.healthBar.addChild(this.healthBarBg, this.healthBarFill);
     this.healthBar.pivot.set(this.healthBar.width / 2, this.healthBar.height / 2);
+
+    this.nameTag = new PIXI.Text(this.name, {
+      fill: 'white',
+      fontFamily: 'Poppins',
+      fontSize: 18,
+      fontWeight: '400',
+    });
+    this.nameTag.anchor.set(0.5, 0.5);
   }
 
   sync = (player, timestamp) => {
@@ -42,6 +51,13 @@ class PlayerManager {
     this.local.pos.x = lerp(this.origin.pos.x, this.next.pos.x, delta);
     this.local.pos.y = lerp(this.origin.pos.y, this.next.pos.y, delta);
     this.local.direction = angularLerp(this.origin.direction, this.next.direction, delta);
+
+    this.local.spear.pos.x = lerp(this.origin.spear.pos.x, this.next.spear.pos.x, delta);
+    this.local.spear.pos.y = lerp(this.origin.spear.pos.y, this.next.spear.pos.y, delta);
+    this.local.spear.direction = angularLerp(
+      this.origin.spear.direction, this.next.spear.direction,
+      delta,
+    );
   }
 
   // player logic copied directly from the server...
@@ -100,6 +116,8 @@ class PlayerManager {
 
     this.healthBar.position.set(this.player.position.x, this.player.position.y + 60);
     this.healthBarFill.width = this.local.health;
+
+    this.nameTag.position.set(this.player.position.x, this.player.position.y + 80);
   }
 }
 
