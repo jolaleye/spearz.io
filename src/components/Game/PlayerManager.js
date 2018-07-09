@@ -65,8 +65,8 @@ class PlayerManager {
     const distance = getDistance(subject.pos.x, target.x, subject.pos.y, target.y);
     subject.direction = Math.atan2(distance.y, distance.x);
 
-    let dx = 6.5 * Math.cos(subject.direction);
-    let dy = 6.5 * Math.sin(subject.direction);
+    let dx = 7 * Math.cos(subject.direction);
+    let dy = 7 * Math.sin(subject.direction);
 
     if (distance.total < 100) {
       dx *= distance.total / 100;
@@ -99,7 +99,7 @@ class PlayerManager {
 
     // adopt the server's authoritative state if the disparity is large enough
     // threshold = maximum distance traveled in one tick... bc it seems right
-    if (disparity.pos.total > 6.5) {
+    if (disparity.pos.total > 7) {
       this.local = serverState;
     }
   }
