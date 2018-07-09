@@ -11,6 +11,9 @@ class PlayerManager {
 
     this.player = new PIXI.Sprite(assetManager.textures.player);
     this.player.anchor.set(0.5, 0.5);
+
+    this.spear = new PIXI.Sprite(assetManager.textures.spear);
+    this.spear.anchor.set(0.5, 0.5);
   }
 
   sync = (player, timestamp) => {
@@ -31,22 +34,27 @@ class PlayerManager {
     this.local.direction = angularLerp(this.origin.direction, this.next.direction, delta);
   }
 
-  // copied directly from the server code...
-  predict = target => {
-    const distance = getDistance(this.local.pos.x, target.x, this.local.pos.y, target.y);
-    this.local.direction = Math.atan2(distance.y, distance.x);
+  // player logic copied directly from the server...
+  emulate = (subject, target) => {
+    const distance = getDistance(subject.pos.x, target.x, subject.pos.y, target.y);
+    subject.direction = Math.atan2(distance.y, distance.x);
 
-    let dx = 6.5 * Math.cos(this.local.direction);
-    let dy = 6.5 * Math.sin(this.local.direction);
+    let dx = 6.5 * Math.cos(subject.direction);
+    let dy = 6.5 * Math.sin(subject.direction);
 
-    // movement is slower when the target is closer
     if (distance.total < 100) {
       dx *= distance.total / 100;
       dy *= distance.total / 100;
     }
 
-    this.local.pos.x += dx;
-    this.local.pos.y += dy;
+    subject.pos.x += dx;
+    subject.pos.y += dy;
+
+    const angle = subject.direction + (Math.PI / 2);
+
+    subject.spear.pos.x = subject.pos.x + (55 * Math.cos(angle));
+    subject.spear.pos.y = subject.pos.y + (55 * Math.sin(angle));
+    subject.spear.direction = subject.direction;
   }
 
   reconcile = (player, lastTick) => {
@@ -55,21 +63,7 @@ class PlayerManager {
 
     // apply unacknowledged commands to the server's state
     const serverState = player;
-    this.history.forEach(({ target }) => {
-      const distance = getDistance(serverState.pos.x, target.x, serverState.pos.y, target.y);
-      serverState.direction = Math.atan2(distance.y, distance.x);
-
-      let dx = 6.5 * Math.cos(serverState.direction);
-      let dy = 6.5 * Math.sin(serverState.direction);
-
-      if (distance.total < 100) {
-        dx *= distance.total / 100;
-        dy *= distance.total / 100;
-      }
-
-      serverState.pos.x += dx;
-      serverState.pos.y += dy;
-    });
+    this.history.forEach(command => this.emulate(serverState, command.target));
 
     // the difference between the local state and the server state + unacknowledged input
     const disparity = {
@@ -84,12 +78,18 @@ class PlayerManager {
     }
   }
 
+  // update sprites
   update = offset => {
     if (!this.local) return;
 
     this.player.position.set(this.local.pos.x - offset.x, this.local.pos.y - offset.y);
     this.player.rotation = this.local.direction + (Math.PI / 2);
+
+    this.spear.position.set(this.local.spear.pos.x - offset.x, this.local.spear.pos.y - offset.y);
+    this.spear.rotation = this.local.spear.direction + (Math.PI / 2);
   }
 }
 
 export default PlayerManager;
+
+/* eslint no-param-reassign: off */
