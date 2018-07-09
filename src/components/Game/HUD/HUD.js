@@ -49,6 +49,8 @@ class HUD extends Component {
     if (from === 'bounds') msg = 'You were out of bounds... (－‸ლ)';
 
     this.setState({ dead: { from, msg } });
+
+    setTimeout(() => this.props.changeMode('start'), 5000);
   }
 
   render = () => (

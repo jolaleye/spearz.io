@@ -59,7 +59,9 @@ class App extends Component {
     } else if (this.state.mode === 'start') {
       return <StartContainer socket={this.state.socket} />;
     } else if (this.state.mode === 'game') {
-      return this.state.loaded ? <Game socket={this.state.socket} /> : <div>Loading...</div>;
+      return this.state.loaded
+        ? <Game socket={this.state.socket} changeMode={this.changeMode} />
+        : <div>Loading...</div>;
     }
 
     return null;

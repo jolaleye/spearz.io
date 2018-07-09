@@ -61,7 +61,7 @@ class Game extends Component {
   render = () => (
     <div className="game">
       <canvas ref={this.canvasRef} />
-      <HUD socket={this.props.socket} />
+      <HUD socket={this.props.socket} changeMode={this.props.changeMode} />
     </div>
   );
 
