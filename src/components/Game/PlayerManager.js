@@ -42,6 +42,7 @@ class PlayerManager {
 
     // state that should be immediately synced
     this.local.health = player.health;
+    this.local.sReleased = player.released; // prevent throwing if spear is released on the server
   }
 
   interpolate = delta => {
@@ -60,36 +61,76 @@ class PlayerManager {
     );
   }
 
-  // player logic copied directly from the server...
-  emulate = (subject, target) => {
-    const distance = getDistance(subject.pos.x, target.x, subject.pos.y, target.y);
-    subject.direction = Math.atan2(distance.y, distance.x);
+  // logic copied directly from the server...
+  emulate = target => {
+    const distance = getDistance(this.local.pos.x, target.x, this.local.pos.y, target.y);
+    this.local.direction = Math.atan2(distance.y, distance.x);
 
-    let dx = 7 * Math.cos(subject.direction);
-    let dy = 7 * Math.sin(subject.direction);
+    let dx = 7 * Math.cos(this.local.direction);
+    let dy = 7 * Math.sin(this.local.direction);
 
     if (distance.total < 100) {
       dx *= distance.total / 100;
       dy *= distance.total / 100;
     }
 
-    subject.pos.x += dx;
-    subject.pos.y += dy;
+    this.local.pos.x += dx;
+    this.local.pos.y += dy;
 
-    const angle = subject.direction + (Math.PI / 2);
+    if (!this.local.released) {
+      const angle = this.local.direction + (Math.PI / 2);
+      this.local.spear.pos.x = this.local.pos.x + (55 * Math.cos(angle));
+      this.local.spear.pos.y = this.local.pos.y + (55 * Math.sin(angle));
+      this.local.spear.direction = this.local.direction;
+    } else {
+      this.local.spear.pos.x += this.local.spear.vx;
+      this.local.spear.pos.y += this.local.spear.vy;
+      this.local.spear.vx *= 0.99;
+      this.local.spear.vy *= 0.99;
+    }
+  }
 
-    subject.spear.pos.x = subject.pos.x + (55 * Math.cos(angle));
-    subject.spear.pos.y = subject.pos.y + (55 * Math.sin(angle));
-    subject.spear.direction = subject.direction;
+  // logic copied directly from the server...
+  emulateThrow = () => {
+    if (this.local.released || this.local.sReleased) return;
+
+    const angle = this.local.direction + (Math.PI / 2);
+    this.local.spear.pos.x = this.local.pos.x + (55 * Math.cos(angle));
+    this.local.spear.pos.y = this.local.pos.y + (55 * Math.sin(angle));
+    this.local.spear.direction = this.local.direction;
+
+    const launchAngle = this.local.spear.direction - (Math.PI / 26);
+    this.local.spear.direction = launchAngle;
+    this.local.spear.vx = 25 * Math.cos(launchAngle);
+    this.local.spear.vy = 25 * Math.sin(launchAngle);
+
+    this.local.released = true;
+    setTimeout(() => {
+      this.local.released = false;
+    }, 500);
   }
 
   reconcile = (player, lastTick) => {
     // discard history up to the last acknowledged command
     this.history = _.dropWhile(this.history, command => command.tick < lastTick);
 
-    // apply unacknowledged commands to the server's state
+    // apply unacknowledged movement to the server's state
     const serverState = player;
-    this.history.forEach(command => this.emulate(serverState, command.target));
+    this.history.forEach(({ target }) => {
+      const distance = getDistance(serverState.pos.x, target.x, serverState.pos.y, target.y);
+      serverState.direction = Math.atan2(distance.y, distance.x);
+
+      let dx = 7 * Math.cos(serverState.direction);
+      let dy = 7 * Math.sin(serverState.direction);
+
+      if (distance.total < 100) {
+        dx *= distance.total / 100;
+        dy *= distance.total / 100;
+      }
+
+      serverState.pos.x += dx;
+      serverState.pos.y += dy;
+    });
 
     // the difference between the local state and the server state + unacknowledged input
     const disparity = {
