@@ -37,6 +37,10 @@ ws.on('connection', client => {
         lobby.rooms[client.room].addToQueue(client.id, data);
         break;
 
+      case 'throw':
+        client.player.throwSpear();
+        break;
+
       default: break;
     }
   });
