@@ -5,7 +5,7 @@ class Quadtree {
     // defines the node's center at (bounds.x, bounds.y) with side length bounds.length
     this.bounds = bounds;
 
-    this.capacity = 20;
+    this.capacity = 10;
     this.nodes = [];
     this.items = [];
   }

@@ -24,9 +24,7 @@ class Spear {
 
   // data needed for the quadtree   width & height match the sprite
   get qt() {
-    return {
-      id: this.id, type: 'spear', x: this.pos.x, y: this.pos.y - 45.5, width: 18, height: 15,
-    };
+    return { x: this.pos.x, y: this.pos.y - 45.5, width: 18, height: 15 };
   }
 
   // collision bounds needed for SAT
