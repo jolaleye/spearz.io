@@ -98,8 +98,10 @@ class Room {
         player.released = false;
         this.clients[player.id].send(pack({ _: 'hit' }));
         candidate.damage(config.hitDamage, 'player', player.name);
+        // check if the player hit is now dead
         if (candidate.dead) {
           player.increaseScore(config.killScore);
+          this.clients[player.id].send(pack({ _: 'kill', name: candidate.name }));
         }
       });
     });
