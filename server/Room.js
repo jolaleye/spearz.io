@@ -83,19 +83,19 @@ class Room {
         _: 'snapshot',
         timestamp: Date.now(),
         last: client.last,
-        players: this.getNearbyPlayers(client).map(player => player.retrieve()),
+        players: this.getNearbyPlayers(client, 1250).map(player => player.retrieve()),
       }));
     });
   }
 
-  getNearbyPlayers(client) {
+  getNearbyPlayers(client, maxDistance) {
     return this.players.filter(player => {
       const distance = getDistance(
         client.player.pos.x, player.pos.x,
         client.player.pos.y, player.pos.y,
       );
 
-      return distance.total <= 1250;
+      return distance.total <= maxDistance;
     });
   }
 }
