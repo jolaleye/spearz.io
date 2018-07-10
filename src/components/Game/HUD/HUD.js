@@ -2,12 +2,10 @@ import React, { Component, Fragment } from 'react';
 
 import { unpack } from '../../../services/cereal';
 import Message from './Message/Message';
-import Death from './Death/Death';
 
 class HUD extends Component {
   state = {
     message: false,
-    dead: false,
   }
 
   componentDidMount() {
@@ -26,7 +24,11 @@ class HUD extends Component {
 
         case 'dead':
           if (!data.from) return;
-          this.showDeathOverlay(data.from, data.name);
+          this.showDeath(data.from, data.name);
+          break;
+
+        case 'kill':
+          this.showKill(data.name);
           break;
 
         default: break;
@@ -47,23 +49,43 @@ class HUD extends Component {
     }
   }
 
-  showDeathOverlay = (from, name) => {
-    let msg;
-    if (from === 'bounds') msg = 'You were out of bounds... (－‸ლ)';
+  showKill = name => {
+    // reset the message timer so that subsequent messages aren't cleared early
+    clearTimeout(this.killMessageTimer);
 
-    this.setState({ dead: { from, msg, name } });
+    const killed = name === '' ? '<unnamed>' : name;
+    this.setState({ message: { type: 'kill', name: killed } });
 
-    setTimeout(() => this.props.changeMode('start'), 3000);
+    // set a timer on the message
+    this.killMessageTimer = setTimeout(() => {
+      // if the message is still a kill message, clear it
+      if (this.state.message.type === 'kill') {
+        this.setState({ message: false });
+      }
+    }, 3000);
+  }
+
+  showDeath = (from, name) => {
+    if (from === 'bounds') {
+      this.setState({ message: {
+        type: 'deathByBounds',
+        msg: 'You were out of bounds... (－‸ლ)',
+      } });
+    } else if (from === 'player') {
+      this.setState({ message: {
+        type: 'deathByPlayer',
+        name: name === '' ? '<unnamed>' : name,
+      } });
+    }
+
+    // go back to the start screen
+    setTimeout(() => this.props.changeMode('start'), 4000);
   }
 
   render = () => (
-    this.state.dead ? (
-      <Death dead={this.state.dead} />
-    ) : (
-      <Fragment>
-        {this.state.message ? <Message message={this.state.message} /> : null}
-      </Fragment>
-    )
+    <Fragment>
+      {this.state.message ? <Message message={this.state.message} /> : null}
+    </Fragment>
   );
 }
 

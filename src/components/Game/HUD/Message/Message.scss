@@ -16,7 +16,36 @@
   justify-content: center;
 }
 
-.message.bounds span {
+.message.death {
+  top: 80px;
+  width: 65em;
+  height: 15.33em;
+}
+
+.message.death.bounds span {
+  font-weight: 400;
+  font-size: 3.5em;
+  color: white;
+  text-shadow: #F5437E 3px 3px 0;
+}
+
+.message.death.player {
+  span {
+    font-weight: 400;
+    font-size: 3.5em;
+    color: white;
+  }
+
+  .name {
+    font-weight: 500;
+    font-size: 4.5em;
+    color: white;
+    text-shadow: #F5437E 3px 3px 0;
+    margin-left: 0.25em;
+  }
+}
+
+.message.boundary span {
   font-weight: 400;
   font-size: 2.5em;
   color: white;
@@ -35,5 +64,20 @@
 
   100% {
     transform: scale(1);
+  }
+}
+
+.message.kill  {
+  span {
+    font-weight: 300;
+    font-size: 2.5em;
+    color: white;
+  }
+
+  .name {
+    font-weight: 500;
+    font-size: 3.5em;
+    text-shadow: #F5437E 3px 3px 0;
+    margin-left: 0.2em;
   }
 }
