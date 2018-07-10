@@ -40,8 +40,8 @@ class Player {
 
   // get player data needed on the client
   retrieve() {
-    const { id, name, health, pos, direction, spear } = this;
-    return { id, name, health, pos, direction, spear: spear.retrieve() };
+    const { id, name, health, pos, direction, spear, released } = this;
+    return { id, name, health, pos, direction, spear: spear.retrieve(), released };
   }
 
   // data needed for the quadtree   width & height match the sprite
@@ -76,6 +76,9 @@ class Player {
     // bring the spear with if it hasn't been released
     if (!this.released) {
       this.spear.follow(this.pos, this.direction);
+    } else {
+      // otherwise let it do its thing
+      this.spear.move();
     }
   }
 
@@ -104,6 +107,20 @@ class Player {
       this.dead = true;
       this.client.send(pack({ _: 'dead', from }));
     }
+  }
+
+  throwSpear() {
+    if (this.released) return;
+
+    // reset then launch
+    this.spear.follow(this.pos, this.direction);
+    this.spear.launch();
+
+    this.released = true;
+    // timer for the spear to return
+    setTimeout(() => {
+      this.released = false;
+    }, config.spearCooldown);
   }
 }
 
