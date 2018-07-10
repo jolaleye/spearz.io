@@ -15,15 +15,18 @@ class HUD extends Component {
       const data = unpack(packet.data);
       switch (data._) {
         case 'message':
+          if (!data.type) return;
           this.showMessage(data.type);
           break;
 
         case 'clearMessage':
+          if (!data.type) return;
           this.clearMessage(data.type);
           break;
 
         case 'dead':
-          this.showDeathOverlay(data.from);
+          if (!data.from) return;
+          this.showDeathOverlay(data.from, data.name);
           break;
 
         default: break;
@@ -44,13 +47,13 @@ class HUD extends Component {
     }
   }
 
-  showDeathOverlay = from => {
+  showDeathOverlay = (from, name) => {
     let msg;
     if (from === 'bounds') msg = 'You were out of bounds... (－‸ლ)';
 
-    this.setState({ dead: { from, msg } });
+    this.setState({ dead: { from, msg, name } });
 
-    setTimeout(() => this.props.changeMode('start'), 5000);
+    setTimeout(() => this.props.changeMode('start'), 3000);
   }
 
   render = () => (

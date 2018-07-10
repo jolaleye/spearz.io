@@ -9,6 +9,13 @@ const Death = ({ dead }) => {
         <span>{dead.msg}</span>
       </div>
     );
+  } else if (dead.from === 'player') {
+    return (
+      <div className="death player">
+        <span>Killed by</span>
+        <span className="name">{dead.name ? dead.name : '<unnamed>'}</span>
+      </div>
+    );
   }
 
   return null;

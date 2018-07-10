@@ -22,3 +22,19 @@
   color: white;
   text-shadow: #F5437E 3px 3px 0;
 }
+
+.death.player {
+  span {
+    font-weight: 400;
+    font-size: 3.5em;
+    color: white;
+  }
+
+  .name {
+    font-weight: 500;
+    font-size: 4.5em;
+    color: white;
+    text-shadow: #F5437E 3px 3px 0;
+    margin-left: 0.25em;
+  }
+}
