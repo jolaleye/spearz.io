@@ -43,6 +43,10 @@ class Game extends Component {
           this.returnSpear();
           break;
 
+        case 'dead':
+          this.stop();
+          break;
+
         default: break;
       }
     });
@@ -65,6 +69,8 @@ class Game extends Component {
   componentWillUnmount() {
     this.app.ticker.stop();
     clearInterval(this.getTargetInterval);
+    this.playerManagers = [];
+    this.app.stage.removeChildren();
   }
 
   resize = () => {
@@ -79,6 +85,17 @@ class Game extends Component {
     </div>
   );
 
+
+  stop = () => {
+    // stop target tracking
+    clearInterval(this.getTargetInterval);
+
+    // remove player health bar, name, spear
+    const activeManager = this.playerManagers.find(mngr => mngr.id === this.props.socket.id);
+    activeManager.spear.visible = false;
+    activeManager.healthBar.visible = false;
+    activeManager.nameTag.visible = false;
+  }
 
   renderX = () => {
     const activeManager = this.playerManagers.find(mngr => mngr.id === this.props.socket.id);
@@ -169,6 +186,13 @@ class Game extends Component {
         manager = new PlayerManager(player.id, player.name);
         this.app.stage.addChild(manager.player, manager.spear, manager.healthBar, manager.nameTag);
         this.playerManagers.push(manager);
+      }
+
+      // remove player health bar, name, and spear if they're dead
+      if (player.dead) {
+        manager.spear.visible = false;
+        manager.healthBar.visible = false;
+        manager.nameTag.visible = false;
       }
 
       manager.sync(player, snapshot.timestamp);
