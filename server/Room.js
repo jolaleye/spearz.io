@@ -72,8 +72,8 @@ class Room {
     // rebuild quadtree
     this.qtree.clear();
     this.players.forEach(player => {
-      this.qtree.insert(player);
-      this.qtree.insert(player.spear);
+      this.qtree.insert(player.qt);
+      this.qtree.insert(player.spear.qt);
     });
   }
 
