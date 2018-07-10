@@ -47,10 +47,10 @@ class Spear {
 
   launch() {
     // launch slightly inwards towards the player
-    const launchAngle = this.local.spear.direction - (Math.PI / 26);
-    this.local.spear.direction = launchAngle;
-    this.vx = 25 * Math.cos(this.direction);
-    this.vy = 25 * Math.sin(this.direction);
+    const launchAngle = this.direction - (Math.PI / 26);
+    this.direction = launchAngle;
+    this.vx = 25 * Math.cos(launchAngle);
+    this.vy = 25 * Math.sin(launchAngle);
   }
 
   move() {
