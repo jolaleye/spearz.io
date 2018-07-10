@@ -22,6 +22,7 @@
     "react-dom": "^16.4.1",
     "react-feather": "^1.1.1",
     "react-scripts": "1.1.1",
+    "sat": "^0.7.1",
     "uws": "^10.148.1"
   },
   "devDependencies": {
