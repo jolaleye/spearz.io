@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const { testPolygonPolygon } = require('sat');
 
 const config = require('./config');
 const { ID, getDistance } = require('./services/util');
@@ -72,8 +73,35 @@ class Room {
     // rebuild quadtree
     this.qtree.clear();
     this.players.forEach(player => {
-      this.qtree.insert(player.qt);
-      this.qtree.insert(player.spear.qt);
+      // exclude dead players
+      if (!player.dead) this.qtree.insert(player.qt);
+    });
+
+    // check for spear hits
+    this.players.forEach(player => {
+      // skip if the player hasn't thrown their spear
+      if (!player.released) return;
+
+      // otherwise find potential collision candidates
+      let candidates = this.qtree.retrieve(player.spear.qt);
+      // filter out this player
+      candidates = candidates.filter(candidate => candidate.id !== player.id);
+
+      // convert candidates from their qt variant to their full object
+      candidates = candidates.map(candidate => this.clients[candidate.id].player);
+
+      // check collision with the remaining candidates
+      candidates.forEach(candidate => {
+        const hit = testPolygonPolygon(player.spear.bounds, candidate.bounds);
+        if (!hit) return;
+
+        player.released = false;
+        this.clients[player.id].send(pack({ _: 'hit' }));
+        candidate.damage(config.hitDamage, 'player', player.name);
+        if (candidate.dead) {
+          player.increaseScore(config.killScore);
+        }
+      });
     });
   }
 
