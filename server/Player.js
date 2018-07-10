@@ -27,13 +27,18 @@ class Player {
     this.health = 100;
     this.dead = false;
 
-    this.outOfBounds = { timestamp: 0 };
+    this.outOfBounds = { out: false, interval: null };
   }
 
   // get player data needed on the client
   retrieve() {
     const { id, name, health, pos, direction, spear } = this;
     return { id, name, health, pos, direction, spear };
+  }
+
+  // data needed for the quadtree   values match the sprite
+  get qt() {
+    return { x: this.pos.x, y: this.pos.y, width: 77, height: 69 };
   }
 
   move(target) {

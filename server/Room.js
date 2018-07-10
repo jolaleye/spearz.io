@@ -4,6 +4,7 @@ const config = require('./config');
 const { ID, getDistance } = require('./services/util');
 const { pack } = require('./services/cereal');
 const Player = require('./Player');
+const Quadtree = require('./services/Quadtree');
 
 class Room {
   constructor() {
@@ -12,6 +13,7 @@ class Room {
     this.clients = {};
     this.players = [];
     this.queue = [];
+    this.qtree = new Quadtree({ x: 0, y: 0, length: config.arenaRadius * 2 });
 
     // simulation tick
     setInterval(this.simulate.bind(this), config.tickrate);
@@ -53,9 +55,9 @@ class Room {
       if (this.queue[last]) client.last = this.queue[last].tick;
     });
 
+    // execute command queue
     this.queue.forEach((command, i) => {
       const client = this.clients[command.clientID];
-
       // skip if the client does not have a player / does not exist
       if (!client || !client.player) {
         this.queue.splice(i, 1);
@@ -65,6 +67,13 @@ class Room {
       client.player.move(command.target);
 
       this.queue.splice(i, 1);
+    });
+
+    // rebuild quadtree
+    this.qtree.clear();
+    this.players.forEach(player => {
+      this.qtree.insert(player);
+      this.qtree.insert(player.spear);
     });
   }
 

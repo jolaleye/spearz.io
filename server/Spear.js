@@ -4,6 +4,11 @@ class Spear {
     this.direction = 0;
   }
 
+  // data needed for the quadtree   values match the sprite
+  get qt() {
+    return { x: this.pos.x, y: this.pos.y - 45.5, width: 18, height: 15 };
+  }
+
   // follow the player's position
   follow(playerPos, playerDirection) {
     // angle from player to spear
