@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const { Vector, Polygon } = require('sat');
 
 const config = require('./config');
 const { getDistance } = require('./services/util');
@@ -14,31 +15,44 @@ class Player {
     // random initial position within the circular arena with origin (0,0)
     const randomAngle = _.random(2 * Math.PI);
     const randomDistance = _.random(config.arenaRadius ** 2);
-    this.pos = {
-      x: Math.sqrt(randomDistance) * Math.cos(randomAngle),
-      y: Math.sqrt(randomDistance) * Math.sin(randomAngle),
-    };
+    this.pos = new Vector(
+      Math.sqrt(randomDistance) * Math.cos(randomAngle),
+      Math.sqrt(randomDistance) * Math.sin(randomAngle),
+    );
 
     this.direction = 0;
 
-    this.spear = new Spear(this.pos);
+    this.spear = new Spear(this.id, this.pos);
     this.released = false;
 
     this.health = 100;
     this.dead = false;
 
     this.outOfBounds = { out: false, interval: null };
+
+    // collision bounds needed for SAT    points match the sprite
+    // points ordered from the point of the player clockwise
+    this.satPolygon = new Polygon(this.pos, [
+      new Vector(0, -34.5), new Vector(38.5, 25), new Vector(20, 32),
+      new Vector(-20, 32), new Vector(-38.5, 25),
+    ]);
   }
 
   // get player data needed on the client
   retrieve() {
     const { id, name, health, pos, direction, spear } = this;
-    return { id, name, health, pos, direction, spear };
+    return { id, name, health, pos, direction, spear: spear.retrieve() };
   }
 
-  // data needed for the quadtree   values match the sprite
+  // data needed for the quadtree   width & height match the sprite
   get qt() {
-    return { x: this.pos.x, y: this.pos.y, width: 77, height: 69 };
+    return { id: this.id, type: 'player', x: this.pos.x, y: this.pos.y, width: 77, height: 69 };
+  }
+
+  // collision bounds needed for SAT
+  get bounds() {
+    this.satPolygon.setAngle(this.direction + (Math.PI / 2));
+    return this.satPolygon;
   }
 
   move(target) {
