@@ -4,4 +4,5 @@ module.exports = {
   snapshotRate: 50,
   arenaRadius: 5000,
   playerLimit: 100,
+  spearCooldown: 500,
 };
