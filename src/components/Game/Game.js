@@ -34,7 +34,17 @@ class Game extends Component {
     // listen for snapshots
     this.props.socket.addEventListener('message', packet => {
       const data = unpack(packet.data);
-      if (data._ === 'snapshot') this.sync(data);
+      switch (data._) {
+        case 'snapshot':
+          this.sync(data);
+          break;
+
+        case 'hit':
+          this.returnSpear();
+          break;
+
+        default: break;
+      }
     });
 
     // throw listeners
@@ -126,6 +136,11 @@ class Game extends Component {
 
     this.props.socket.send(pack({ _: 'throw' }));
     activeManager.emulateThrow();
+  }
+
+  returnSpear = () => {
+    const activeManager = this.playerManagers.find(mngr => mngr.id === this.props.socket.id);
+    activeManager.local.released = false;
   }
 
   // new snapshot received
