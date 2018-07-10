@@ -28,6 +28,8 @@ class Player {
     this.health = 100;
     this.dead = false;
 
+    this.score = 0;
+
     this.outOfBounds = { out: false, interval: null };
 
     // collision bounds needed for SAT    points match the sprite
@@ -86,7 +88,9 @@ class Player {
     const distanceFromCenter = getDistance(this.pos.x, 0, this.pos.y, 0);
     if (distanceFromCenter.total >= config.arenaRadius && !this.outOfBounds.out) {
       // just went out of bounds - take damage every second
-      this.outOfBounds.interval = setInterval(() => this.damage(10, 'bounds'), 1000);
+      this.outOfBounds.interval = setInterval(() => {
+        this.damage(config.boundaryDamage, 'bounds');
+      }, config.boundaryDamageFrequency);
       this.outOfBounds.out = true;
       // inform the client
       this.client.send(pack({ _: 'message', type: 'bounds' }));
@@ -99,13 +103,13 @@ class Player {
     }
   }
 
-  damage(value, from) {
+  damage(value, from, name) {
     this.health -= value;
     this.health = Math.max(this.health, 0);
     // inform the client if they die
     if (this.health === 0 && !this.dead) {
       this.dead = true;
-      this.client.send(pack({ _: 'dead', from }));
+      this.client.send(pack({ _: 'dead', from, name }));
     }
   }
 
@@ -121,6 +125,10 @@ class Player {
     setTimeout(() => {
       this.released = false;
     }, config.spearCooldown);
+  }
+
+  increaseScore(value) {
+    this.score += value;
   }
 }
 
