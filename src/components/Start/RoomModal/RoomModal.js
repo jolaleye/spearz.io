@@ -21,7 +21,7 @@ const RoomModal = ({ modal, toggleModal, currentKey, roomKey, msg, handleKeyChan
             </div>
             {msg
               ? <p className={`help has-text-${msg.code === 0 ? 'danger' : 'success'}`}>
-                  {msg.msg} {msg.code === 0 ? '¯\\_(ツ)_/¯' : '＼(^o^)／'}
+                  {msg.msg} {msg.code === 0 ? '¯\\_(o_o)_/¯' : '＼(^o^)／'}
                 </p>
               : null
             }
