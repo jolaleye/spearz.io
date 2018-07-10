@@ -37,6 +37,10 @@ class Game extends Component {
       if (data._ === 'snapshot') this.sync(data);
     });
 
+    // throw listeners
+    window.addEventListener('keydown', this.throwSpear);
+    window.addEventListener('click', this.throwSpear);
+
     this.tick = 0;
     this.sinceSnapshot = 0;
 
@@ -110,8 +114,18 @@ class Game extends Component {
 
     // send the target to the server and simulate the effects locally
     this.props.socket.send(pack({ _: 'target', target, tick: this.tick }));
-    activeManager.emulate(activeManager.local, target);
+    activeManager.emulate(target);
     activeManager.history.push({ target, tick: this.tick });
+  }
+
+  throwSpear = event => {
+    const activeManager = this.playerManagers.find(mngr => mngr.id === this.props.socket.id);
+
+    // checks that if a key was used, it was the spacebar, and that the spear hasn't been released
+    if ((event.key && event.key !== ' ') || activeManager.released) return;
+
+    this.props.socket.send(pack({ _: 'throw' }));
+    activeManager.emulateThrow();
   }
 
   // new snapshot received
