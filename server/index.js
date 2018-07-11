@@ -1,4 +1,5 @@
 const path = require('path');
+const http = require('http');
 const express = require('express');
 const WebSocket = require('uws');
 
@@ -6,7 +7,7 @@ const Lobby = require('./Lobby');
 const { unpack } = require('./services/cereal');
 
 const app = express();
-const server = app.listen(process.env.PORT || 3001);
+const server = http.createServer(app);
 const ws = new WebSocket.Server({ server });
 
 app.use(express.static(path.join(__dirname, '../build')));
@@ -54,3 +55,5 @@ ws.on('connection', client => {
     lobby.disconnect(client);
   });
 });
+
+server.listen(process.env.PORT || 3001);
