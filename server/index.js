@@ -2,12 +2,11 @@ const path = require('path');
 const express = require('express');
 const WebSocket = require('uws');
 
-const config = require('./config');
 const Lobby = require('./Lobby');
 const { unpack } = require('./services/cereal');
 
 const app = express();
-const server = app.listen(config.port);
+const server = app.listen(process.env.PORT || 3001);
 const ws = new WebSocket.Server({ server });
 
 app.use(express.static(path.join(__dirname, '../build')));
