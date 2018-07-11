@@ -48,6 +48,13 @@ class App extends Component {
         default: break;
       }
     });
+
+    // if the connection drops, go back to the start screen and reconnect
+    socket.addEventListener('close', () => {
+      this.setState({ connected: false });
+      this.changeMode('start');
+      this.connect();
+    });
   }
 
   changeMode = mode => {
