@@ -28,7 +28,7 @@ class StartContainer extends Component {
     event.preventDefault();
     if (!this.props.connected || !this.props.loaded) return;
 
-    this.props.socket.send(pack({ _: 'joinGame', nickname: _.trim(this.state.nickname) }));
+    this.props.socket.send(pack('joinGame', { nickname: _.trim(this.state.nickname) }));
     this.setState({ nickname: '' });
   }
 

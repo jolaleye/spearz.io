@@ -27,7 +27,8 @@ class Room {
   addClient(client) {
     client.room = this.key;
     this.connections += 1;
-    client.send(pack({ _: 'roomKey', key: this.key }));
+    client.send(pack('roomKey', { key: this.key }));
+    client.last = 0;
   }
 
   removeClient(id) {
@@ -42,7 +43,7 @@ class Room {
     // add the client and player
     this.clients[client.id] = client;
     this.players.push(client.player);
-    client.send(pack({ _: 'ready' }));
+    client.send(pack('ready'));
   }
 
   addToQueue(clientID, data) {
@@ -98,12 +99,12 @@ class Room {
         if (!hit) return;
 
         player.released = false;
-        this.clients[player.id].send(pack({ _: 'hit' }));
+        this.clients[player.id].send(pack('hit'));
         candidate.damage(config.hitDamage, 'player', player.name);
         // check if the player hit is now dead
         if (candidate.dead) {
           player.increaseScore(config.killScore);
-          this.clients[player.id].send(pack({ _: 'kill', name: candidate.name }));
+          this.clients[player.id].send(pack('kill', { name: candidate.name }));
         }
       });
     });
@@ -111,9 +112,8 @@ class Room {
 
   snapshot() {
     Object.values(this.clients).forEach(client => {
-      client.send(pack({
-        _: 'snapshot',
-        timestamp: Date.now(),
+      client.send(pack('snapshot', {
+        timestamp: Date.now().toString(),
         last: client.last,
         players: this.getNearbyPlayers(client, 1250).map(player => player.retrieve()),
       }));
@@ -166,7 +166,7 @@ class Room {
         });
       }
       // send the leaderboard
-      client.send(pack({ _: 'leaderboard', players: list }));
+      client.send(pack('leaderboard', { players: list }));
     });
   }
 }

@@ -25,7 +25,7 @@ class RoomModalContainer extends Component {
 
   joinRoom = event => {
     event.preventDefault();
-    this.props.socket.send(pack({ _: 'joinRoom', key: this.state.roomKey }));
+    this.props.socket.send(pack('joinRoom', { key: this.state.roomKey }));
     this.setState({ roomKey: '' });
   }
 

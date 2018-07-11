@@ -141,7 +141,7 @@ class Game extends Component {
     };
 
     // send the target to the server and simulate the effects locally
-    this.props.socket.send(pack({ _: 'target', target, tick: this.tick }));
+    this.props.socket.send(pack('target', { target, tick: this.tick }));
     activeManager.emulate(target);
     activeManager.history.push({ target, tick: this.tick });
   }
@@ -153,7 +153,7 @@ class Game extends Component {
     // checks that if a key was used, it was the spacebar, and that the spear hasn't been released
     if ((event.key && event.key !== ' ') || activeManager.released) return;
 
-    this.props.socket.send(pack({ _: 'throw' }));
+    this.props.socket.send(pack('throw'));
     activeManager.emulateThrow();
   }
 

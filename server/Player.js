@@ -94,23 +94,23 @@ class Player {
       }, config.boundaryDamageFrequency);
       this.outOfBounds.out = true;
       // inform the client
-      this.client.send(pack({ _: 'message', type: 'bounds' }));
+      this.client.send(pack('message', { type: 'bounds' }));
     } else if (distanceFromCenter.total < config.arenaRadius && this.outOfBounds.out) {
       // just came back in - stop taking damage
       clearInterval(this.outOfBounds.interval);
       this.outOfBounds.out = false;
       // inform the client
-      this.client.send(pack({ _: 'clearMessage', type: 'bounds' }));
+      this.client.send(pack('clearMessage', { type: 'bounds' }));
     }
   }
 
-  damage(value, from, name) {
+  damage(value, from, name = '') {
     this.health -= value;
     this.health = Math.max(this.health, 0);
     // inform the client if they die
     if (this.health === 0 && !this.dead) {
       this.dead = true;
-      this.client.send(pack({ _: 'dead', from, name }));
+      this.client.send(pack('dead', { from, name }));
     }
   }
 

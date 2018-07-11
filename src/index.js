@@ -29,6 +29,8 @@ class App extends Component {
     const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
     const host = process.env.NODE_ENV === 'production' ? window.location.host : 'localhost:3001';
     const socket = new WebSocket(`${protocol}://${host}`);
+    socket.binaryType = 'arraybuffer';
+
     this.setState(prevState => ({ socket, connectionAttempts: prevState.connectionAttempts + 1 }));
 
     socket.addEventListener('open', () => {

@@ -86,7 +86,7 @@ class HUD extends Component {
 
     // death process finished, remove player and go back to the start screen
     setTimeout(() => {
-      this.props.socket.send(pack({ _: 'remove' }));
+      this.props.socket.send(pack('remove'));
       this.props.changeMode('start');
     }, 4000);
   }

@@ -13,7 +13,7 @@ class Lobby {
   initiate(client) {
     // assign the client an ID
     client.id = ID(2);
-    client.send(pack({ _: 'id', id: client.id }));
+    client.send(pack('id', { id: client.id }));
 
     // find a room
     const room = this.findRoom();
@@ -36,13 +36,13 @@ class Lobby {
   joinRoom(client, key) {
     if (key === client.room) {
       // client is already in the room
-      client.send(pack({ _: 'keyMsg', code: 1, msg: 'You\'re already in that room!' }));
+      client.send(pack('keyMsg', { code: 1, msg: 'You\'re already in that room!' }));
     } else if (!this.rooms[key]) {
       // room does not exist
-      client.send(pack({ _: 'keyMsg', code: 0, msg: 'That room doesn\'t exist' }));
+      client.send(pack('keyMsg', { code: 0, msg: 'That room doesn\'t exist' }));
     } else if (this.rooms[key].connections >= config.playerLimit) {
       // room is full
-      client.send(pack({ _: 'keyMsg', code: 0, msg: 'That room is full' }));
+      client.send(pack('keyMsg', { code: 0, msg: 'That room is full' }));
     } else {
       // room exists and has space
       this.disconnect(client);
