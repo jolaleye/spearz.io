@@ -26,17 +26,23 @@ class StartContainer extends Component {
 
   joinGame = event => {
     event.preventDefault();
+    if (!this.props.connected || !this.props.loaded) return;
+
     this.props.socket.send(pack({ _: 'joinGame', nickname: _.trim(this.state.nickname) }));
     this.setState({ nickname: '' });
   }
 
   render = () => (
     <Fragment>
-      <Start nickname={this.state.nickname} handleNameChange={this.handleNameChange}
+      <Start connected={this.props.connected} loaded={this.props.loaded}
+        nickname={this.state.nickname} handleNameChange={this.handleNameChange}
         audio={this.state.audio} toggleAudio={this.toggleAudio} toggleModal={this.toggleModal}
         joinGame={this.joinGame} />
-      <RoomModalContainer socket={this.props.socket} modal={this.state.modal}
-        toggleModal={this.toggleModal} />
+      {this.props.connected
+        ? <RoomModalContainer socket={this.props.socket} modal={this.state.modal}
+            toggleModal={this.toggleModal} />
+        : null
+      }
     </Fragment>
   );
 }
