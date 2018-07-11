@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 
-import { unpack } from '../../../services/cereal';
+import { pack, unpack } from '../../../services/cereal';
 import Message from './Message/Message';
 
 class HUD extends Component {
@@ -78,8 +78,11 @@ class HUD extends Component {
       } });
     }
 
-    // go back to the start screen
-    setTimeout(() => this.props.changeMode('start'), 4000);
+    // death process finished, remove player and go back to the start screen
+    setTimeout(() => {
+      this.props.socket.send(pack({ _: 'remove' }));
+      this.props.changeMode('start');
+    }, 4000);
   }
 
   render = () => (
