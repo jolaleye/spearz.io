@@ -1,46 +1,43 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import _ from 'lodash';
-import { Howler } from 'howler';
 
-import parser from '../../services/parser';
 import Start from './Start';
-import FriendModalContainer from './FriendModal/FriendModalContainer';
-
-const { encode } = parser;
+import RoomModalContainer from './RoomModal/RoomModalContainer';
+import { pack } from '../../services/cereal';
 
 class StartContainer extends Component {
   state = {
-    name: '',
-    friendModalState: false,
+    nickname: '',
     audio: true,
-  };
+    modal: false,
+  }
 
-  handleNameChange = e => this.setState({ name: e.target.value });
+  handleNameChange = event => {
+    this.setState({ nickname: event.target.value });
+  }
 
-  handleSubmit = e => {
-    e.preventDefault();
-    this.props.socket.send(encode('joinGame', { name: _.trim(this.state.name) }));
-    this.setState({ name: '' });
+  toggleAudio = () => {
+    this.setState(prevState => ({ audio: !prevState.audio }));
   }
 
   toggleModal = () => {
-    this.setState(prevState => ({ friendModalState: !prevState.friendModalState }));
+    this.setState(prevState => ({ modal: !prevState.modal }));
   }
 
-  toggleAudio = async () => {
-    await this.setState(prevState => ({ audio: !prevState.audio }));
-    Howler.mute(!this.state.audio);
+  joinGame = event => {
+    event.preventDefault();
+    this.props.socket.send(pack({ _: 'joinGame', nickname: _.trim(this.state.nickname) }));
+    this.setState({ nickname: '' });
   }
 
   render = () => (
-    <Start name={this.state.name} handleNameChange={this.handleNameChange}
-      handleSubmit={this.handleSubmit} toggleAudio={this.toggleAudio} audio={this.state.audio}
-      toggleModal={this.toggleModal}
-    >
-      <FriendModalContainer socket={this.props.socket} room={this.props.room}
-        toggleModal={this.toggleModal} modalState={this.state.friendModalState}
-      />
-    </Start>
+    <Fragment>
+      <Start nickname={this.state.nickname} handleNameChange={this.handleNameChange}
+        audio={this.state.audio} toggleAudio={this.toggleAudio} toggleModal={this.toggleModal}
+        joinGame={this.joinGame} />
+      <RoomModalContainer socket={this.props.socket} modal={this.state.modal}
+        toggleModal={this.toggleModal} />
+    </Fragment>
   );
 }
 

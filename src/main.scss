@@ -1,10 +1,16 @@
-@import 'bulma/sass/utilities/initial-variables';
-
-html { overflow: hidden !important; }
-*::selection {
-  background: rgba(242, 111, 142, 0.5);
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-$family-sans-serif: 'Roboto', sans-serif;
+html, body {
+  overflow: hidden !important;
+}
+
+// Bulma
+@import 'bulma/sass/utilities/initial-variables';
+
+$family-sans-serif: 'Poppins', sans-serif;
 
 @import 'bulma/bulma';

@@ -1,11 +1,17 @@
 module.exports = {
-  port: process.env.PORT || 3001,
+  port: process.env.NODE_ENV === 'production' ? process.env.PORT : 3001,
 
-  maxPlayers: 100,
+  tickrate: 15,
+  snapshotRate: 50,
+  leaderboardRate: 1000,
   arenaRadius: 5000,
-  throwCooldown: 0.5,
-  damageOnHit: 25,
-  damageWhileOut: 10,
-  scorePerKil: 100,
-  maxTimeOutOfBounds: 5,
+  playerLimit: 100,
+
+  spearCooldown: 500,
+
+  boundaryDamage: 10,
+  boundaryDamageFrequency: 1000,
+  hitDamage: 20,
+
+  killScore: 100,
 };

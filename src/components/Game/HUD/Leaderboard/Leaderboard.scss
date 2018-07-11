@@ -1,0 +1,55 @@
+.leaderboard {
+  position: absolute;
+  right: 1em;
+  top: 1em;
+
+  width: 20em;
+
+  padding: 0.5em 1em 1em 1em;
+
+  background-color: rgba(0, 0, 0, 0.15);
+
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+
+  &__header {
+    font-size: 2em;
+    font-weight: 500;
+    color: white;
+  }
+
+  &__player {
+    &.active {
+      color: #FEE6CA;
+    }
+
+    width: 100%;
+
+    color: white;
+    font-size: 1.3em;
+    font-weight: 200;
+
+    display: flex;
+    align-items: center;
+  }
+
+  &__rank {
+    flex: 1 1 5%;
+    text-align: center;
+  }
+
+  &__name {
+    flex: 6 2 85%;
+    padding: 0 0.25em;
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__score {
+    flex: 2 1 10%;
+    text-align: right;
+  }
+}

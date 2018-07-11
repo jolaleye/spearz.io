@@ -1,0 +1,83 @@
+.message {
+  position: absolute;
+  top: 3.75em;
+  left: 50%;
+  transform: translateX(-50%);
+
+  width: 50em;
+  height: 11.79em;
+
+  background: rgba(0, 0, 0, 0.2);
+  background: url('../../../../assets/message-area.svg');
+  background-size: cover;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.message.death {
+  top: 5em;
+  width: 65em;
+  height: 15.33em;
+}
+
+.message.death.bounds span {
+  font-weight: 400;
+  font-size: 3.5em;
+  color: white;
+  text-shadow: #F5437E 3px 3px 0;
+}
+
+.message.death.player {
+  span {
+    font-weight: 400;
+    font-size: 3.5em;
+    color: white;
+  }
+
+  .name {
+    font-weight: 500;
+    font-size: 4.5em;
+    color: white;
+    text-shadow: #F5437E 3px 3px 0;
+    margin-left: 0.25em;
+  }
+}
+
+.message.boundary span {
+  font-weight: 400;
+  font-size: 2.5em;
+  color: white;
+  text-shadow: #F5437E 3px 3px 0;
+  animation: text-pulse 1s ease infinite;
+}
+
+@keyframes text-pulse {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.2);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.message.kill  {
+  span {
+    font-weight: 300;
+    font-size: 2.5em;
+    color: white;
+  }
+
+  .name {
+    font-weight: 500;
+    font-size: 3.5em;
+    text-shadow: #F5437E 3px 3px 0;
+    margin-left: 0.2em;
+  }
+}

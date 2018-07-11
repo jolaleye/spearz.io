@@ -1,17 +1,18 @@
-exports.ID = pieces => {
-  // generate an id piece
-  const piece = () => Math.random().toString(36).substr(2, 9);
-  // if "pieces" was passed, combine multiple id pieces
-  if (pieces) {
-    let id = '';
-    for (let i = 0; i < pieces; i += 1) {
-      if (i === pieces - 1) id += piece();
-      else id += `${piece()}-`;
-    }
-    return id;
-  }
-  // default to 1 piece
-  return piece();
+const _ = require('lodash');
+
+exports.ID = (chunks = 1) => {
+  // generate an id chunk
+  const chunk = () => Math.random().toString(36).substr(2, 9);
+
+  let id = '';
+
+  // add chunks to the id
+  _.times(chunks, i => {
+    // add a "-" after each chunk unless it's the last
+    id += `${chunk()}${i === chunks - 1 ? '' : '-'}`;
+  });
+
+  return id;
 };
 
 exports.getDistance = (x1, x2, y1, y2) => ({

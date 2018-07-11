@@ -1,90 +1,71 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 
 import './main.css';
-import parser from './services/parser';
-import assetManager from './services/assetManager';
 import StartContainer from './components/Start/StartContainer';
 import Game from './components/Game/Game';
-import Restart from './components/Restart/Restart';
-import Mobile from './components/Mobile/Mobile';
-
-const { decode } = parser;
+import { unpack } from './services/cereal';
+import assetManager from './assetManager';
 
 class App extends Component {
   state = {
     socket: null,
-    room: '',
-    view: 'start',
-    deathMsg: '',
+    socketOpen: false,
+    mode: 'start',
+    loaded: false,
   }
 
   async componentDidMount() {
-    // connect to the server
-    await this.setState({
-      socket: process.env.NODE_ENV === 'production'
-        ? new WebSocket(`${window.location.protocol === 'https:' ?
-          'wss' : 'ws'}://${window.location.host}`)
-        : new WebSocket('ws://localhost:3001'),
-    });
-    const { socket } = this.state;
-    socket.binaryType = 'arraybuffer';
+    // WebSocket connection
+    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    const host = process.env.NODE_ENV === 'production' ? window.location.host : 'localhost:3001';
+    const socket = new WebSocket(`${protocol}://${host}`);
+    socket.addEventListener('open', () => this.setState({ socketOpen: true }));
+    await this.setState({ socket });
+    this.handleSocket();
 
-    socket.addEventListener('message', ({ data }) => {
-      const packet = decode(data);
-      switch (packet._type) {
-        // recieving socket id
-        case 'id':
-          socket.id = packet.id;
-          break;
-        // recieving room id
-        case 'roomId': return this.setState({ room: packet.id });
-        // name submitted, ready to play
-        case 'ready': return this.changeView('game');
-        // player died, move to restart screen
-        case 'dead':
-          this.changeView('restart');
-          this.setState({ deathMsg: { type: packet.type, name: packet.name } });
-          break;
-        default: return null;
-      }
-    });
-
-    // load game assets
-    assetManager.loadAssets();
+    // assets
+    await assetManager.load();
+    this.setState({ loaded: true });
   }
 
-  changeView = view => this.setState({ view });
+  handleSocket = () => {
+    const { socket } = this.state;
 
-  getView = () => {
-    const { socket, room, view, deathMsg } = this.state;
+    socket.addEventListener('message', packet => {
+      const data = unpack(packet.data);
+      switch (data._) {
+        case 'id':
+          socket.id = data.id;
+          this.setState({ socket });
+          break;
 
-    switch (view) {
-      case 'start':
-        return <StartContainer socket={socket} room={room} />;
-      case 'game':
-        return <Game socket={socket} />;
-      case 'restart':
-        return <Restart changeView={this.changeView} deathMsg={deathMsg} />;
-      default:
-        return <div></div>;
-    }
+        case 'ready':
+          this.changeMode('game');
+          break;
+
+        default: break;
+      }
+    });
+  }
+
+  changeMode = mode => {
+    this.setState({ mode });
   }
 
   render = () => {
-    if (!this.state.socket) return <div></div>;
+    if (!this.state.socket || !this.state.socketOpen) {
+      return <div>Connecting...</div>;
+    } else if (this.state.mode === 'start') {
+      return <StartContainer socket={this.state.socket} />;
+    } else if (this.state.mode === 'game') {
+      return this.state.loaded
+        ? <Game socket={this.state.socket} changeMode={this.changeMode} />
+        : <div>Loading...</div>;
+    }
 
-    return (
-      <Fragment>
-        <div className="is-hidden-mobile">
-          {this.getView()}
-        </div>
-        <div className="is-hidden-tablet">
-          <Mobile />
-        </div>
-      </Fragment>
-    );
-  }
+    return null;
+  };
 }
 
 ReactDOM.render(<App />, document.getElementById('root'));

@@ -2,26 +2,17 @@ const _ = require('lodash');
 const { Vector, Polygon } = require('sat');
 
 const config = require('./config');
-const { encode } = require('./services/parser');
 const { getDistance } = require('./services/util');
 const Spear = require('./Spear');
+const { pack } = require('./services/cereal');
 
 class Player {
-  constructor(id, name, socket) {
-    this.id = id;
-    this.name = name;
-    this.socket = socket;
-    this.health = 100;
-    this.score = 0;
-    this.direction = 0;
-    this.outOfBounds = { at: 0, time: 0 };
-    this.thrown = false;
-    this.deathMsg = {};
-    this.quick = false;
-    this.dead = false;
+  constructor(client, nickname) {
+    this.client = client;
+    this.id = client.id;
+    this.name = nickname;
 
-    // random initial position within the arena (a circle)
-    // origin is at the center of the arena
+    // random initial position within the circular arena with origin (0,0)
     const randomAngle = _.random(2 * Math.PI);
     const randomDistance = _.random(config.arenaRadius ** 2);
     this.pos = new Vector(
@@ -29,131 +20,112 @@ class Player {
       Math.sqrt(randomDistance) * Math.sin(randomAngle),
     );
 
-    this.spear = new Spear(this.pos);
-    this.distanceToSpear = {};
+    this.direction = 0;
 
-    // hit box points are hard coded to fit sprite size
-    this.hitbox = new Polygon(this.pos, []);
+    this.spear = new Spear(this.id, this.pos);
+    this.released = false;
+
+    this.health = 100;
+    this.dead = false;
+
+    this.score = 0;
+    this.rank = 0;
+
+    this.outOfBounds = { out: false, interval: null };
+
+    // collision bounds needed for SAT    points match the sprite
+    // points ordered from the point of the player clockwise
+    this.satPolygon = new Polygon(this.pos, [
+      new Vector(0, -34.5), new Vector(38.5, 25), new Vector(20, 32),
+      new Vector(-20, 32), new Vector(-38.5, 25),
+    ]);
   }
 
-  // return data that the client needs
-  getData() {
-    return {
-      id: this.id,
-      name: this.name,
-      pos: this.pos,
-      spear: {
-        direction: this.spear.direction,
-      },
-      distanceToSpear: this.distanceToSpear,
-      direction: this.direction,
-      outOfBounds: this.outOfBounds,
-      thrown: Boolean(this.thrown),
-      quick: this.quick,
-      dead: Boolean(this.dead),
-    };
+  // get player data needed on the client
+  retrieve() {
+    const { id, name, health, dead, pos, direction, spear } = this;
+    return { id, name, health, dead, pos, direction, spear: spear.retrieve() };
   }
 
-  update(target) {
-    // distance and direction to the target
+  // data needed for the quadtree   width & height match the sprite
+  get qt() {
+    return { id: this.id, type: 'player', x: this.pos.x, y: this.pos.y, width: 77, height: 69 };
+  }
+
+  // collision bounds needed for SAT
+  get bounds() {
+    this.satPolygon.setAngle(this.direction + (Math.PI / 2));
+    return this.satPolygon;
+  }
+
+  move(target) {
+    this.checkBoundary();
+
     const distance = getDistance(this.pos.x, target.x, this.pos.y, target.y);
     this.direction = Math.atan2(distance.y, distance.x);
 
-    this.checkBoundary();
+    let dx = 7 * Math.cos(this.direction);
+    let dy = 7 * Math.sin(this.direction);
 
-    let dx = 5 * Math.cos(this.direction);
-    let dy = 5 * Math.sin(this.direction);
-
-    // movement is slower when the target is close
+    // movement is slower when the target is closer
     if (distance.total < 100) {
       dx *= distance.total / 100;
       dy *= distance.total / 100;
-      this.quick = false;
-    } else this.quick = true;
+    }
 
     this.pos.x += dx;
     this.pos.y += dy;
 
-    // update hitbox
-    this.hitbox.setPoints([
-      new Vector(-7, -38), new Vector(7, -38),
-      new Vector(44, 28), new Vector(23, 40),
-      new Vector(-23, 40), new Vector(-44, 28),
-    ]);
-    this.hitbox.rotate(this.direction + (Math.PI / 2));
-
-    this.updateSpear();
+    // bring the spear with if it hasn't been released
+    if (!this.released) {
+      this.spear.follow(this.pos, this.direction);
+    } else {
+      // otherwise let it do its thing
+      this.spear.move();
+    }
   }
 
   checkBoundary() {
-    if (getDistance(this.pos.x, 0, this.pos.y, 0).total >= config.arenaRadius) {
-      if (this.outOfBounds.at === 0) {
-        // player just passed the boundary
-        this.outOfBounds.at = Date.now();
-        this.socket.send(encode('message', {
-          type: 'outOfBounds',
-          target: '',
-          duration: 0,
-          msg: 'Get back into the fight!',
-        }));
-      }
-      // calculate time out of bounds
-      this.outOfBounds.time = (Date.now() - this.outOfBounds.at) / 1000;
-      // if the player is out for too long, they die
-      if (this.outOfBounds.time >= config.maxTimeOutOfBounds) {
-        this.takeDamage(100);
-        this.deathMsg = { type: 'bounds', name: '' };
-      }
-    } else if (this.outOfBounds.at !== 0) {
-      // player just came back in bounds
-      this.socket.send(encode('message', {
-        type: 'clear',
-        target: 'outOfBounds',
-        duration: 0,
-        msg: '',
-      }));
-      this.outOfBounds = { at: 0, time: 0 };
+    const distanceFromCenter = getDistance(this.pos.x, 0, this.pos.y, 0);
+    if (distanceFromCenter.total >= config.arenaRadius && !this.outOfBounds.out) {
+      // just went out of bounds - take damage every second
+      this.outOfBounds.interval = setInterval(() => {
+        this.damage(config.boundaryDamage, 'bounds');
+      }, config.boundaryDamageFrequency);
+      this.outOfBounds.out = true;
+      // inform the client
+      this.client.send(pack({ _: 'message', type: 'bounds' }));
+    } else if (distanceFromCenter.total < config.arenaRadius && this.outOfBounds.out) {
+      // just came back in - stop taking damage
+      clearInterval(this.outOfBounds.interval);
+      this.outOfBounds.out = false;
+      // inform the client
+      this.client.send(pack({ _: 'clearMessage', type: 'bounds' }));
     }
   }
 
-  updateSpear() {
-    const timeSinceThrow = (Date.now() - this.thrown.at) / 1000;
-    // if the last spear throw was > throwCooldown seconds ago, reset the spear
-    if (this.thrown && timeSinceThrow > config.throwCooldown) this.resetSpear();
-
-    // if the spear hasn't been thrown, position it according to the player
-    if (!this.thrown) {
-      const angleToSpear = (this.direction + (Math.PI / 2));
-      this.spear.pos.x = this.pos.x + (60 * Math.cos(angleToSpear));
-      this.spear.pos.y = this.pos.y + (60 * Math.sin(angleToSpear));
-      this.spear.direction = this.direction;
-    }
-
-    this.spear.update();
-
-    this.distanceToSpear = getDistance(
-      this.pos.x, this.spear.pos.x,
-      this.pos.y, this.spear.pos.y,
-    );
-  }
-
-  throw(target) {
-    if (this.thrown) return;
-    this.thrown = { at: Date.now() };
-    this.spear.throw(target);
-  }
-
-  resetSpear() {
-    this.thrown = false;
-    this.spear.dx = 0;
-    this.spear.dy = 0;
-  }
-
-  takeDamage(value) {
+  damage(value, from, name) {
     this.health -= value;
     this.health = Math.max(this.health, 0);
-    this.socket.send(encode('health', { health: this.health }));
-    if ((!this.health > 0) && !this.dead) this.dead = Date.now();
+    // inform the client if they die
+    if (this.health === 0 && !this.dead) {
+      this.dead = true;
+      this.client.send(pack({ _: 'dead', from, name }));
+    }
+  }
+
+  throwSpear() {
+    if (this.released || !this.spear) return;
+
+    // reset then launch
+    this.spear.follow(this.pos, this.direction);
+    this.spear.launch();
+
+    this.released = true;
+    // timer for the spear to return
+    setTimeout(() => {
+      this.released = false;
+    }, config.spearCooldown);
   }
 
   increaseScore(value) {

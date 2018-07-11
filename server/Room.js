@@ -1,102 +1,176 @@
-const { testPolygonPolygon } = require('sat');
 const _ = require('lodash');
+const { testPolygonPolygon } = require('sat');
 
 const config = require('./config');
 const { ID, getDistance } = require('./services/util');
-const { encode } = require('./services/parser');
+const { pack } = require('./services/cereal');
+const Player = require('./Player');
+const Quadtree = require('./services/Quadtree');
 
 class Room {
   constructor() {
-    this.id = ID();
+    this.key = ID();
     this.connections = 0;
+    this.clients = {};
     this.players = [];
-    this.leaderboard = [];
+    this.queue = [];
+    this.qtree = new Quadtree({ x: 0, y: 0, length: config.arenaRadius * 2 });
+
+    // simulation tick
+    setInterval(this.simulate.bind(this), config.tickrate);
+    // snapshot tick
+    setInterval(this.snapshot.bind(this), config.snapshotRate);
+    // send clients the leaderboard
+    setInterval(this.updateLeaderboard.bind(this), config.leaderboardRate);
   }
 
-  update(activePlayer) {
-    this.checkHits(activePlayer);
-    this.clearPlayers();
-    this.updateLeaderboard(activePlayer);
+  addClient(client) {
+    client.room = this.key;
+    this.connections += 1;
+    client.send(pack({ _: 'roomKey', key: this.key }));
   }
 
-  checkHits(activePlayer) {
-    // if the active player has thrown their spear check for hits
-    if (activePlayer.thrown) {
-      this.fetchPlayers(activePlayer, false).forEach(otherPlayer => {
-        // test for collision between the spear and a player
-        if (testPolygonPolygon(activePlayer.spear.hitbox, otherPlayer.hitbox)) {
-          activePlayer.socket.send(encode('hit'));
-          otherPlayer.socket.send(encode('hit'));
+  removeClient(id) {
+    this.clients = _.omitBy(this.clients, client => client.id === id);
+    this.players = this.players.filter(player => player.id !== id);
+    this.connections -= 1;
+  }
 
-          activePlayer.resetSpear();
-          otherPlayer.takeDamage(config.damageOnHit);
+  // bring a client into the game
+  joinGame(client, nickname) {
+    client.player = new Player(client, nickname);
+    // add the client and player
+    this.clients[client.id] = client;
+    this.players.push(client.player);
+    client.send(pack({ _: 'ready' }));
+  }
 
-          // if the player hit is now dead
-          if (!otherPlayer.health > 0) {
-            activePlayer.increaseScore(config.scorePerKil);
-            activePlayer.socket.send(encode('message', {
-              type: 'kill',
-              target: '',
-              duration: 3,
-              msg: otherPlayer.name ? otherPlayer.name : '<unnamed>',
-            }));
+  addToQueue(clientID, data) {
+    this.queue.push({ clientID, target: data.target, tick: data.tick });
+  }
 
-            // eslint-disable-next-line
-            otherPlayer.deathMsg = {
-              type: 'player',
-              name: activePlayer.name ? activePlayer.name : '<unnamed>',
-            };
-          }
+  simulate() {
+    if (_.isEmpty(this.queue)) return;
+
+    // find each client's last command
+    Object.values(this.clients).forEach(client => {
+      const last = _.findLastIndex(this.queue, command => command.clientID === client.id);
+      if (this.queue[last]) client.last = this.queue[last].tick;
+    });
+
+    // execute command queue
+    this.queue.forEach((command, i) => {
+      const client = this.clients[command.clientID];
+      // skip if the client does not have a player / does not exist
+      if (!client || !client.player) {
+        this.queue.splice(i, 1);
+        return;
+      }
+
+      client.player.move(command.target);
+
+      this.queue.splice(i, 1);
+    });
+
+    // rebuild quadtree
+    this.qtree.clear();
+    this.players.forEach(player => {
+      // exclude dead players
+      if (!player.dead) this.qtree.insert(player.qt);
+    });
+
+    // check for spear hits
+    this.players.forEach(player => {
+      // skip if the player hasn't thrown their spear
+      if (!player.released) return;
+
+      // otherwise find potential collision candidates
+      let candidates = this.qtree.retrieve(player.spear.qt);
+      // filter out this player
+      candidates = candidates.filter(candidate => candidate.id !== player.id);
+
+      // convert candidates from their qt variant to their full object
+      candidates = candidates.map(candidate => this.clients[candidate.id].player);
+
+      // check collision with the remaining candidates
+      candidates.forEach(candidate => {
+        const hit = testPolygonPolygon(player.spear.bounds, candidate.bounds);
+        if (!hit) return;
+
+        player.released = false;
+        this.clients[player.id].send(pack({ _: 'hit' }));
+        candidate.damage(config.hitDamage, 'player', player.name);
+        // check if the player hit is now dead
+        if (candidate.dead) {
+          player.increaseScore(config.killScore);
+          this.clients[player.id].send(pack({ _: 'kill', name: candidate.name }));
         }
       });
-    }
-  }
-
-  // check for players that are dead but haven't been removed
-  clearPlayers() {
-    this.players.forEach(player => {
-      if (!player.dead) return;
-      if (((Date.now() - player.dead) / 1000) > 3) {
-        this.removePlayer(player.id);
-        player.socket.send(encode('dead', { ...player.deathMsg }));
-      }
     });
   }
 
-  fetchPlayers(activePlayer, include) {
-    // fetches players within 1250 units of the active player
-    // includes / doesn't include the active player based on include param
+  snapshot() {
+    Object.values(this.clients).forEach(client => {
+      client.send(pack({
+        _: 'snapshot',
+        timestamp: Date.now(),
+        last: client.last,
+        players: this.getNearbyPlayers(client, 1250).map(player => player.retrieve()),
+      }));
+    });
+  }
+
+  getNearbyPlayers(client, maxDistance) {
     return this.players.filter(player => {
       const distance = getDistance(
-        activePlayer.pos.x, player.pos.x,
-        activePlayer.pos.y, player.pos.y,
+        client.player.pos.x, player.pos.x,
+        client.player.pos.y, player.pos.y,
       );
-      return (distance.total <= 1250) && (include ? true : player.id !== activePlayer.id);
+
+      return distance.total <= maxDistance;
     });
   }
 
-  removePlayer(id) {
-    this.players = this.players.filter(player => player.id !== id);
-  }
+  updateLeaderboard() {
+    if (_.isEmpty(this.players)) return;
 
-  updateLeaderboard(activePlayer) {
-    const leaders = _.sortBy(this.players, ['score']).reverse();
-    if (leaders.length > 10) leaders.splice(10);
-    // if the active player is not in the top 10, add them to the bottom
-    if (!leaders.includes(activePlayer)) leaders.push(activePlayer);
+    // sort players by score
+    const sorted = _.sortBy(this.players, ['score']).reverse();
 
-    const newLeaderboard = leaders.map((player, i) => ({
-      name: player.name === '' ? '<unnamed>' : player.name,
+    // give each player their rank
+    sorted.forEach((player, i) => {
+      player.rank = i + 1;
+    });
+
+    // cut down to the top 10
+    let leaders = sorted.slice(0, 10);
+
+    // create leaderboard-friendly variants of the players
+    leaders = leaders.map(player => ({
+      id: player.id,
+      name: player.name,
       score: player.score,
-      rank: i + 1,
-      active: player.id === activePlayer.id,
+      rank: player.rank,
     }));
 
-    if (!_.isEqual(newLeaderboard, this.leaderboard)) {
-      this.leaderboard = newLeaderboard;
-      activePlayer.socket.send(encode('leaderboard', { leaderboard: this.leaderboard }));
-    }
+    Object.values(this.clients).forEach(client => {
+      const included = leaders.some(player => player.id === client.id);
+      const list = leaders.slice();
+      // if the client is not included, add them with their rank, score, etc. before sending
+      if (!included) {
+        list.push({
+          id: client.player.id,
+          name: client.player.name,
+          score: client.player.score,
+          rank: client.player.rank,
+        });
+      }
+      // send the leaderboard
+      client.send(pack({ _: 'leaderboard', players: list }));
+    });
   }
 }
 
 module.exports = Room;
+
+/* eslint no-param-reassign: off */

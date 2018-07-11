@@ -1,49 +1,33 @@
 import React from 'react';
+import { Users, Volume2, VolumeX } from 'react-feather';
 
 import './Start.css';
 import logo from '../../assets/logo.svg';
 
-const Start = ({
-  name, handleNameChange, handleSubmit, audio, toggleAudio, toggleModal, children,
-}) => (
+const Start = ({ audio, toggleAudio, toggleModal, nickname, handleNameChange, joinGame }) => (
   <div className="start">
-    <img className="logo" src={logo} alt="Spearz.io" />
 
-    <form className="form" onSubmit={handleSubmit}>
-      <div className="field">
-        <div className="control">
-          <input className="form__name input is-large" type="text" placeholder="Nickname"
-            value={name} onChange={handleNameChange} maxLength='15'
-          />
-        </div>
-      </div>
-      <div className="field">
-        <div className="control">
-          <button className="form__btn button is-large is-rounded" type="submit">PLAY</button>
-        </div>
-      </div>
-    </form>
+      <img className="start__logo" src={logo} alt="Spearz.io" />
 
-    <div className="instructions content">
-      <p><span>Move</span> with your mouse</p>
-      <p><span>Click</span> or press <span>Space</span> to throw your spear</p>
-    </div>
+      <form className="start__form" onSubmit={joinGame}>
+        <input className="input" type="text" value={nickname} placeholder="Nickname" maxLength="12"
+          spellCheck="false" onChange={handleNameChange} />
+        <button className="button is-rounded" type="submit">PLAY</button>
+      </form>
 
-    <div className="options">
-      <div className="audio" onClick={toggleAudio}>
-        <span className="audio__icon icon is-large">{
-          audio ? <i className="fas fa-volume-up fa-2x"></i>
-            : <i className="fas fa-volume-off fa-2x"></i>
-        }</span>
+      <div className="start__info">
+        <p>Move with your <span>mouse</span></p>
+        <p><span>Click</span> or press <span>space</span> to throw your spear</p>
       </div>
-      <div className="friends" onClick={toggleModal}>
-        <span className="friends__icon icon is-large">
-          <i className="fas fa-user-friends fa-2x"></i>
-        </span>
-      </div>
-    </div>
 
-    {children}
+      <div className="start__controls">
+        <Users className="icon" onClick={toggleModal} />
+        {audio
+          ? <Volume2 className="icon" onClick={toggleAudio} />
+          : <VolumeX className="icon" onClick={toggleAudio} />
+        }
+      </div>
+
   </div>
 );
 

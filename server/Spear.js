@@ -1,36 +1,65 @@
 const { Vector, Polygon } = require('sat');
 
-const { getDistance } = require('./services/util');
-
 class Spear {
-  constructor(pos) {
-    this.pos = new Vector(pos.x, pos.y);
+  constructor(id, pos) {
+    this.id = id;
+    this.pos = { x: pos.x, y: pos.y };
     this.direction = 0;
-    this.dx = 0;
-    this.dy = 0;
-    // hit box points are hard coded to fit sprite size
-    this.hitbox = new Polygon(this.pos, []);
+
+    this.vx = 0;
+    this.vy = 0;
+
+    // collision bounds needed for SAT    values match the sprite
+    // points ordered from the point of the spear clockwise around the spear head
+    this.satPolygon = new Polygon(this.pos, [
+      new Vector(0, -51), new Vector(9, -38), new Vector(-9, -38),
+    ]);
   }
 
-  update() {
-    this.pos.x += this.dx;
-    this.pos.y += this.dy;
-
-    this.dx *= 0.99;
-    this.dy *= 0.99;
-
-    // update hitbox
-    this.hitbox.setPoints([new Vector(0, -53.5), new Vector(5, -45), new Vector(-5, -45)]);
-    this.hitbox.rotate(this.direction + (Math.PI / 2));
+  // get spear data needed on the client
+  retrieve() {
+    const { pos, direction } = this;
+    return { pos, direction, bounds: this.bounds };
   }
 
-  throw(target) {
-    // distance and direction to the target
-    const distance = getDistance(this.pos.x, target.x, this.pos.y, target.y);
-    this.direction = Math.atan2(distance.y, distance.x);
+  // data needed for the quadtree   width & height match the sprite
+  get qt() {
+    return { x: this.pos.x, y: this.pos.y - 45.5, width: 18, height: 15 };
+  }
 
-    this.dx = 20 * Math.cos(this.direction);
-    this.dy = 20 * Math.sin(this.direction);
+  // collision bounds needed for SAT
+  get bounds() {
+    this.satPolygon.setAngle(this.direction + (Math.PI / 2));
+    return this.satPolygon;
+  }
+
+  // follow the player's position
+  follow(playerPos, playerDirection) {
+    // angle from player to spear
+    const angle = playerDirection + (Math.PI / 2);
+
+    this.pos.x = playerPos.x + (55 * Math.cos(angle));
+    this.pos.y = playerPos.y + (55 * Math.sin(angle));
+    this.direction = playerDirection;
+  }
+
+  launch() {
+    // launch slightly inwards towards the player
+    const launchAngle = this.direction - (Math.PI / 26);
+    this.direction = launchAngle;
+    this.vx = 25 * Math.cos(launchAngle);
+    this.vy = 25 * Math.sin(launchAngle);
+  }
+
+  move() {
+    if (!this.pos.x || !this.pos.y) return;
+
+    this.pos.x += this.vx;
+    this.pos.y += this.vy;
+
+    // gradually decrease velocity
+    this.vx *= 0.99;
+    this.vy *= 0.99;
   }
 }
 
