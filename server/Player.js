@@ -114,7 +114,7 @@ class Player {
   }
 
   throwSpear() {
-    if (this.released) return;
+    if (this.released || !this.spear) return;
 
     // reset then launch
     this.spear.follow(this.pos, this.direction);

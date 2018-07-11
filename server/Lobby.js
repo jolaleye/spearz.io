@@ -60,6 +60,8 @@ class Lobby {
 
   // disconnect a client from their room
   disconnect(client) {
+    if (!this.rooms[client.room]) return;
+
     this.rooms[client.room].removeClient(client.id);
     // remove empty rooms
     this.rooms = _.omitBy(this.rooms, room => room.connections === 0);
@@ -68,5 +70,4 @@ class Lobby {
 
 module.exports = Lobby;
 
-/* eslint class-methods-use-this: off */
 /* eslint no-param-reassign: off */
