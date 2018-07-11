@@ -64,7 +64,11 @@ class Lobby {
 
     this.rooms[client.room].removeClient(client.id);
     // remove empty rooms
-    this.rooms = _.omitBy(this.rooms, room => room.connections === 0);
+    Object.values(this.rooms).forEach(room => {
+      if (room.connections === 0) {
+        delete this.rooms[room.id];
+      }
+    });
   }
 }
 
