@@ -3,8 +3,7 @@
   right: 1em;
   top: 1em;
 
-  width: 19.5em;
-  height: 25em;
+  width: 20em;
 
   padding: 0.5em 1em 1em 1em;
 
@@ -36,12 +35,13 @@
   }
 
   &__rank {
-    flex: 1 1 auto;
-    margin-right: 0.3em;
+    flex: 1 1 5%;
+    text-align: center;
   }
 
   &__name {
-    flex: 5 3 100%;
+    flex: 6 2 85%;
+    padding: 0 0.25em;
     display: inline-block;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -49,6 +49,7 @@
   }
 
   &__score {
-    flex: 2 1 auto;
+    flex: 2 1 10%;
+    text-align: right;
   }
 }
