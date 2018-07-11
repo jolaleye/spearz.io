@@ -20,6 +20,8 @@ class Room {
     setInterval(this.simulate.bind(this), config.tickrate);
     // snapshot tick
     setInterval(this.snapshot.bind(this), config.snapshotRate);
+    // send clients the leaderboard
+    setInterval(this.updateLeaderboard.bind(this), config.leaderboardRate);
   }
 
   addClient(client) {
@@ -126,6 +128,45 @@ class Room {
       );
 
       return distance.total <= maxDistance;
+    });
+  }
+
+  updateLeaderboard() {
+    if (_.isEmpty(this.players)) return;
+
+    // sort players by score
+    const sorted = _.sortBy(this.players, ['score']).reverse();
+
+    // give each player their rank
+    sorted.forEach((player, i) => {
+      player.rank = i + 1;
+    });
+
+    // cut down to the top 10
+    let leaders = sorted.slice(0, 10);
+
+    // create leaderboard-friendly variants of the players
+    leaders = leaders.map(player => ({
+      id: player.id,
+      name: player.name,
+      score: player.score,
+      rank: player.rank,
+    }));
+
+    Object.values(this.clients).forEach(client => {
+      const included = leaders.some(player => player.id === client.id);
+      const list = leaders.slice();
+      // if the client is not included, add them with their rank, score, etc. before sending
+      if (!included) {
+        list.push({
+          id: client.player.id,
+          name: client.player.name,
+          score: client.player.score,
+          rank: client.player.rank,
+        });
+      }
+      // send the leaderboard
+      client.send(pack({ _: 'leaderboard', players: list }));
     });
   }
 }

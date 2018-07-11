@@ -3,6 +3,7 @@ module.exports = {
 
   tickrate: 15,
   snapshotRate: 50,
+  leaderboardRate: 1000,
   arenaRadius: 5000,
   playerLimit: 100,
 

@@ -2,10 +2,12 @@ import React, { Component, Fragment } from 'react';
 
 import { pack, unpack } from '../../../services/cereal';
 import Message from './Message/Message';
+import Leaderboard from './Leaderboard/Leaderboard';
 
 class HUD extends Component {
   state = {
     message: false,
+    leaderboard: [],
   }
 
   componentDidMount() {
@@ -29,6 +31,10 @@ class HUD extends Component {
 
         case 'kill':
           this.showKill(data.name);
+          break;
+
+        case 'leaderboard':
+          this.updateLeaderboard(data.players);
           break;
 
         default: break;
@@ -85,9 +91,19 @@ class HUD extends Component {
     }, 4000);
   }
 
+  updateLeaderboard = players => {
+    const leaders = players.map(player => ({
+      ...player,
+      active: player.id === this.props.socket.id,
+    }));
+
+    this.setState({ leaderboard: leaders });
+  }
+
   render = () => (
     <Fragment>
       {this.state.message ? <Message message={this.state.message} /> : null}
+      <Leaderboard leaderboard={this.state.leaderboard} />
     </Fragment>
   );
 }
