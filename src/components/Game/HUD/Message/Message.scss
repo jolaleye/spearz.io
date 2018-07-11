@@ -1,6 +1,6 @@
 .message {
   position: absolute;
-  top: 60px;
+  top: 3.75em;
   left: 50%;
   transform: translateX(-50%);
 
@@ -17,7 +17,7 @@
 }
 
 .message.death {
-  top: 80px;
+  top: 5em;
   width: 65em;
   height: 15.33em;
 }
