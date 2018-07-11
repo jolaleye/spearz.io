@@ -29,6 +29,7 @@ class Player {
     this.dead = false;
 
     this.score = 0;
+    this.rank = 0;
 
     this.outOfBounds = { out: false, interval: null };
 
