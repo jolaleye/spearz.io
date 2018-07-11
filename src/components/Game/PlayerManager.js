@@ -42,7 +42,6 @@ class PlayerManager {
 
     // state that should be immediately synced
     this.local.health = player.health;
-    this.local.sReleased = player.released; // prevent throwing if spear is released on the server
   }
 
   interpolate = delta => {
@@ -92,7 +91,7 @@ class PlayerManager {
 
   // logic copied directly from the server...
   emulateThrow = () => {
-    if (this.local.released || this.local.sReleased) return;
+    if (this.local.released) return;
 
     const angle = this.local.direction + (Math.PI / 2);
     this.local.spear.pos.x = this.local.pos.x + (55 * Math.cos(angle));
