@@ -58,6 +58,11 @@ class Player {
     return this.satPolygon;
   }
 
+  // data needed for the leaderboard
+  get lb() {
+    return { id: this.id, name: this.name, score: this.score, rank: this.rank };
+  }
+
   move(target) {
     this.checkBoundary();
 

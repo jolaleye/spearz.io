@@ -145,27 +145,16 @@ class Room {
     // cut down to the top 10
     let leaders = sorted.slice(0, 10);
 
-    // create leaderboard-friendly variants of the players
-    leaders = leaders.map(player => ({
-      id: player.id,
-      name: player.name,
-      score: player.score,
-      rank: player.rank,
-    }));
+    // convert to leaderboard-friendly variants of the players
+    leaders = leaders.map(player => player.lb);
 
     Object.values(this.clients).forEach(client => {
-      const included = leaders.some(player => player.id === client.id);
       const list = leaders.slice();
+
       // if the client is not included, add them with their rank, score, etc. before sending
-      if (!included) {
-        list.push({
-          id: client.player.id,
-          name: client.player.name,
-          score: client.player.score,
-          rank: client.player.rank,
-        });
-      }
-      // send the leaderboard
+      const included = leaders.some(player => player.id === client.id);
+      if (!included) list.push(client.player.lb);
+
       client.send(pack('leaderboard', { players: list }));
     });
   }
