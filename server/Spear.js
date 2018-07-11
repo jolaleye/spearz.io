@@ -19,7 +19,7 @@ class Spear {
   // get spear data needed on the client
   retrieve() {
     const { pos, direction } = this;
-    return { pos, direction, bounds: this.bounds };
+    return { pos, direction };
   }
 
   // data needed for the quadtree   width & height match the sprite
