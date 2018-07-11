@@ -99,6 +99,7 @@ class Game extends Component {
 
   renderX = () => {
     const activeManager = this.playerManagers.find(mngr => mngr.id === this.props.socket.id);
+    if (!activeManager) return;
 
     this.sinceSnapshot += this.app.ticker.elapsedMS;
 
@@ -147,6 +148,7 @@ class Game extends Component {
 
   throwSpear = event => {
     const activeManager = this.playerManagers.find(mngr => mngr.id === this.props.socket.id);
+    if (!activeManager) return;
 
     // checks that if a key was used, it was the spacebar, and that the spear hasn't been released
     if ((event.key && event.key !== ' ') || activeManager.released) return;
@@ -157,6 +159,8 @@ class Game extends Component {
 
   returnSpear = () => {
     const activeManager = this.playerManagers.find(mngr => mngr.id === this.props.socket.id);
+    if (!activeManager) return;
+
     activeManager.local.released = false;
   }
 
