@@ -12,6 +12,7 @@ class App extends Component {
     mode: 'start',
     socket: null,
     connected: false,
+    connectionAttempts: 0,
     loaded: false,
   }
 
@@ -28,7 +29,7 @@ class App extends Component {
     const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
     const host = process.env.NODE_ENV === 'production' ? window.location.host : 'localhost:3001';
     const socket = new WebSocket(`${protocol}://${host}`);
-    this.setState({ socket });
+    this.setState(prevState => ({ socket, connectionAttempts: prevState.connectionAttempts + 1 }));
 
     socket.addEventListener('open', () => {
       this.setState({ connected: true });
@@ -53,7 +54,9 @@ class App extends Component {
     socket.addEventListener('close', () => {
       this.setState({ connected: false });
       this.changeMode('start');
-      this.connect();
+
+      // if the connection keeps getting dropped, stop trying
+      if (this.state.connectionAttempts < 10) this.connect();
     });
   }
 
