@@ -29,16 +29,22 @@ ws.on('connection', client => {
         break;
 
       case 'joinGame':
+        if (!lobby.rooms[client.room]) break;
         lobby.rooms[client.room].joinGame(client, data.nickname);
         break;
 
       case 'target':
-        if (!data.target || !data.tick) break;
+        if (!data.target || !data.tick || !lobby.rooms[client.room]) break;
         lobby.rooms[client.room].addToQueue(client.id, data);
         break;
 
       case 'throw':
+        if (!client.player) break;
         client.player.throwSpear();
+        break;
+
+      case 'remove':
+        lobby.disconnect(client);
         break;
 
       default: break;
