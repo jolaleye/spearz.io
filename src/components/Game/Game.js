@@ -62,6 +62,7 @@ class Game extends Component {
 
     this.tick = 0;
     this.sinceSnapshot = 0;
+    this.sincePrediction = 0;
 
     // render loop
     this.app.ticker.add(this.renderX);
@@ -107,18 +108,22 @@ class Game extends Component {
     if (!activeManager) return;
 
     this.sinceSnapshot += this.app.ticker.elapsedMS;
+    this.sincePrediction += this.app.ticker.elapsedMS;
 
     // player rendering
     this.playerManagers.forEach(manager => {
-      // interpolate other players (the current player uses prediction)
-      if (manager.id !== activeManager.id) {
-        if (!manager.origin || !manager.next) return;
+      let smoothPeriod;
+      let delta;
 
-        // interpolate between the origin and next states
-        const smoothPeriod = manager.next.timestamp - manager.origin.timestamp;
-        const delta = this.sinceSnapshot / smoothPeriod;
-        manager.interpolate(_.clamp(delta, 1));
+      if (manager.id === activeManager.id) {
+        smoothPeriod = config.tickrate;
+        delta = this.sincePrediction / smoothPeriod;
+      } else {
+        smoothPeriod = manager.next.timestamp - manager.origin.timestamp;
+        delta = this.sinceSnapshot / smoothPeriod;
       }
+
+      manager.interpolate(_.clamp(delta, 1));
 
       const offset = {
         x: activeManager.local.pos.x - (this.app.screen.width / 2),
@@ -149,8 +154,10 @@ class Game extends Component {
 
     // send the target to the server and simulate the effects locally
     this.props.socket.send(pack('target', { target, tick: this.tick }));
-    activeManager.emulate(target);
+    activeManager.predict(target);
     activeManager.history.push({ target, tick: this.tick });
+
+    this.sincePrediction = 0;
   }
 
   throwSpear = event => {
@@ -206,7 +213,7 @@ class Game extends Component {
         manager.nameTag.visible = false;
       }
 
-      manager.sync(player, snapshot.timestamp);
+      manager.sync(player, snapshot.timestamp, manager.id === this.props.socket.id);
 
       // fix potential prediction errors
       if (manager.id === this.props.socket.id && snapshot.last) {
