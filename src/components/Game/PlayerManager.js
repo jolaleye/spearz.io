@@ -98,7 +98,7 @@ class PlayerManager {
     this.local.spear.pos.y = this.local.pos.y + (55 * Math.sin(angle));
     this.local.spear.direction = this.local.direction;
 
-    const launchAngle = this.local.spear.direction - (Math.PI / 26);
+    const launchAngle = this.local.spear.direction - (Math.PI / 38);
     this.local.spear.direction = launchAngle;
     this.local.spear.vx = 25 * Math.cos(launchAngle);
     this.local.spear.vy = 25 * Math.sin(launchAngle);
