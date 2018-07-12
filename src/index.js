@@ -1,9 +1,10 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import ReactDOM from 'react-dom';
 
 import './main.css';
 import StartContainer from './components/Start/StartContainer';
 import Game from './components/Game/Game';
+import Mobile from './components/Mobile/Mobile';
 import { unpack } from './services/cereal';
 import assetManager from './assetManager';
 
@@ -69,11 +70,19 @@ class App extends Component {
   render = () => {
     if (this.state.mode === 'start') {
       return (
-        <StartContainer socket={this.state.socket} connected={this.state.connected}
-          loaded={this.state.loaded} />
+        <Fragment>
+          <StartContainer socket={this.state.socket} connected={this.state.connected}
+            loaded={this.state.loaded} />
+          <Mobile />
+        </Fragment>
       );
     } else if (this.state.mode === 'game') {
-      return <Game socket={this.state.socket} changeMode={this.changeMode} />;
+      return (
+        <Fragment>
+          <Game socket={this.state.socket} changeMode={this.changeMode} />
+          <Mobile />
+        </Fragment>
+      );
     }
 
     return null;

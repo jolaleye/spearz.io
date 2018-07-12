@@ -3,7 +3,7 @@ import React from 'react';
 import './RoomModal.css';
 
 const RoomModal = ({ modal, toggleModal, currentKey, roomKey, msg, handleKeyChange, joinRoom }) => (
-  <div className={`modal ${modal ? 'is-active' : ''}`}>
+  <div className={`modal is-hidden-touch ${modal ? 'is-active' : ''}`}>
     <div className="modal-background" onClick={toggleModal}></div>
 
     <div className="modal-content">

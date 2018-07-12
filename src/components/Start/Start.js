@@ -7,7 +7,7 @@ import logo from '../../assets/logo.svg';
 const Start = ({
   connected, loaded, nickname, handleNameChange, audio, toggleAudio, toggleModal, joinGame,
 }) => (
-  <div className="start">
+  <div className="start is-hidden-touch">
 
     <img className="start__logo" src={logo} alt="Spearz.io" />
 
