@@ -66,6 +66,9 @@ class PlayerManager {
 
   // logic copied directly from the server...
   predict = target => {
+    if (this.next) {
+      this.local.pos = _.clone(this.next.pos);
+    }
     this.origin = _.cloneDeep(this.local);
     this.next = _.cloneDeep(this.local);
 
@@ -147,11 +150,11 @@ class PlayerManager {
 
     // position disparity between the local state and the server state + unacknowledged input
     const disparity = getDistance(
-      this.local.pos.x, serverState.pos.x, this.local.pos.y, serverState.pos.y,
+      this.next.pos.x, serverState.pos.x, this.next.pos.y, serverState.pos.y,
     );
 
     // adopt the server's authoritative state if the disparity is large enough
-    if (disparity > config.reconciliationThreshold) {
+    if (disparity.total > config.reconciliationThreshold) {
       this.local = serverState;
     }
   }
