@@ -12,7 +12,7 @@ class ArenaManager {
     // boundary ring
     this.boundary = new PIXI.Graphics();
     this.boundary.lineStyle(10, 0xFFFFFF, 0.1, 0.5);
-    this.boundary.drawCircle(0, 0, config.arenaRadius);
+    this.boundary.drawCircle(0, 0, config.arenaRadius - 10);
   }
 
   resize = screen => {
