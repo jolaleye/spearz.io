@@ -156,6 +156,13 @@ class PlayerManager {
     }
   }
 
+  hide = (player, spear, health, name) => {
+    this.player.visible = !player;
+    this.spear.visible = !spear;
+    this.healthBar.visible = !health;
+    this.nameTag.visible = !name;
+  }
+
   // update sprites
   update = offset => {
     if (!this.local) return;

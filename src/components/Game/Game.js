@@ -109,9 +109,7 @@ class Game extends Component {
     clearInterval(this.getTargetInterval);
 
     // remove player health bar, name, spear
-    this.activeManager.spear.visible = false;
-    this.activeManager.healthBar.visible = false;
-    this.activeManager.nameTag.visible = false;
+    this.activeManager.hide(false, true, true, true);
   }
 
   renderX = () => {
@@ -182,12 +180,7 @@ class Game extends Component {
       if (snapshot.players.some(player => player.id === manager.id)) return;
 
       // remove the manager if no player shares the id
-      /* eslint-disable */
-      manager.player.visible = false;
-      manager.spear.visible = false;
-      manager.healthBar.visible = false;
-      manager.nameTag.visible = false;
-      /* eslint-enable */
+      manager.hide(true, true, true, true);
       this.playerManagers.splice(i, 1);
     });
 
@@ -204,11 +197,7 @@ class Game extends Component {
       }
 
       // remove player health bar, name, and spear if they're dead
-      if (player.dead) {
-        manager.spear.visible = false;
-        manager.healthBar.visible = false;
-        manager.nameTag.visible = false;
-      }
+      if (player.dead) manager.hide(false, true, true, true);
 
       manager.sync(player, snapshot.timestamp, manager.id === this.props.socket.id);
 
