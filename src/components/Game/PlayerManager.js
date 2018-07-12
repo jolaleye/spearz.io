@@ -87,12 +87,6 @@ class PlayerManager {
     this.next.pos.y = this.local.pos.y + dy;
 
     if (!this.local.released) {
-      const distFromPlayer = getDistance(
-        this.local.spear.pos.x, this.local.pos.x, this.local.spear.pos.y, this.local.pos.y,
-      ).total;
-      // make the spear visible again when it has returned
-      if (distFromPlayer < config.spear.distFromPlayer) this.spear.visible = true;
-
       const angle = this.next.direction + (Math.PI / 2);
       this.next.spear.pos.x = this.next.pos.x + (config.spear.distFromPlayer * Math.cos(angle));
       this.next.spear.pos.y = this.next.pos.y + (config.spear.distFromPlayer * Math.sin(angle));
@@ -107,7 +101,7 @@ class PlayerManager {
 
   // logic copied directly from the server...
   emulateThrow = () => {
-    if (this.local.released || !this.spear.visible) return;
+    if (this.local.released) return;
 
     const angle = this.local.direction + (Math.PI / 2);
     this.local.spear.pos.x = this.local.pos.x + (config.spear.distFromPlayer * Math.cos(angle));
@@ -121,8 +115,8 @@ class PlayerManager {
     this.local.released = true;
     setTimeout(() => {
       this.local.released = false;
-      // make the spear invisible while it returns
-      this.spear.visible = false;
+      this.local.spear.pos.x = this.local.pos.x + (config.spear.distFromPlayer * Math.cos(angle));
+      this.local.spear.pos.y = this.local.pos.y + (config.spear.distFromPlayer * Math.sin(angle));
     }, config.spear.cooldown);
   }
 
