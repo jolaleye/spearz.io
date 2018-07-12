@@ -138,8 +138,7 @@ class Game extends Component {
     });
 
     // arena rendering
-    this.arenaManager.updateBackground(this.offset);
-    this.arenaManager.updateBoundary(this.offset);
+    this.arenaManager.update(this.offset);
   }
 
   getTarget = () => {

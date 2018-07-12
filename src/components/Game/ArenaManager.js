@@ -20,14 +20,9 @@ class ArenaManager {
     this.background.height = screen.height;
   }
 
-  updateBackground = pos => {
-    this.background.tilePosition.set(-pos.x, -pos.y);
-  }
-
-  updateBoundary = (pos, screen) => {
-    const x = pos.x - (screen.width / 2);
-    const y = pos.y - (screen.height / 2);
-    this.boundary.position.set(-x, -y);
+  update = offset => {
+    this.background.tilePosition.set(-offset.x, -offset.y);
+    this.boundary.position.set(-offset.x, -offset.y);
   }
 }
 
