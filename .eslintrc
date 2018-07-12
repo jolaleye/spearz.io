@@ -5,7 +5,8 @@
     "no-console": "off",
     "arrow-parens": "off",
     "object-curly-newline": "off",
-    "no-underscore-dangle": "off"
+    "no-underscore-dangle": "off",
+    "function-paren-newline": "off"
   },
   "env": {
     "browser": true
