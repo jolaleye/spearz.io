@@ -84,7 +84,7 @@ class Game extends Component {
   }
 
   render = () => (
-    <div className="game">
+    <div className="game is-hidden-touch">
       <canvas ref={this.canvasRef} />
       <HUD socket={this.props.socket} changeMode={this.props.changeMode} />
     </div>
@@ -144,6 +144,8 @@ class Game extends Component {
       x: mouse.x + (activeManager.local.pos.x - (this.app.screen.width / 2)),
       y: mouse.y + (activeManager.local.pos.y - (this.app.screen.height / 2)),
     };
+
+    if (!Number.isFinite(target.x) || !Number.isFinite(target.y)) return;
 
     // send the target to the server and simulate the effects locally
     this.props.socket.send(pack('target', { target, tick: this.tick }));
