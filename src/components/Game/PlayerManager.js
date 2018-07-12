@@ -3,6 +3,7 @@ import * as PIXI from 'pixi.js';
 
 import { lerp, angularLerp, getDistance } from '../../services/util';
 import assetManager from '../../assetManager';
+import config from './config';
 
 class PlayerManager {
   constructor(id, name) {
@@ -65,8 +66,8 @@ class PlayerManager {
     const distance = getDistance(this.local.pos.x, target.x, this.local.pos.y, target.y);
     this.local.direction = Math.atan2(distance.y, distance.x);
 
-    let dx = 7 * Math.cos(this.local.direction);
-    let dy = 7 * Math.sin(this.local.direction);
+    let dx = config.player.speed * Math.cos(this.local.direction);
+    let dy = config.player.speed * Math.sin(this.local.direction);
 
     if (distance.total < 100) {
       dx *= distance.total / 100;
@@ -78,8 +79,8 @@ class PlayerManager {
 
     if (!this.local.released) {
       const angle = this.local.direction + (Math.PI / 2);
-      this.local.spear.pos.x = this.local.pos.x + (55 * Math.cos(angle));
-      this.local.spear.pos.y = this.local.pos.y + (55 * Math.sin(angle));
+      this.local.spear.pos.x = this.local.pos.x + (config.spear.distFromPlayer * Math.cos(angle));
+      this.local.spear.pos.y = this.local.pos.y + (config.spear.distFromPlayer * Math.sin(angle));
       this.local.spear.direction = this.local.direction;
     } else {
       this.local.spear.pos.x += this.local.spear.vx;
@@ -98,15 +99,15 @@ class PlayerManager {
     this.local.spear.pos.y = this.local.pos.y + (55 * Math.sin(angle));
     this.local.spear.direction = this.local.direction;
 
-    const launchAngle = this.local.spear.direction - (Math.PI / 38);
+    const launchAngle = this.local.spear.direction - (Math.PI / config.spear.throwAngleDivisor);
     this.local.spear.direction = launchAngle;
-    this.local.spear.vx = 25 * Math.cos(launchAngle);
-    this.local.spear.vy = 25 * Math.sin(launchAngle);
+    this.local.spear.vx = config.spear.throwSpeed * Math.cos(launchAngle);
+    this.local.spear.vy = config.spear.throwSpeed * Math.sin(launchAngle);
 
     this.local.released = true;
     setTimeout(() => {
       this.local.released = false;
-    }, 500);
+    }, config.spear.cooldown);
   }
 
   reconcile = (player, lastTick) => {
@@ -119,8 +120,8 @@ class PlayerManager {
       const distance = getDistance(serverState.pos.x, target.x, serverState.pos.y, target.y);
       serverState.direction = Math.atan2(distance.y, distance.x);
 
-      let dx = 7 * Math.cos(serverState.direction);
-      let dy = 7 * Math.sin(serverState.direction);
+      let dx = config.player.speed * Math.cos(serverState.direction);
+      let dy = config.player.speed * Math.sin(serverState.direction);
 
       if (distance.total < 100) {
         dx *= distance.total / 100;
@@ -139,7 +140,7 @@ class PlayerManager {
 
     // adopt the server's authoritative state if the disparity is large enough
     // threshold = maximum distance traveled in one tick... bc it seems right
-    if (disparity.pos.total > 7) {
+    if (disparity.pos.total > config.player.speed) {
       this.local = serverState;
     }
   }

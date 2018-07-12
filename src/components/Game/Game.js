@@ -8,6 +8,7 @@ import ArenaManager from './ArenaManager';
 import { pack, unpack } from '../../services/cereal';
 import PlayerManager from './PlayerManager';
 import cursor from '../../assets/cursor.png';
+import config from './config';
 
 class Game extends Component {
   canvasRef = createRef();
@@ -65,7 +66,7 @@ class Game extends Component {
     // render loop
     this.app.ticker.add(this.renderX);
     // target tracking
-    this.getTargetInterval = setInterval(this.getTarget, 15);
+    this.getTargetInterval = setInterval(this.getTarget, config.tickrate);
 
     this.resize();
   }

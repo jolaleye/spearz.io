@@ -69,8 +69,8 @@ class Player {
     const distance = getDistance(this.pos.x, target.x, this.pos.y, target.y);
     this.direction = Math.atan2(distance.y, distance.x);
 
-    let dx = 7 * Math.cos(this.direction);
-    let dy = 7 * Math.sin(this.direction);
+    let dx = config.player.speed * Math.cos(this.direction);
+    let dy = config.player.speed * Math.sin(this.direction);
 
     // movement is slower when the target is closer
     if (distance.total < 100) {
@@ -95,8 +95,8 @@ class Player {
     if (distanceFromCenter.total >= config.arenaRadius && !this.outOfBounds.out) {
       // just went out of bounds - take damage every second
       this.outOfBounds.interval = setInterval(() => {
-        this.damage(config.boundaryDamage, 'bounds');
-      }, config.boundaryDamageFrequency);
+        this.damage(config.damage.bounds, 'bounds');
+      }, config.damage.boundsFreq);
       this.outOfBounds.out = true;
       // inform the client
       this.client.send(pack('message', { type: 'bounds' }));
@@ -130,7 +130,7 @@ class Player {
     // timer for the spear to return
     setTimeout(() => {
       this.released = false;
-    }, config.spearCooldown);
+    }, config.spear.cooldown);
   }
 
   increaseScore(value) {

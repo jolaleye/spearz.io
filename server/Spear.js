@@ -1,5 +1,7 @@
 const { Vector, Polygon } = require('sat');
 
+const config = require('./config');
+
 class Spear {
   constructor(id, pos) {
     this.id = id;
@@ -38,17 +40,17 @@ class Spear {
     // angle from player to spear
     const angle = playerDirection + (Math.PI / 2);
 
-    this.pos.x = playerPos.x + (55 * Math.cos(angle));
-    this.pos.y = playerPos.y + (55 * Math.sin(angle));
+    this.pos.x = playerPos.x + (config.spear.distFromPlayer * Math.cos(angle));
+    this.pos.y = playerPos.y + (config.spear.distFromPlayer * Math.sin(angle));
     this.direction = playerDirection;
   }
 
   launch() {
     // launch slightly inwards towards the player
-    const launchAngle = this.direction - (Math.PI / 38);
+    const launchAngle = this.direction - (Math.PI / config.spear.throwAngleDivisor);
     this.direction = launchAngle;
-    this.vx = 25 * Math.cos(launchAngle);
-    this.vy = 25 * Math.sin(launchAngle);
+    this.vx = config.spear.throwSpeed * Math.cos(launchAngle);
+    this.vy = config.spear.throwSpeed * Math.sin(launchAngle);
   }
 
   move() {

@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js';
 
 import assetManager from '../../assetManager';
+import config from './config';
 
 class ArenaManager {
   constructor(screen) {
@@ -11,7 +12,7 @@ class ArenaManager {
     // boundary ring
     this.boundary = new PIXI.Graphics();
     this.boundary.lineStyle(10, 0xFFFFFF, 0.1, 0.5);
-    this.boundary.drawCircle(0, 0, 5000);
+    this.boundary.drawCircle(0, 0, config.arenaRadius);
   }
 
   resize = screen => {
