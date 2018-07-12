@@ -7,6 +7,7 @@ import HUD from './HUD/HUD';
 import ArenaManager from './ArenaManager';
 import { pack, unpack } from '../../services/cereal';
 import PlayerManager from './PlayerManager';
+import cursor from '../../assets/cursor.png';
 
 class Game extends Component {
   canvasRef = createRef();
@@ -19,6 +20,9 @@ class Game extends Component {
       resolution: window.devicePixelRatio,
       transparent: true,
     });
+
+    // custom cursor
+    this.app.renderer.plugins.interaction.cursorStyles.default = `url(${cursor}), auto`;
 
     // canvas sizing
     this.app.renderer.autoResize = true;
