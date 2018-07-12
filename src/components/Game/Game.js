@@ -92,20 +92,30 @@ class Game extends Component {
   );
 
 
+  get activeManager() {
+    return this.playerManagers.find(mngr => mngr.id === this.props.socket.id);
+  }
+
+  get offset() {
+    return {
+      x: this.activeManager.local.pos.x - (this.app.screen.width / 2),
+      y: this.activeManager.local.pos.y - (this.app.screen.height / 2),
+    };
+  }
+
+
   stop = () => {
     // stop target tracking
     clearInterval(this.getTargetInterval);
 
     // remove player health bar, name, spear
-    const activeManager = this.playerManagers.find(mngr => mngr.id === this.props.socket.id);
-    activeManager.spear.visible = false;
-    activeManager.healthBar.visible = false;
-    activeManager.nameTag.visible = false;
+    this.activeManager.spear.visible = false;
+    this.activeManager.healthBar.visible = false;
+    this.activeManager.nameTag.visible = false;
   }
 
   renderX = () => {
-    const activeManager = this.playerManagers.find(mngr => mngr.id === this.props.socket.id);
-    if (!activeManager) return;
+    if (!this.activeManager) return;
 
     this.sinceSnapshot += this.app.ticker.elapsedMS;
     this.sincePrediction += this.app.ticker.elapsedMS;
@@ -115,7 +125,7 @@ class Game extends Component {
       let smoothPeriod;
       let delta;
 
-      if (manager.id === activeManager.id) {
+      if (manager.id === this.activeManager.id) {
         smoothPeriod = config.tickrate;
         delta = this.sincePrediction / smoothPeriod;
       } else {
@@ -124,58 +134,46 @@ class Game extends Component {
       }
 
       manager.interpolate(_.clamp(delta, 1));
-
-      const offset = {
-        x: activeManager.local.pos.x - (this.app.screen.width / 2),
-        y: activeManager.local.pos.y - (this.app.screen.height / 2),
-      };
-
-      manager.update(offset);
+      manager.update(this.offset);
     });
 
     // arena rendering
-    this.arenaManager.updateBackground(activeManager.local.pos);
-    this.arenaManager.updateBoundary(activeManager.local.pos, this.app.screen);
+    this.arenaManager.updateBackground(this.offset);
+    this.arenaManager.updateBoundary(this.offset);
   }
 
   getTarget = () => {
     this.tick += 1;
-    const activeManager = this.playerManagers.find(mngr => mngr.id === this.props.socket.id);
 
-    if (!activeManager || !this.tick) return;
+    if (!this.activeManager || !this.tick) return;
 
     const mouse = this.app.renderer.plugins.interaction.mouse.global;
-    const target = {
-      x: mouse.x + (activeManager.local.pos.x - (this.app.screen.width / 2)),
-      y: mouse.y + (activeManager.local.pos.y - (this.app.screen.height / 2)),
-    };
+    const target = { x: mouse.x + this.offset.x, y: mouse.y + this.offset.y };
 
     if (!Number.isFinite(target.x) || !Number.isFinite(target.y)) return;
 
     // send the target to the server and simulate the effects locally
     this.props.socket.send(pack('target', { target, tick: this.tick }));
-    activeManager.predict(target);
-    activeManager.history.push({ target, tick: this.tick });
+    this.activeManager.predict(target);
+    this.activeManager.history.push({ target, tick: this.tick });
 
     this.sincePrediction = 0;
   }
 
   throwSpear = event => {
-    const activeManager = this.playerManagers.find(mngr => mngr.id === this.props.socket.id);
-    if (!activeManager) return;
+    if (!this.activeManager) return;
 
     // checks that if a key was used, it was the spacebar, and that the spear hasn't been released
-    if ((event.key && event.key !== ' ') || activeManager.released) return;
+    if ((event.key && event.key !== ' ') || this.activeManager.released) return;
 
     this.props.socket.send(pack('throw'));
-    activeManager.emulateThrow();
+    this.activeManager.emulateThrow();
   }
 
   returnSpear = () => {
-    const activeManager = this.playerManagers.find(mngr => mngr.id === this.props.socket.id);
-    if (!activeManager) return;
-
-    activeManager.local.released = false;
+    if (this.activeManager) {
+      this.activeManager.local.released = false;
+    }
   }
 
   // new snapshot received
