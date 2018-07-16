@@ -94,7 +94,7 @@ class HUD extends Component {
     setTimeout(() => {
       this.props.socket.send(pack('remove'));
       this.props.changeMode('start');
-    }, 4000);
+    }, 3000);
   }
 
   updateLeaderboard = players => {
