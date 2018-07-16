@@ -8,8 +8,8 @@ class Spear {
     this.pos = { x: pos.x, y: pos.y };
     this.direction = 0;
 
-    this.vx = 0;
-    this.vy = 0;
+    this.dx = 0;
+    this.dy = 0;
 
     // collision bounds needed for SAT    values match the sprite
     // points ordered from the point of the spear clockwise around the spear head
@@ -49,19 +49,19 @@ class Spear {
     // launch slightly inwards towards the player
     const launchAngle = this.direction - (Math.PI / config.spear.throwAngleDivisor);
     this.direction = launchAngle;
-    this.vx = config.spear.throwSpeed * Math.cos(launchAngle);
-    this.vy = config.spear.throwSpeed * Math.sin(launchAngle);
+    this.dx = config.spear.throwSpeed * Math.cos(launchAngle);
+    this.dy = config.spear.throwSpeed * Math.sin(launchAngle);
   }
 
   move() {
     if (!this.pos.x || !this.pos.y) return;
 
-    this.pos.x += this.vx;
-    this.pos.y += this.vy;
+    this.pos.x += this.dx;
+    this.pos.y += this.dy;
 
     // gradually decrease velocity
-    this.vx *= 0.99;
-    this.vy *= 0.99;
+    this.dx *= 0.99;
+    this.dy *= 0.99;
   }
 }
 
