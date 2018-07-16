@@ -67,7 +67,6 @@ class Game extends Component {
 
     this.tick = 0;
     this.sinceSnapshot = 0;
-    this.sincePrediction = 0;
 
     // render loop
     this.app.ticker.add(this.renderX);
@@ -82,6 +81,7 @@ class Game extends Component {
     clearInterval(this.trackingInterval);
     this.playerManagers = [];
     this.app.stage.removeChildren();
+    assetManager.sounds.bounds.stop();
   }
 
   resize = () => {
@@ -113,20 +113,21 @@ class Game extends Component {
     // stop target tracking
     clearInterval(this.trackingInterval);
 
-    // remove player health bar, name, spear
-    this.activeManager.hide(false, true, true, true);
+    // remove player health bar, name, spear & play death animation
+    this.activeManager.hide({ player: false, spear: true, name: true, health: true });
+    this.activeManager.play('death');
   }
 
   renderX = () => {
     if (!this.activeManager) return;
 
     this.sinceSnapshot += this.app.ticker.elapsedMS;
-    this.sincePrediction += this.app.ticker.elapsedMS;
 
     // player rendering
     this.playerManagers.forEach(manager => {
+      // interpolate other players
       if (manager.id !== this.activeManager.id) {
-        const smoothPeriod = manager.next.timestamp - manager.origin.timestamp;
+        const smoothPeriod = manager.next.timestamp - manager.prev.timestamp;
         const delta = this.sinceSnapshot / smoothPeriod;
         manager.interpolate(_.clamp(delta, 1));
       }
@@ -152,15 +153,13 @@ class Game extends Component {
     this.props.socket.send(pack('target', { target, tick: this.tick }));
     this.activeManager.predict(target);
     this.activeManager.history.push({ target, tick: this.tick });
-
-    this.sincePrediction = 0;
   }
 
   throwSpear = event => {
     if (!this.activeManager) return;
 
     // checks that if a key was used, it was the spacebar, and that the spear hasn't been released
-    if ((event.key && event.key !== ' ') || this.activeManager.released) return;
+    if ((event.key && event.key !== ' ') || this.activeManager.local.released) return;
 
     this.props.socket.send(pack('throw'));
     this.activeManager.emulateThrow();
@@ -180,7 +179,7 @@ class Game extends Component {
       if (snapshot.players.some(player => player.id === manager.id)) return;
 
       // remove the manager if no player shares the id
-      manager.hide(true, true, true, true);
+      manager.hide({ player: true, spear: true, name: true, health: true });
       this.playerManagers.splice(i, 1);
     });
 
@@ -196,8 +195,11 @@ class Game extends Component {
         this.playerManagers.push(manager);
       }
 
-      // remove player health bar, name, and spear if they're dead
-      if (player.dead) manager.hide(false, true, true, true);
+      // check if the player is dead
+      if (player.dead) {
+        manager.hide({ player: false, spear: true, name: true, health: true });
+        manager.play('death');
+      }
 
       manager.sync(player, snapshot.timestamp, manager.id === this.props.socket.id);
 
