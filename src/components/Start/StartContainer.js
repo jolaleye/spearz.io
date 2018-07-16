@@ -1,5 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import _ from 'lodash';
+import { Howler } from 'howler';
 
 import Start from './Start';
 import RoomModalContainer from './RoomModal/RoomModalContainer';
@@ -16,8 +17,9 @@ class StartContainer extends Component {
     this.setState({ nickname: event.target.value });
   }
 
-  toggleAudio = () => {
-    this.setState(prevState => ({ audio: !prevState.audio }));
+  toggleAudio = async () => {
+    await this.setState(prevState => ({ audio: !prevState.audio }));
+    Howler.mute(!this.state.audio);
   }
 
   toggleModal = () => {

@@ -9,6 +9,7 @@ import { pack, unpack } from '../../services/cereal';
 import PlayerManager from './PlayerManager';
 import cursor from '../../assets/cursor.png';
 import config from './config';
+import assetManager from '../../assetManager';
 
 class Game extends Component {
   canvasRef = createRef();
@@ -29,6 +30,9 @@ class Game extends Component {
     this.app.renderer.autoResize = true;
     window.addEventListener('resize', this.resize);
 
+    // SFX
+    assetManager.sounds.soundtrack.play();
+
     // manager for arena related rendering
     this.arenaManager = new ArenaManager(this.app.screen);
     this.app.stage.addChild(this.arenaManager.background, this.arenaManager.boundary);
@@ -45,6 +49,7 @@ class Game extends Component {
           break;
 
         case 'hit':
+          assetManager.sounds.hit.play();
           this.returnSpear();
           break;
 
@@ -159,6 +164,7 @@ class Game extends Component {
 
     this.props.socket.send(pack('throw'));
     this.activeManager.emulateThrow();
+    assetManager.sounds.throw.play();
   }
 
   returnSpear = () => {

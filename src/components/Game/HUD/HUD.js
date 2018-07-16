@@ -3,6 +3,7 @@ import React, { Component, Fragment } from 'react';
 import { pack, unpack } from '../../../services/cereal';
 import Message from './Message/Message';
 import Leaderboard from './Leaderboard/Leaderboard';
+import assetManager from '../../../assetManager';
 
 class HUD extends Component {
   state = {
@@ -44,7 +45,10 @@ class HUD extends Component {
 
   showMessage = type => {
     let msg;
-    if (type === 'bounds') msg = 'You\'re out of bounds!';
+    if (type === 'bounds') {
+      msg = 'You\'re out of bounds!';
+      assetManager.sounds.bounds.play();
+    }
 
     this.setState({ message: { type, msg } });
   }
@@ -53,6 +57,8 @@ class HUD extends Component {
     if (this.state.message && type === this.state.message.type) {
       this.setState({ message: false });
     }
+
+    if (type === 'bounds') assetManager.sounds.bounds.pause();
   }
 
   showKill = name => {
