@@ -7,7 +7,7 @@ module.exports = {
 
   damage: {
     bounds: 10,
-    boundsFreq: 1000,
+    boundsFreq: 500,
     hit: 20,
   },
 
