@@ -57,43 +57,35 @@ class PlayerManager {
 
     this.local.spear.pos.x = lerp(this.origin.spear.pos.x, this.next.spear.pos.x, delta);
     this.local.spear.pos.y = lerp(this.origin.spear.pos.y, this.next.spear.pos.y, delta);
-    if (!this.local.released) {
-      this.local.spear.direction = angularLerp(
-        this.origin.spear.direction, this.next.spear.direction, delta,
-      );
-    }
+    this.local.spear.direction = angularLerp(
+      this.origin.spear.direction, this.next.spear.direction, delta,
+    );
   }
 
   // logic copied directly from the server...
   predict = target => {
-    if (this.next) {
-      this.local.pos = _.clone(this.next.pos);
-    }
-    this.origin = _.cloneDeep(this.local);
-    this.next = _.cloneDeep(this.local);
-
     const distance = getDistance(this.local.pos.x, target.x, this.local.pos.y, target.y);
-    this.next.direction = Math.atan2(distance.y, distance.x);
+    this.local.direction = Math.atan2(distance.y, distance.x);
 
-    let dx = config.player.speed * Math.cos(this.next.direction);
-    let dy = config.player.speed * Math.sin(this.next.direction);
+    let dx = config.player.speed * Math.cos(this.local.direction);
+    let dy = config.player.speed * Math.sin(this.local.direction);
 
     if (distance.total < 100) {
       dx *= distance.total / 100;
       dy *= distance.total / 100;
     }
 
-    this.next.pos.x = this.local.pos.x + dx;
-    this.next.pos.y = this.local.pos.y + dy;
+    this.local.pos.x += dx;
+    this.local.pos.y += dy;
 
     if (!this.local.released) {
-      const angle = this.next.direction + (Math.PI / 2);
-      this.next.spear.pos.x = this.next.pos.x + (config.spear.distFromPlayer * Math.cos(angle));
-      this.next.spear.pos.y = this.next.pos.y + (config.spear.distFromPlayer * Math.sin(angle));
-      this.next.spear.direction = this.next.direction;
+      const angle = this.local.direction + (Math.PI / 2);
+      this.local.spear.pos.x = this.local.pos.x + (config.spear.distFromPlayer * Math.cos(angle));
+      this.local.spear.pos.y = this.local.pos.y + (config.spear.distFromPlayer * Math.sin(angle));
+      this.local.spear.direction = this.local.direction;
     } else {
-      this.next.spear.pos.x = this.local.spear.pos.x + this.local.spear.vx;
-      this.next.spear.pos.y = this.local.spear.pos.y + this.local.spear.vy;
+      this.local.spear.pos.x = this.local.spear.pos.x + this.local.spear.vx;
+      this.local.spear.pos.y = this.local.spear.pos.y + this.local.spear.vy;
       this.local.spear.vx *= 0.99;
       this.local.spear.vy *= 0.99;
     }
@@ -144,7 +136,7 @@ class PlayerManager {
 
     // position disparity between the local state and the server state + unacknowledged input
     const disparity = getDistance(
-      this.next.pos.x, serverState.pos.x, this.next.pos.y, serverState.pos.y,
+      this.local.pos.x, serverState.pos.x, this.local.pos.y, serverState.pos.y,
     );
 
     // adopt the server's authoritative state if the disparity is large enough

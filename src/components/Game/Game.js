@@ -120,18 +120,12 @@ class Game extends Component {
 
     // player rendering
     this.playerManagers.forEach(manager => {
-      let smoothPeriod;
-      let delta;
-
-      if (manager.id === this.activeManager.id) {
-        smoothPeriod = config.tickrate;
-        delta = this.sincePrediction / smoothPeriod;
-      } else {
-        smoothPeriod = manager.next.timestamp - manager.origin.timestamp;
-        delta = this.sinceSnapshot / smoothPeriod;
+      if (manager.id !== this.activeManager.id) {
+        const smoothPeriod = manager.next.timestamp - manager.origin.timestamp;
+        const delta = this.sinceSnapshot / smoothPeriod;
+        manager.interpolate(_.clamp(delta, 1));
       }
 
-      manager.interpolate(_.clamp(delta, 1));
       manager.update(this.offset);
     });
 
