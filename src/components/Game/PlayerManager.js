@@ -4,6 +4,7 @@ import * as PIXI from 'pixi.js';
 import { lerp, angularLerp, getDistance } from './util';
 import assetManager from '../../assetManager';
 import config from './config';
+import spriteAtlas from '../../assets/spritesheet.json';
 
 class PlayerManager {
   constructor(id, name) {
@@ -11,12 +12,29 @@ class PlayerManager {
     this.name = name;
     this.history = [];
 
-    this.player = new PIXI.Sprite(assetManager.textures.player);
-    this.player.anchor.set(0.5, 0.5);
+    // player sprites & animations
+    const deathSequence = [];
+    spriteAtlas.animations.death.forEach(phase => deathSequence.push(assetManager.textures[phase]));
 
+    this.playerAnimations = {
+      normal: new PIXI.Sprite(assetManager.textures.player),
+      death: new PIXI.extras.AnimatedSprite(deathSequence),
+    };
+    this.currentAnimation = 'normal';
+
+    this.playerAnimations.death.animationSpeed = 0.25;
+    this.playerAnimations.death.loop = false;
+    this.playerAnimations.death.renderable = false;
+
+    this.player = new PIXI.Container();
+    this.player.addChild(this.playerAnimations.normal, this.playerAnimations.death);
+    this.player.pivot.set(this.player.width / 2, this.player.height / 2);
+
+    // spear sprites & animations
     this.spear = new PIXI.Sprite(assetManager.textures.spear);
     this.spear.anchor.set(0.5, 0.5);
 
+    // health bar sprite
     this.healthBarBg = new PIXI.Sprite(assetManager.textures['health-bar-bg']);
     this.healthBarFill = new PIXI.Sprite(assetManager.textures['health-bar']);
 
@@ -24,19 +42,17 @@ class PlayerManager {
     this.healthBar.addChild(this.healthBarBg, this.healthBarFill);
     this.healthBar.pivot.set(this.healthBar.width / 2, this.healthBar.height / 2);
 
+    // name tag
     this.nameTag = new PIXI.Text(this.name, {
-      fill: 'white',
-      fontFamily: 'Poppins',
-      fontSize: 18,
-      fontWeight: '400',
+      fill: 'white', fontFamily: 'Poppins', fontSize: 18, fontWeight: '400',
     });
     this.nameTag.anchor.set(0.5, 0.5);
   }
 
   sync = (player, timestamp, active) => {
-    // update past and next state (only for other players)
+    // update previous and next state (only for other players)
     if (!active) {
-      this.origin = this.next ? _.cloneDeep(this.next) : { ...player, timestamp };
+      this.prev = this.next ? _.cloneDeep(this.next) : { ...player, timestamp };
       this.next = { ...player, timestamp };
     }
 
@@ -48,17 +64,17 @@ class PlayerManager {
   }
 
   interpolate = delta => {
-    if (!this.local || !this.origin || !this.next) return;
+    if (!this.local || !this.prev || !this.next) return;
 
-    // interpolate between the origin and next states
-    this.local.pos.x = lerp(this.origin.pos.x, this.next.pos.x, delta);
-    this.local.pos.y = lerp(this.origin.pos.y, this.next.pos.y, delta);
-    this.local.direction = angularLerp(this.origin.direction, this.next.direction, delta);
+    // interpolate between the prev and next states
+    this.local.pos.x = lerp(this.prev.pos.x, this.next.pos.x, delta);
+    this.local.pos.y = lerp(this.prev.pos.y, this.next.pos.y, delta);
+    this.local.direction = angularLerp(this.prev.direction, this.next.direction, delta);
 
-    this.local.spear.pos.x = lerp(this.origin.spear.pos.x, this.next.spear.pos.x, delta);
-    this.local.spear.pos.y = lerp(this.origin.spear.pos.y, this.next.spear.pos.y, delta);
+    this.local.spear.pos.x = lerp(this.prev.spear.pos.x, this.next.spear.pos.x, delta);
+    this.local.spear.pos.y = lerp(this.prev.spear.pos.y, this.next.spear.pos.y, delta);
     this.local.spear.direction = angularLerp(
-      this.origin.spear.direction, this.next.spear.direction, delta,
+      this.prev.spear.direction, this.next.spear.direction, delta,
     );
   }
 
@@ -93,8 +109,6 @@ class PlayerManager {
 
   // logic copied directly from the server...
   emulateThrow = () => {
-    if (this.local.released) return;
-
     const angle = this.local.direction + (Math.PI / 2);
     this.local.spear.pos.x = this.local.pos.x + (config.spear.distFromPlayer * Math.cos(angle));
     this.local.spear.pos.y = this.local.pos.y + (config.spear.distFromPlayer * Math.sin(angle));
@@ -145,7 +159,7 @@ class PlayerManager {
     }
   }
 
-  hide = (player, spear, health, name) => {
+  hide = ({ player, spear, health, name }) => {
     this.player.visible = !player;
     this.spear.visible = !spear;
     this.healthBar.visible = !health;
@@ -166,6 +180,21 @@ class PlayerManager {
     this.healthBarFill.width = this.local.health;
 
     this.nameTag.position.set(this.player.position.x, this.player.position.y + 80);
+  }
+
+  play = animation => {
+    if (animation === this.currentAnimation) return;
+
+    switch (animation) {
+      case 'death':
+        this.playerAnimations.normal.renderable = false;
+        this.playerAnimations.death.renderable = true;
+        this.playerAnimations.death.play();
+        this.currentAnimation = 'death';
+        break;
+
+      default: break;
+    }
   }
 }
 
