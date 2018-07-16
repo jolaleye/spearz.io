@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import * as PIXI from 'pixi.js';
 
-import { lerp, angularLerp, getDistance } from '../../services/util';
+import { lerp, angularLerp, getDistance } from './util';
 import assetManager from '../../assetManager';
 import config from './config';
 
@@ -159,10 +159,8 @@ class PlayerManager {
     this.player.position.set(this.local.pos.x - offset.x, this.local.pos.y - offset.y);
     this.player.rotation = this.local.direction + (Math.PI / 2);
 
-    if (Number.isFinite(this.local.spear.pos.x) && Number.isFinite(this.local.spear.pos.y)) {
-      this.spear.position.set(this.local.spear.pos.x - offset.x, this.local.spear.pos.y - offset.y);
-      this.spear.rotation = this.local.spear.direction + (Math.PI / 2);
-    }
+    this.spear.position.set(this.local.spear.pos.x - offset.x, this.local.spear.pos.y - offset.y);
+    this.spear.rotation = this.local.spear.direction + (Math.PI / 2);
 
     this.healthBar.position.set(this.player.position.x, this.player.position.y + 60);
     this.healthBarFill.width = this.local.health;
