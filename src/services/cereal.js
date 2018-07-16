@@ -42,6 +42,7 @@ const lexicon = {
         dead: 'bool',
         pos: { x: 'float64', y: 'float64' },
         direction: 'float64',
+        released: 'bool',
         spear: {
           pos: { x: 'float64', y: 'float64' },
           direction: 'float64',

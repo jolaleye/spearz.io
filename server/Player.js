@@ -43,8 +43,8 @@ class Player {
 
   // get player data needed on the client
   retrieve() {
-    const { id, name, health, dead, pos, direction, spear } = this;
-    return { id, name, health, dead, pos, direction, spear: spear.retrieve() };
+    const { id, name, health, dead, pos, direction, spear, released } = this;
+    return { id, name, health, dead, pos, direction, spear: spear.retrieve(), released };
   }
 
   // data needed for the quadtree   width & height match the sprite
