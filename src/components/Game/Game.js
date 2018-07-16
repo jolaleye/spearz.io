@@ -67,14 +67,14 @@ class Game extends Component {
     // render loop
     this.app.ticker.add(this.renderX);
     // target tracking
-    this.getTargetInterval = setInterval(this.getTarget, config.tickrate);
+    this.trackingInterval = setInterval(this.track, config.tickrate);
 
     this.resize();
   }
 
   componentWillUnmount() {
     this.app.ticker.stop();
-    clearInterval(this.getTargetInterval);
+    clearInterval(this.trackingInterval);
     this.playerManagers = [];
     this.app.stage.removeChildren();
   }
@@ -106,7 +106,7 @@ class Game extends Component {
 
   stop = () => {
     // stop target tracking
-    clearInterval(this.getTargetInterval);
+    clearInterval(this.trackingInterval);
 
     // remove player health bar, name, spear
     this.activeManager.hide(false, true, true, true);
@@ -133,7 +133,7 @@ class Game extends Component {
     this.arenaManager.update(this.offset);
   }
 
-  getTarget = () => {
+  track = () => {
     this.tick += 1;
 
     if (!this.activeManager || !this.tick) return;
