@@ -14,13 +14,15 @@ class PlayerManager {
 
     // player sprites & animations
     const deathSequence = [];
-    spriteAtlas.animations.death.forEach(phase => deathSequence.push(assetManager.textures[phase]));
+    spriteAtlas.animations.death.forEach(phase => {
+      deathSequence.push(assetManager.textures[phase]);
+    });
 
     this.playerAnimations = {
       normal: new PIXI.Sprite(assetManager.textures.player),
       death: new PIXI.extras.AnimatedSprite(deathSequence),
     };
-    this.currentAnimation = 'normal';
+    this.currentPlayerAnimation = 'normal';
 
     this.playerAnimations.death.animationSpeed = 0.25;
     this.playerAnimations.death.loop = false;
@@ -31,8 +33,23 @@ class PlayerManager {
     this.player.pivot.set(this.player.width / 2, this.player.height / 2);
 
     // spear sprites & animations
-    this.spear = new PIXI.Sprite(assetManager.textures.spear);
-    this.spear.anchor.set(0.5, 0.5);
+    const flyingSequence = [];
+    spriteAtlas.animations.spear.forEach(phase => {
+      flyingSequence.push(assetManager.textures[phase]);
+    });
+
+    this.spearAnimations = {
+      holding: new PIXI.Sprite(assetManager.textures.spear),
+      flying: new PIXI.extras.AnimatedSprite(flyingSequence),
+    };
+    this.currentSpearAnimation = 'still';
+
+    this.spearAnimations.flying.animationSpeed = 0.15;
+    this.spearAnimations.flying.renderable = false;
+
+    this.spear = new PIXI.Container();
+    this.spear.addChild(this.spearAnimations.holding, this.spearAnimations.flying);
+    this.spear.pivot.set(this.spear.width / 2, this.spear.height / 2);
 
     // health bar sprite
     this.healthBarBg = new PIXI.Sprite(assetManager.textures['health-bar-bg']);
@@ -71,11 +88,14 @@ class PlayerManager {
     this.local.pos.y = lerp(this.prev.pos.y, this.next.pos.y, delta);
     this.local.direction = angularLerp(this.prev.direction, this.next.direction, delta);
 
-    this.local.spear.pos.x = lerp(this.prev.spear.pos.x, this.next.spear.pos.x, delta);
-    this.local.spear.pos.y = lerp(this.prev.spear.pos.y, this.next.spear.pos.y, delta);
-    this.local.spear.direction = angularLerp(
-      this.prev.spear.direction, this.next.spear.direction, delta,
-    );
+    // if the spear is currently released but it isn't in the next state, don't interpolate
+    if (!(this.prev.released && !this.next.released)) {
+      this.local.spear.pos.x = lerp(this.prev.spear.pos.x, this.next.spear.pos.x, delta);
+      this.local.spear.pos.y = lerp(this.prev.spear.pos.y, this.next.spear.pos.y, delta);
+      this.local.spear.direction = angularLerp(
+        this.prev.spear.direction, this.next.spear.direction, delta,
+      );
+    }
   }
 
   // logic copied directly from the server...
@@ -121,6 +141,7 @@ class PlayerManager {
     this.local.released = true;
     setTimeout(() => {
       this.local.released = false;
+      this.animateSpear('holding');
       this.local.spear.pos.x = this.local.pos.x + (config.spear.distFromPlayer * Math.cos(angle));
       this.local.spear.pos.y = this.local.pos.y + (config.spear.distFromPlayer * Math.sin(angle));
     }, config.spear.cooldown);
@@ -182,15 +203,37 @@ class PlayerManager {
     this.nameTag.position.set(this.player.position.x, this.player.position.y + 80);
   }
 
-  play = animation => {
-    if (animation === this.currentAnimation) return;
+  animatePlayer = animation => {
+    if (animation === this.currentPlayerAnimation) return;
 
     switch (animation) {
       case 'death':
         this.playerAnimations.normal.renderable = false;
         this.playerAnimations.death.renderable = true;
         this.playerAnimations.death.play();
-        this.currentAnimation = 'death';
+        this.currentPlayerAnimation = 'death';
+        break;
+
+      default: break;
+    }
+  }
+
+  animateSpear = animation => {
+    if (animation === this.currentSpearAnimation) return;
+
+    switch (animation) {
+      case 'holding':
+        this.spearAnimations.holding.renderable = true;
+        this.spearAnimations.flying.renderable = false;
+        this.spearAnimations.flying.stop();
+        this.currentSpearAnimation = 'holding';
+        break;
+
+      case 'flying':
+        this.spearAnimations.holding.renderable = false;
+        this.spearAnimations.flying.renderable = true;
+        this.spearAnimations.flying.play();
+        this.currentSpearAnimation = 'flying';
         break;
 
       default: break;
