@@ -115,7 +115,7 @@ class Game extends Component {
 
     // remove player health bar, name, spear & play death animation
     this.activeManager.hide({ player: false, spear: true, name: true, health: true });
-    this.activeManager.play('death');
+    this.activeManager.animatePlayer('death');
   }
 
   renderX = () => {
@@ -164,11 +164,13 @@ class Game extends Component {
     this.props.socket.send(pack('throw'));
     this.activeManager.emulateThrow();
     assetManager.sounds.throw.play();
+    this.activeManager.animateSpear('flying');
   }
 
   returnSpear = () => {
     if (this.activeManager) {
       this.activeManager.local.released = false;
+      this.activeManager.animateSpear('holding');
     }
   }
 
@@ -198,7 +200,14 @@ class Game extends Component {
       // check if the player is dead
       if (player.dead) {
         manager.hide({ player: false, spear: true, name: true, health: true });
-        manager.play('death');
+        manager.animatePlayer('death');
+      }
+
+      // check if the player has thrown their spear
+      if (player.released && manager.id !== this.props.socket.id) {
+        manager.animateSpear('flying');
+      } else if (manager.id !== this.props.socket.id) {
+        manager.animateSpear('holding');
       }
 
       manager.sync(player, snapshot.timestamp, manager.id === this.props.socket.id);
