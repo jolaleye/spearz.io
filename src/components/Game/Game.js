@@ -211,6 +211,13 @@ class Game extends Component {
         manager.animateSpear('holding');
       }
 
+      // check if the player is moving at full speed
+      if (player.quick && manager.id !== this.props.socket.id) {
+        manager.animatePlayer('moving');
+      } else if (manager.id !== this.props.socket.id) {
+        manager.animatePlayer('still');
+      }
+
       manager.sync(player, snapshot.timestamp, manager.id === this.props.socket.id);
 
       // fix potential prediction errors

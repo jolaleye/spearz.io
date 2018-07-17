@@ -239,28 +239,26 @@ class PlayerManager {
   animatePlayer = animation => {
     if (animation === this.currentPlayerAnimation) return;
 
+    this.player.children.forEach(child => {
+      child.renderable = false;
+    });
+
     switch (animation) {
       case 'death':
-        this.playerAnimations.still.renderable = false;
-        this.playerAnimations.moving.renderable = false;
         this.playerAnimations.death.renderable = true;
         this.playerAnimations.death.play();
         this.currentPlayerAnimation = 'death';
         break;
 
       case 'moving':
-        this.playerAnimations.still.renderable = false;
-        this.playerAnimations.death.renderable = false;
         this.playerAnimations.moving.renderable = true;
         this.playerAnimations.moving.play();
         this.currentPlayerAnimation = 'moving';
         break;
 
       case 'still':
-        this.playerAnimations.death.renderable = false;
-        this.playerAnimations.moving.renderable = false;
-        this.playerAnimations.still.renderable = true;
         this.playerAnimations.moving.stop();
+        this.playerAnimations.still.renderable = true;
         this.currentPlayerAnimation = 'still';
         break;
 
@@ -271,16 +269,18 @@ class PlayerManager {
   animateSpear = animation => {
     if (animation === this.currentSpearAnimation) return;
 
+    this.spear.children.forEach(child => {
+      child.renderable = false;
+    });
+
     switch (animation) {
       case 'holding':
-        this.spearAnimations.holding.renderable = true;
-        this.spearAnimations.flying.renderable = false;
         this.spearAnimations.flying.stop();
+        this.spearAnimations.holding.renderable = true;
         this.currentSpearAnimation = 'holding';
         break;
 
       case 'flying':
-        this.spearAnimations.holding.renderable = false;
         this.spearAnimations.flying.renderable = true;
         this.spearAnimations.flying.play();
         this.currentSpearAnimation = 'flying';
