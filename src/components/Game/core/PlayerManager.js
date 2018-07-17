@@ -18,18 +18,29 @@ class PlayerManager {
       deathSequence.push(assetManager.textures[phase]);
     });
 
+    const movingSequence = [];
+    spriteAtlas.animations.moving.forEach(phase => {
+      movingSequence.push(assetManager.textures[phase]);
+    });
+
     this.playerAnimations = {
-      normal: new PIXI.Sprite(assetManager.textures.player),
+      still: new PIXI.Sprite(assetManager.textures.player),
+      moving: new PIXI.extras.AnimatedSprite(movingSequence),
       death: new PIXI.extras.AnimatedSprite(deathSequence),
     };
-    this.currentPlayerAnimation = 'normal';
+    this.currentPlayerAnimation = 'still';
 
     this.playerAnimations.death.animationSpeed = 0.25;
     this.playerAnimations.death.loop = false;
     this.playerAnimations.death.renderable = false;
 
+    this.playerAnimations.moving.animationSpeed = 0.2;
+    this.playerAnimations.moving.renderable = false;
+
     this.player = new PIXI.Container();
-    this.player.addChild(this.playerAnimations.normal, this.playerAnimations.death);
+    this.player.addChild(
+      this.playerAnimations.still, this.playerAnimations.moving, this.playerAnimations.death,
+    );
     this.player.pivot.set(this.player.width / 2, this.player.height / 2);
 
     // spear sprites & animations
@@ -112,6 +123,9 @@ class PlayerManager {
     if (distance.total < 100) {
       dx *= distance.total / 100;
       dy *= distance.total / 100;
+      this.animatePlayer('still');
+    } else {
+      this.animatePlayer('moving');
     }
 
     this.next.pos.x = this.local.pos.x + dx;
@@ -227,10 +241,27 @@ class PlayerManager {
 
     switch (animation) {
       case 'death':
-        this.playerAnimations.normal.renderable = false;
+        this.playerAnimations.still.renderable = false;
+        this.playerAnimations.moving.renderable = false;
         this.playerAnimations.death.renderable = true;
         this.playerAnimations.death.play();
         this.currentPlayerAnimation = 'death';
+        break;
+
+      case 'moving':
+        this.playerAnimations.still.renderable = false;
+        this.playerAnimations.death.renderable = false;
+        this.playerAnimations.moving.renderable = true;
+        this.playerAnimations.moving.play();
+        this.currentPlayerAnimation = 'moving';
+        break;
+
+      case 'still':
+        this.playerAnimations.death.renderable = false;
+        this.playerAnimations.moving.renderable = false;
+        this.playerAnimations.still.renderable = true;
+        this.playerAnimations.moving.stop();
+        this.currentPlayerAnimation = 'still';
         break;
 
       default: break;
