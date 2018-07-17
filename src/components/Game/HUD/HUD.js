@@ -1,14 +1,16 @@
 import React, { Component, Fragment } from 'react';
 
 import { pack, unpack } from '../../../services/cereal';
+import assetManager from '../../../assetManager';
 import Message from './Message/Message';
 import Leaderboard from './Leaderboard/Leaderboard';
-import assetManager from '../../../assetManager';
+import Feed from './Feed/Feed';
 
 class HUD extends Component {
   state = {
     message: false,
     leaderboard: [],
+    feed: [],
   }
 
   componentDidMount() {
@@ -38,6 +40,10 @@ class HUD extends Component {
           this.updateLeaderboard(data.players);
           break;
 
+        case 'feed':
+          this.addToFeed(data.type, data.names);
+          break;
+
         default: break;
       }
     });
@@ -65,8 +71,7 @@ class HUD extends Component {
     // reset the message timer so that subsequent messages aren't cleared early
     clearTimeout(this.killMessageTimer);
 
-    const killed = name === '' ? '<unnamed>' : name;
-    this.setState({ message: { type: 'kill', name: killed } });
+    this.setState({ message: { type: 'kill', name: name || '<unnamed>' } });
 
     // set a timer on the message
     this.killMessageTimer = setTimeout(() => {
@@ -86,7 +91,7 @@ class HUD extends Component {
     } else if (from === 'player') {
       this.setState({ message: {
         type: 'deathByPlayer',
-        name: name === '' ? '<unnamed>' : name,
+        name: name || '<unnamed>',
       } });
     }
 
@@ -106,10 +111,38 @@ class HUD extends Component {
     this.setState({ leaderboard: leaders });
   }
 
+  addToFeed = (type, names) => {
+    let message = null;
+
+    switch (type) {
+      case 'join':
+        message = `${names[0] || '<unnamed>'} joined the game`;
+        break;
+
+      case 'leave':
+        message = `${names[0] || '<unnamed>'} left the game`;
+        break;
+
+      case 'kill':
+        message = `${names[0] || '<unnamed>'} killed ${names[1] || '<unnamed>'}`;
+        break;
+
+      default: break;
+    }
+
+    if (message) {
+      const feed = [...this.state.feed];
+      if (feed.length === 5) feed.shift();
+      feed.push(message);
+      this.setState({ feed });
+    }
+  }
+
   render = () => (
     <Fragment>
       {this.state.message ? <Message message={this.state.message} /> : null}
       <Leaderboard leaderboard={this.state.leaderboard} />
+      <Feed feed={this.state.feed} />
     </Fragment>
   );
 }

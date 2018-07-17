@@ -99,6 +99,10 @@ const lexicon = {
     type: 'remove',
     schema: sp.build({ _: 'uint' }),
   },
+  16: {
+    type: 'feed',
+    schema: sp.build({ _: 'uint', type: 'string', names: ['string'] }),
+  },
 };
 
 exports.pack = (type, data = {}) => {

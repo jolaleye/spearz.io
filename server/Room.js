@@ -31,8 +31,16 @@ class Room {
     client.last = 0;
   }
 
-  removeClient(id) {
-    this.clients = _.omitBy(this.clients, client => client.id === id);
+  removeClient(id, fromDeath) {
+    // notify players through the feed
+    if (!fromDeath) {
+      Object.values(this.clients).forEach(client => {
+        if (!this.clients[id] || !this.clients[id].player) return;
+        client.send(pack('feed', { type: 'leave', names: [this.clients[id].player.name] }));
+      });
+    }
+
+    delete this.clients[id];
     this.players = this.players.filter(player => player.id !== id);
     this.connections -= 1;
   }
@@ -44,6 +52,11 @@ class Room {
     this.clients[client.id] = client;
     this.players.push(client.player);
     client.send(pack('ready'));
+
+    // notify players through the feed
+    Object.values(this.clients).forEach(clnt => {
+      clnt.send(pack('feed', { type: 'join', names: [client.player.name] }));
+    });
   }
 
   addToQueue(clientID, data) {
@@ -101,10 +114,16 @@ class Room {
         player.released = false;
         this.clients[player.id].send(pack('hit'));
         candidate.damage(config.damage.hit, 'player', player.name);
+
         // check if the player hit is now dead
         if (candidate.dead) {
           player.increaseScore(config.score.kill);
           this.clients[player.id].send(pack('kill', { name: candidate.name }));
+
+          // notify players through the feed
+          Object.values(this.clients).forEach(client => {
+            client.send(pack('feed', { type: 'kill', names: [player.name, candidate.name] }));
+          });
         }
       });
     });
