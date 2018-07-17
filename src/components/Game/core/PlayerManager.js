@@ -237,7 +237,9 @@ class PlayerManager {
   }
 
   animatePlayer = animation => {
-    if (animation === this.currentPlayerAnimation) return;
+    if (animation === this.currentPlayerAnimation || this.currentPlayerAnimation === 'death') {
+      return;
+    }
 
     this.player.children.forEach(child => {
       child.renderable = false;
