@@ -7,6 +7,7 @@ import HUD from './HUD/HUD';
 import { pack, unpack } from '../../services/cereal';
 import ArenaManager from './core/ArenaManager';
 import PlayerManager from './core/PlayerManager';
+import CanvasHUD from './core/HUD';
 import cursor from '../../assets/cursor.png';
 import config from './core/config';
 import assetManager from '../../assetManager';
@@ -32,6 +33,8 @@ class Game extends Component {
 
     // SFX
     assetManager.sounds.soundtrack.play();
+
+    this.hud = new CanvasHUD(this.app, this.props.socket);
 
     // manager for arena related rendering
     this.arenaManager = new ArenaManager(this.app.screen);
