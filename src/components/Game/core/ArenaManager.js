@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 
-import assetManager from '../../assetManager';
 import config from './config';
+import assetManager from '../../../assetManager';
 
 class ArenaManager {
   constructor(screen) {

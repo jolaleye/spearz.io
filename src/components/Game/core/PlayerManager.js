@@ -2,9 +2,9 @@ import _ from 'lodash';
 import * as PIXI from 'pixi.js';
 
 import { lerp, angularLerp, getDistance } from './util';
-import assetManager from '../../assetManager';
+import assetManager from '../../../assetManager';
 import config from './config';
-import spriteAtlas from '../../assets/spritesheet.json';
+import spriteAtlas from '../../../assets/spritesheet.json';
 
 class PlayerManager {
   constructor(id, name) {

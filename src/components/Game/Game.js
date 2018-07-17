@@ -4,11 +4,11 @@ import _ from 'lodash';
 
 import './Game.css';
 import HUD from './HUD/HUD';
-import ArenaManager from './ArenaManager';
 import { pack, unpack } from '../../services/cereal';
-import PlayerManager from './PlayerManager';
+import ArenaManager from './core/ArenaManager';
+import PlayerManager from './core/PlayerManager';
 import cursor from '../../assets/cursor.png';
-import config from './config';
+import config from './core/config';
 import assetManager from '../../assetManager';
 
 class Game extends Component {
