@@ -50,7 +50,7 @@ class Game extends Component {
 
         case 'hit':
           assetManager.sounds.hit.play();
-          this.returnSpear();
+          if (this.activeManager) this.activeManager.returnSpear();
           break;
 
         case 'dead':
@@ -67,6 +67,7 @@ class Game extends Component {
 
     this.tick = 0;
     this.sinceSnapshot = 0;
+    this.sincePrediction = 0;
 
     // render loop
     this.app.ticker.add(this.renderX);
@@ -122,17 +123,23 @@ class Game extends Component {
     if (!this.activeManager) return;
 
     this.sinceSnapshot += this.app.ticker.elapsedMS;
+    this.sincePrediction += this.app.ticker.elapsedMS;
 
     // player rendering
     this.playerManagers.forEach(manager => {
-      // interpolate other players
+      let smoothPeriod;
+      let delta;
+
       if (manager.id !== this.activeManager.id) {
-        const smoothPeriod = manager.next.timestamp - manager.prev.timestamp;
-        const delta = this.sinceSnapshot / smoothPeriod;
-        manager.interpolate(_.clamp(delta, 1));
+        smoothPeriod = manager.next.timestamp - manager.prev.timestamp;
+        delta = this.sinceSnapshot / smoothPeriod;
+      } else {
+        smoothPeriod = config.tickrate;
+        delta = this.sincePrediction / smoothPeriod;
       }
 
-      manager.update(this.offset);
+      manager.interpolate(_.clamp(delta, 1), manager.id === this.props.socket.id);
+      manager.update(this.offset, manager.id === this.props.socket.id);
     });
 
     // arena rendering
@@ -153,6 +160,8 @@ class Game extends Component {
     this.props.socket.send(pack('target', { target, tick: this.tick }));
     this.activeManager.predict(target);
     this.activeManager.history.push({ target, tick: this.tick });
+
+    this.sincePrediction = 0;
   }
 
   throwSpear = event => {
@@ -164,14 +173,6 @@ class Game extends Component {
     this.props.socket.send(pack('throw'));
     this.activeManager.emulateThrow();
     assetManager.sounds.throw.play();
-    this.activeManager.animateSpear('flying');
-  }
-
-  returnSpear = () => {
-    if (this.activeManager) {
-      this.activeManager.local.released = false;
-      this.activeManager.animateSpear('holding');
-    }
   }
 
   // new snapshot received
