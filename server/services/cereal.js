@@ -103,6 +103,10 @@ const lexicon = {
     type: 'feed',
     schema: sp.build({ _: 'uint', type: 'string', names: ['string'] }),
   },
+  17: {
+    type: 'score',
+    schema: sp.build({ _: 'uint', value: 'uint' }),
+  },
 };
 
 exports.pack = (type, data = {}) => {

@@ -5,12 +5,14 @@ import assetManager from '../../../assetManager';
 import Message from './Message/Message';
 import Leaderboard from './Leaderboard/Leaderboard';
 import Feed from './Feed/Feed';
+import Score from './Score/Score';
 
 class HUD extends Component {
   state = {
     message: false,
     leaderboard: [],
     feed: [],
+    scoreChain: 0,
   }
 
   componentDidMount() {
@@ -42,6 +44,10 @@ class HUD extends Component {
 
         case 'feed':
           this.addToFeed(data.type, data.names);
+          break;
+
+        case 'score':
+          this.chainScore(data.value);
           break;
 
         default: break;
@@ -138,11 +144,21 @@ class HUD extends Component {
     }
   }
 
+  chainScore = value => {
+    clearTimeout(this.scoreTimer);
+
+    this.setState(prevState => ({ scoreChain: prevState.scoreChain + value }));
+
+    // after 3 seconds, clear the score chain
+    this.scoreTimer = setTimeout(() => this.setState({ scoreChain: 0 }), 2000);
+  }
+
   render = () => (
     <Fragment>
       {this.state.message ? <Message message={this.state.message} /> : null}
       <Leaderboard leaderboard={this.state.leaderboard} />
       <Feed feed={this.state.feed} />
+      {this.state.scoreChain ? <Score value={this.state.scoreChain} /> : null}
     </Fragment>
   );
 }

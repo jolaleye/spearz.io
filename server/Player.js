@@ -140,6 +140,7 @@ class Player {
 
   increaseScore(value) {
     this.score += value;
+    this.client.send(pack('score', { value }));
   }
 }
 
