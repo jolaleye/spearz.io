@@ -41,6 +41,7 @@ const lexicon = {
         health: 'uint',
         dead: 'bool',
         pos: { x: 'float64', y: 'float64' },
+        quick: 'bool',
         direction: 'float64',
         released: 'bool',
         spear: {

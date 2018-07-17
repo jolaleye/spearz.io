@@ -20,6 +20,8 @@ class Player {
       Math.sqrt(randomDistance) * Math.sin(randomAngle),
     );
 
+    this.quick = false;
+
     this.direction = 0;
 
     this.spear = new Spear(this.id, this.pos);
@@ -43,8 +45,8 @@ class Player {
 
   // get player data needed on the client
   retrieve() {
-    const { id, name, health, dead, pos, direction, spear, released } = this;
-    return { id, name, health, dead, pos, direction, spear: spear.retrieve(), released };
+    const { id, name, health, dead, pos, direction, spear, released, quick } = this;
+    return { id, name, health, dead, pos, direction, spear: spear.retrieve(), released, quick };
   }
 
   // data needed for the quadtree   width & height match the sprite
@@ -76,6 +78,9 @@ class Player {
     if (distance.total < 100) {
       dx *= distance.total / 100;
       dy *= distance.total / 100;
+      this.quick = false;
+    } else {
+      this.quick = true;
     }
 
     this.pos.x += dx;
