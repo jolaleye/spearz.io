@@ -44,7 +44,7 @@ ws.on('connection', client => {
         break;
 
       case 'remove':
-        lobby.disconnect(client);
+        lobby.disconnect(client, true);
         break;
 
       default: break;

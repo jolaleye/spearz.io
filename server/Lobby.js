@@ -59,10 +59,10 @@ class Lobby {
   }
 
   // disconnect a client from their room
-  disconnect(client) {
+  disconnect(client, fromDeath) {
     if (!this.rooms[client.room]) return;
 
-    this.rooms[client.room].removeClient(client.id);
+    this.rooms[client.room].removeClient(client.id, fromDeath);
     // remove empty rooms
     Object.values(this.rooms).forEach(room => {
       if (room.connections === 0) {
