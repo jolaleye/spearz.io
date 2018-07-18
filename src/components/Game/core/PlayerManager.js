@@ -105,7 +105,7 @@ class PlayerManager {
     this.local.pos.y = lerp(this.prev.pos.y, this.next.pos.y, delta);
     this.local.direction = angularLerp(this.prev.direction, this.next.direction, delta);
 
-    if (active || (this.prev.released === this.next.released)) {
+    if (active || (!active && this.prev.released === this.next.released)) {
       this.local.spear.pos.x = lerp(this.prev.spear.pos.x, this.next.spear.pos.x, delta);
       this.local.spear.pos.y = lerp(this.prev.spear.pos.y, this.next.spear.pos.y, delta);
       this.local.spear.direction = angularLerp(
@@ -222,8 +222,9 @@ class PlayerManager {
     this.player.position.set(this.local.pos.x - offset.x, this.local.pos.y - offset.y);
     this.player.rotation = this.local.direction + (Math.PI / 2);
 
-    if (!active || (this.local.released && this.local.spear.pos.x && this.local.spear.pos.y)) {
-      // render the spear at its position if it is flying or for other players
+    if ((!active && this.next.released) ||
+    (this.local.released && this.local.spear.pos.x && this.local.spear.pos.y)) {
+      // render the spear at its position if it is flying
       this.spear.position.set(this.local.spear.pos.x - offset.x, this.local.spear.pos.y - offset.y);
       this.spear.rotation = this.local.spear.direction + (Math.PI / 2);
     } else {
