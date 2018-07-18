@@ -102,6 +102,7 @@ class Game extends Component {
     this.playerManagers = [];
     this.app.stage.removeChildren();
     assetManager.sounds.bounds.stop();
+    assetManager.sounds.soundtrack.stop();
   }
 
   resize = () => {
