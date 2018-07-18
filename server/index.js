@@ -39,8 +39,8 @@ ws.on('connection', client => {
         break;
 
       case 'throw':
-        if (!client.player) break;
-        client.player.throwSpear();
+        if (!client.player || !data.tick || !data.delta) break;
+        client.player.throwSpear(data.tick, data.delta);
         break;
 
       case 'remove':

@@ -34,6 +34,7 @@ const lexicon = {
     schema: sp.build({
       _: 'uint',
       timestamp: 'string',
+      tick: 'uint',
       last: 'uint',
       players: [{
         id: 'string',
@@ -77,7 +78,7 @@ const lexicon = {
   },
   9: {
     type: 'throw',
-    schema: sp.build({ _: 'uint' }),
+    schema: sp.build({ _: 'uint', tick: 'uint', delta: 'uint' }),
   },
   10: {
     type: 'hit',
