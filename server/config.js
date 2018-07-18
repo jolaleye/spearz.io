@@ -13,6 +13,7 @@ module.exports = {
 
   score: {
     kill: 100,
+    pickup: 10,
   },
 
   player: {
@@ -24,5 +25,10 @@ module.exports = {
     distFromPlayer: 55,
     throwSpeed: 50,
     throwAngleDivisor: 38, // increasing this makes the spear follow a straighter path
+  },
+
+  scorePickups: {
+    initialCount: 100,
+    onJoin: 5,
   },
 };

@@ -49,6 +49,10 @@ const lexicon = {
           direction: 'float64',
         },
       }],
+      scorePickups: [{
+        id: 'string',
+        pos: { x: 'float64', y: 'float64' },
+      }],
     }),
   },
   7: {

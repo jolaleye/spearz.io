@@ -1,11 +1,12 @@
 const _ = require('lodash');
-const { testPolygonPolygon } = require('sat');
+const { testPolygonPolygon, testPolygonCircle } = require('sat');
 
 const config = require('./config');
 const { ID, getDistance } = require('./services/util');
 const { pack } = require('./services/cereal');
 const Player = require('./Player');
 const Quadtree = require('./services/Quadtree');
+const ScorePickup = require('./ScorePickup');
 
 class Room {
   constructor() {
@@ -15,6 +16,10 @@ class Room {
     this.players = [];
     this.queue = [];
     this.qtree = new Quadtree({ x: 0, y: 0, length: config.arenaRadius * 2 });
+    this.scorePickups = [];
+
+    // add initial score pick-ups
+    _.times(config.scorePickups.initialCount, () => this.scorePickups.push(new ScorePickup()));
 
     // simulation tick
     setInterval(this.simulate.bind(this), config.tickrate);
@@ -57,6 +62,9 @@ class Room {
     Object.values(this.clients).forEach(clnt => {
       clnt.send(pack('feed', { type: 'join', names: [client.player.name] }));
     });
+
+    // add more pick-ups
+    _.times(config.scorePickups.onJoin, () => this.scorePickups.push(new ScorePickup()));
   }
 
   addToQueue(clientID, data) {
@@ -86,46 +94,81 @@ class Room {
       this.queue.splice(i, 1);
     });
 
-    // rebuild quadtree
+    // clear quadtree
     this.qtree.clear();
+
+    // insert pick-ups
+    this.scorePickups.forEach(pickup => this.qtree.insert(pickup.qt));
+
+    // insert players, excluding dead players
     this.players.forEach(player => {
-      // exclude dead players
       if (!player.dead) this.qtree.insert(player.qt);
     });
 
-    // check for spear hits
     this.players.forEach(player => {
-      // skip if the player hasn't thrown their spear
-      if (!player.released) return;
+      // check for hits if the player has thrown their spear
+      if (player.released) this.checkSpearHits(player);
 
-      // otherwise find potential collision candidates
-      let candidates = this.qtree.retrieve(player.spear.qt);
-      // filter out this player
-      candidates = candidates.filter(candidate => candidate.id !== player.id);
+      // check for collisions with pick-ups
+      this.checkPickups(player);
+    });
+  }
 
-      // convert candidates from their qt variant to their full object
-      candidates = candidates.map(candidate => this.clients[candidate.id].player);
+  checkSpearHits(player) {
+    // find potential collision candidates
+    let candidates = this.qtree.retrieve(player.spear.qt);
+    // filter out this player and pick-ups
+    candidates = candidates.filter(candidate => (
+      candidate.id !== player.id && candidate.type !== 'score'
+    ));
 
-      // check collision with the remaining candidates
-      candidates.forEach(candidate => {
-        const hit = testPolygonPolygon(player.spear.bounds, candidate.bounds);
-        if (!hit) return;
+    // convert candidates from their qt variant to their full object
+    candidates = candidates.map(candidate => this.clients[candidate.id].player);
 
-        player.released = false;
-        this.clients[player.id].send(pack('hit'));
-        candidate.damage(config.damage.hit, 'player', player.name);
+    // check collision with the remaining candidates
+    candidates.forEach(candidate => {
+      const hit = testPolygonPolygon(player.spear.bounds, candidate.bounds);
+      if (!hit) return;
 
-        // check if the player hit is now dead
-        if (candidate.dead) {
-          player.increaseScore(config.score.kill);
-          this.clients[player.id].send(pack('kill', { name: candidate.name }));
+      player.released = false;
+      this.clients[player.id].send(pack('hit'));
+      candidate.damage(config.damage.hit, 'player', player.name);
 
-          // notify players through the feed
-          Object.values(this.clients).forEach(client => {
-            client.send(pack('feed', { type: 'kill', names: [player.name, candidate.name] }));
-          });
-        }
-      });
+      // check if the player hit is now dead
+      if (candidate.dead) {
+        player.increaseScore(config.score.kill);
+        this.clients[player.id].send(pack('kill', { name: candidate.name }));
+
+        // notify players through the feed
+        Object.values(this.clients).forEach(client => {
+          client.send(pack('feed', { type: 'kill', names: [player.name, candidate.name] }));
+        });
+      }
+    });
+  }
+
+  checkPickups(player) {
+    // find potential collision candidates
+    let candidates = this.qtree.retrieve(player.spear.qt);
+    // filter out players
+    candidates = candidates.filter(candidate => candidate.type !== 'player');
+
+    // convert candidates from their qt variant to their full object
+    candidates = candidates.map(candidate => (
+      this.scorePickups.find(pickup => pickup.id === candidate.id)
+    ));
+
+    // check collision with the remaining candidates
+    candidates.forEach(candidate => {
+      const hit = testPolygonCircle(player.bounds, candidate.bounds);
+      if (!hit) return;
+
+      // delete the pick-up and increase score
+      this.scorePickups = this.scorePickups.filter(pickup => pickup.id !== candidate.id);
+      player.increaseScore(config.score.pickup);
+
+      // add a new pick-up
+      this.scorePickups.push(new ScorePickup());
     });
   }
 
@@ -135,18 +178,8 @@ class Room {
         timestamp: Date.now().toString(),
         last: client.last,
         players: this.getNearbyPlayers(client, 1250).map(player => player.retrieve()),
+        scorePickups: this.getNearbyScorePickups(client, 1250).map(pickup => pickup.retrieve()),
       }));
-    });
-  }
-
-  getNearbyPlayers(client, maxDistance) {
-    return this.players.filter(player => {
-      const distance = getDistance(
-        client.player.pos.x, player.pos.x,
-        client.player.pos.y, player.pos.y,
-      );
-
-      return distance.total <= maxDistance;
     });
   }
 
@@ -175,6 +208,28 @@ class Room {
       if (!included) list.push(client.player.lb);
 
       client.send(pack('leaderboard', { players: list }));
+    });
+  }
+
+  getNearbyPlayers(client, maxDistance) {
+    return this.players.filter(player => {
+      const distance = getDistance(
+        client.player.pos.x, player.pos.x,
+        client.player.pos.y, player.pos.y,
+      );
+
+      return distance.total <= maxDistance;
+    });
+  }
+
+  getNearbyScorePickups(client, maxDistance) {
+    return this.scorePickups.filter(pickup => {
+      const distance = getDistance(
+        client.player.pos.x, pickup.pos.x,
+        client.player.pos.y, pickup.pos.y,
+      );
+
+      return distance.total <= maxDistance;
     });
   }
 }

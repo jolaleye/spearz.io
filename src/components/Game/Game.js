@@ -7,6 +7,7 @@ import HUD from './HUD/HUD';
 import { pack, unpack } from '../../services/cereal';
 import ArenaManager from './core/ArenaManager';
 import PlayerManager from './core/PlayerManager';
+import ScorePickupManager from './core/ScorePickupManager';
 import CanvasHUD from './core/HUD';
 import cursor from '../../assets/cursor.png';
 import config from './core/config';
@@ -42,6 +43,9 @@ class Game extends Component {
 
     // managers for player rendering
     this.playerManagers = [];
+
+    // managers for score pick-ups
+    this.scorePickupManagers = [];
 
     // listen for snapshots
     this.props.socket.addEventListener('message', packet => {
@@ -147,6 +151,11 @@ class Game extends Component {
 
     // arena rendering
     this.arenaManager.update(this.offset);
+
+    // pick-ups
+    this.scorePickupManagers.forEach(manager => {
+      manager.update(this.offset);
+    });
   }
 
   track = () => {
@@ -226,6 +235,27 @@ class Game extends Component {
       // fix potential prediction errors
       if (manager.id === this.props.socket.id && snapshot.last) {
         manager.reconcile(player, snapshot.last);
+      }
+    });
+
+    // remove managers for score pick-ups that aren't present
+    this.scorePickupManagers.forEach((manager, i) => {
+      if (snapshot.scorePickups.some(pickup => pickup.id === manager.id)) return;
+
+      // remove the manager if no pickup shares the id
+      manager.hide();
+      this.scorePickupManagers.splice(i, 1);
+    });
+
+    snapshot.scorePickups.forEach(pickup => {
+      // find the manager for this pickup
+      let manager = this.scorePickupManagers.find(mngr => mngr.id === pickup.id);
+
+      // create one if needed
+      if (!manager) {
+        manager = new ScorePickupManager(pickup.id, pickup.pos);
+        this.app.stage.addChild(manager.sprite);
+        this.scorePickupManagers.push(manager);
       }
     });
 
