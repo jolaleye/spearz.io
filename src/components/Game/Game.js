@@ -1,6 +1,7 @@
 import React, { Component, createRef } from 'react';
 import * as PIXI from 'pixi.js';
 import _ from 'lodash';
+import 'pixi-layers';
 
 import './Game.css';
 import HUD from './HUD/HUD';
@@ -24,6 +25,18 @@ class Game extends Component {
       transparent: true,
     });
 
+    this.app.stage = new PIXI.display.Stage();
+
+    this.arenaGroup = new PIXI.display.Group(0, false);
+    this.pickupGroup = new PIXI.display.Group(1, false);
+    this.playerGroup = new PIXI.display.Group(2, false);
+
+    this.app.stage.addChild(
+      new PIXI.display.Layer(this.arenaGroup),
+      new PIXI.display.Layer(this.pickupGroup),
+      new PIXI.display.Layer(this.playerGroup),
+    );
+
     // canvas sizing
     this.app.renderer.autoResize = true;
     window.addEventListener('resize', this.resize);
@@ -36,6 +49,8 @@ class Game extends Component {
     // manager for arena related rendering
     this.arenaManager = new ArenaManager(this.app.screen);
     this.app.stage.addChild(this.arenaManager.background, this.arenaManager.boundary);
+    this.arenaManager.background.parentGroup = this.arenaGroup;
+    this.arenaManager.boundary.parentGroup = this.arenaGroup;
 
     // managers for player rendering
     this.playerManagers = [];
@@ -202,7 +217,8 @@ class Game extends Component {
       // create one if needed
       if (!manager) {
         manager = new PlayerManager(player.id, player.name);
-        this.app.stage.addChild(manager.player, manager.spear, manager.healthBar, manager.nameTag);
+        this.app.stage.addChild(manager.container);
+        manager.container.parentGroup = this.playerGroup;
         this.playerManagers.push(manager);
       }
 
@@ -251,6 +267,7 @@ class Game extends Component {
       if (!manager) {
         manager = new ScorePickupManager(pickup.id, pickup.pos);
         this.app.stage.addChild(manager.sprite);
+        manager.sprite.parentGroup = this.pickupGroup;
         this.scorePickupManagers.push(manager);
       }
     });
