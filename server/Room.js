@@ -141,6 +141,7 @@ class Room {
 
     // check collision with the remaining candidates
     candidates.forEach(candidate => {
+      if (!player.spear.bounds || !candidate.bounds) return;
       const hit = testPolygonPolygon(player.spear.bounds, candidate.bounds);
       if (!hit) return;
 
