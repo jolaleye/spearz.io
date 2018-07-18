@@ -2,7 +2,7 @@ const _ = require('lodash');
 const { testPolygonPolygon, testPolygonCircle } = require('sat');
 
 const config = require('./config');
-const { ID, getDistance } = require('./services/util');
+const { ID, getDistance, lerp } = require('./services/util');
 const { pack } = require('./services/cereal');
 const Player = require('./Player');
 const Quadtree = require('./services/Quadtree');
@@ -136,6 +136,9 @@ class Room {
     // convert candidates from their qt variant to their full object
     candidates = candidates.map(candidate => this.clients[candidate.id].player);
 
+    // compensate for different latency factors
+    candidates = this.rollback(_.cloneDeep(candidates), player.release);
+
     // check collision with the remaining candidates
     candidates.forEach(candidate => {
       const hit = testPolygonPolygon(player.spear.bounds, candidate.bounds);
@@ -143,10 +146,10 @@ class Room {
 
       player.released = false;
       this.clients[player.id].send(pack('hit'));
-      candidate.damage(config.damage.hit, 'player', player.name);
+      this.clients[candidate.id].player.damage(config.damage.hit, 'player', player.name);
 
       // check if the player hit is now dead
-      if (candidate.dead) {
+      if (this.clients[candidate.id].player.dead) {
         player.increaseScore(config.score.kill);
         this.clients[player.id].send(pack('kill', { name: candidate.name }));
 
@@ -156,6 +159,30 @@ class Room {
         });
       }
     });
+  }
+
+  rollback(players, { tick, delta }) {
+    // find the snapshot with the given tick
+    const snapshot = this.history.find(snap => snap.tick === tick);
+    // and the next one
+    const nextSnapshot = this.history[this.history.indexOf(snapshot) + 1];
+
+    if (!snapshot || !nextSnapshot) return players;
+
+    players.forEach(player => {
+      // states in the last and next snapshots
+      const s1 = snapshot.players.find(plyr => plyr.id === player.id);
+      const s2 = nextSnapshot.players.find(plyr => plyr.id === player.id);
+
+      if (!s1 || !s2) return;
+
+      const t = _.clamp(delta / (nextSnapshot.timestamp - snapshot.timestamp), 1);
+      // roll player positions back to that snapshot + the delta
+      player.pos.x = lerp(s1.pos.x, s2.pos.x, t);
+      player.pos.y = lerp(s1.pos.y, s2.pos.y, t);
+    });
+
+    return players;
   }
 
   checkPickups(player) {
@@ -187,6 +214,7 @@ class Room {
     // save a snapshot of the whole room
     const snapshot = {
       tick: this.tick,
+      timestamp: Date.now(),
       players: _.cloneDeep(this.players),
     };
     // keep a history of the last second of snapshots
@@ -196,6 +224,7 @@ class Room {
     Object.values(this.clients).forEach(client => {
       client.send(pack('snapshot', {
         timestamp: Date.now().toString(),
+        tick: this.tick,
         last: client.last,
         players: this.getNearbyPlayers(client, 1250).map(player => player.retrieve()),
         scorePickups: this.getNearbyScorePickups(client, 1250).map(pickup => pickup.retrieve()),

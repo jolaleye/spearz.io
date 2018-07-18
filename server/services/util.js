@@ -20,3 +20,7 @@ exports.getDistance = (x1, x2, y1, y2) => ({
   y: y2 - y1,
   total: Math.sqrt(((x2 - x1) ** 2) + ((y2 - y1) ** 2)),
 });
+
+exports.lerp = (v0, v1, t) => (
+  ((1 - t) * v0) + (t * v1)
+);
