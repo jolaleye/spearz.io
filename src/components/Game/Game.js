@@ -9,7 +9,6 @@ import ArenaManager from './core/ArenaManager';
 import PlayerManager from './core/PlayerManager';
 import ScorePickupManager from './core/ScorePickupManager';
 import CanvasHUD from './core/HUD';
-import cursor from '../../assets/cursor.png';
 import config from './core/config';
 import assetManager from '../../assetManager';
 
@@ -24,9 +23,6 @@ class Game extends Component {
       resolution: window.devicePixelRatio,
       transparent: true,
     });
-
-    // custom cursor
-    this.app.renderer.plugins.interaction.cursorStyles.default = `url(${cursor}), auto`;
 
     // canvas sizing
     this.app.renderer.autoResize = true;
