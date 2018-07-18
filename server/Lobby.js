@@ -59,14 +59,17 @@ class Lobby {
   }
 
   // disconnect a client from their room
-  disconnect(client, fromDeath) {
+  disconnect(client, fromDeath = false) {
     if (!this.rooms[client.room]) return;
 
     this.rooms[client.room].removeClient(client.id, fromDeath);
+
     // remove empty rooms
     Object.values(this.rooms).forEach(room => {
       if (room.connections === 0) {
-        delete this.rooms[room.id];
+        this.rooms[room.key].destroy();
+        this.rooms[room.key] = null;
+        delete this.rooms[room.key];
       }
     });
   }

@@ -16,17 +16,23 @@ class Room {
     this.players = [];
     this.queue = [];
     this.qtree = new Quadtree({ x: 0, y: 0, length: config.arenaRadius * 2 });
-    this.scorePickups = [];
 
     // add initial score pick-ups
+    this.scorePickups = [];
     _.times(config.scorePickups.initialCount, () => this.scorePickups.push(new ScorePickup()));
 
+    this.ticks = {};
+
     // simulation tick
-    setInterval(this.simulate.bind(this), config.tickrate);
+    this.ticks.sim = setInterval(this.simulate.bind(this), config.tickrate);
+    this.tick = 0;
+
     // snapshot tick
-    setInterval(this.snapshot.bind(this), config.snapshotRate);
+    this.ticks.snap = setInterval(this.snapshot.bind(this), config.snapshotRate);
+    this.history = [];
+
     // send clients the leaderboard
-    setInterval(this.updateLeaderboard.bind(this), config.leaderboardRate);
+    this.ticks.lb = setInterval(this.updateLeaderboard.bind(this), config.leaderboardRate);
   }
 
   addClient(client) {
@@ -37,17 +43,21 @@ class Room {
   }
 
   removeClient(id, fromDeath) {
-    // notify players through the feed
     if (!fromDeath) {
+      // if the disconnect was from closing tab/closing browser/drop/etc.
+      this.connections -= 1;
+      if (!this.clients[id]) return;
+      this.clients[id].room = null;
+
+      // notify players through the feed
       Object.values(this.clients).forEach(client => {
-        if (!this.clients[id] || !this.clients[id].player) return;
         client.send(pack('feed', { type: 'leave', names: [this.clients[id].player.name] }));
       });
+
+      delete this.clients[id];
     }
 
-    delete this.clients[id];
     this.players = this.players.filter(player => player.id !== id);
-    this.connections -= 1;
   }
 
   // bring a client into the game
@@ -72,6 +82,7 @@ class Room {
   }
 
   simulate() {
+    this.tick += 1;
     if (_.isEmpty(this.queue)) return;
 
     // find each client's last command
@@ -173,6 +184,15 @@ class Room {
   }
 
   snapshot() {
+    // save a snapshot of the whole room
+    const snapshot = {
+      tick: this.tick,
+      players: _.cloneDeep(this.players),
+    };
+    // keep a history of the last second of snapshots
+    if (this.history.length === 20) this.history.shift();
+    this.history.push(snapshot);
+
     Object.values(this.clients).forEach(client => {
       client.send(pack('snapshot', {
         timestamp: Date.now().toString(),
@@ -231,6 +251,12 @@ class Room {
 
       return distance.total <= maxDistance;
     });
+  }
+
+  destroy() {
+    clearInterval(this.ticks.sim);
+    clearInterval(this.ticks.snap);
+    clearInterval(this.ticks.lb);
   }
 }
 
