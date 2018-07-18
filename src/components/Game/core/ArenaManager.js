@@ -5,6 +5,8 @@ import assetManager from '../../../assetManager';
 
 class ArenaManager {
   constructor(screen) {
+    this.screen = screen;
+
     // background cell
     const cellTexture = assetManager.textures.backgroundCell;
     this.background = new PIXI.extras.TilingSprite(cellTexture, screen.width, screen.height);
@@ -15,9 +17,9 @@ class ArenaManager {
     this.boundary.drawCircle(0, 0, config.arenaRadius);
   }
 
-  resize = screen => {
-    this.background.width = screen.width;
-    this.background.height = screen.height;
+  resize = () => {
+    this.background.width = this.screen.width;
+    this.background.height = this.screen.height;
   }
 
   update = offset => {

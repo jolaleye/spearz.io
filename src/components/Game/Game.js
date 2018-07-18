@@ -90,7 +90,7 @@ class Game extends Component {
 
   resize = () => {
     this.app.renderer.resize(window.innerWidth, window.innerHeight);
-    this.arenaManager.resize(this.app.screen);
+    this.arenaManager.resize();
   }
 
   render = () => (
