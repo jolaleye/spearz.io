@@ -42,7 +42,7 @@ class StartContainer extends Component {
         joinGame={this.joinGame} />
       {this.props.connected
         ? <RoomModalContainer socket={this.props.socket} modal={this.state.modal}
-            toggleModal={this.toggleModal} />
+            toggleModal={this.toggleModal} roomKey={this.props.roomKey} />
         : null
       }
     </Fragment>

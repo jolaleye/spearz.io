@@ -5,7 +5,6 @@ import { unpack, pack } from '../../../services/cereal';
 
 class RoomModalContainer extends Component {
   state = {
-    currentKey: '',
     roomKey: '',
     msg: null,
   }
@@ -13,10 +12,6 @@ class RoomModalContainer extends Component {
   componentDidMount() {
     this.props.socket.addEventListener('message', packet => {
       const data = unpack(packet.data);
-      if (data._ === 'roomKey') {
-        this.setState({ currentKey: data.key });
-      }
-
       if (data._ === 'keyMsg') {
         this.setState({ msg: { code: data.code, msg: data.msg } });
       }
@@ -36,7 +31,7 @@ class RoomModalContainer extends Component {
 
   render = () =>
     <RoomModal modal={this.props.modal} toggleModal={this.props.toggleModal}
-      currentKey={this.state.currentKey} roomKey={this.state.roomKey} msg={this.state.msg}
+      currentKey={this.props.roomKey} roomKey={this.state.roomKey} msg={this.state.msg}
       handleKeyChange={this.handleKeyChange} joinRoom={this.joinRoom} />
 }
 

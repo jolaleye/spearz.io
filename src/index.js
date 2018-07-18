@@ -15,6 +15,7 @@ class App extends Component {
     connected: false,
     connectionAttempts: 0,
     loaded: false,
+    roomKey: '',
   }
 
   async componentDidMount() {
@@ -45,6 +46,10 @@ class App extends Component {
           socket.id = data.id;
           break;
 
+        case 'roomKey':
+          this.setState({ roomKey: data.key });
+          break;
+
         case 'ready':
           this.changeMode('game');
           break;
@@ -72,7 +77,7 @@ class App extends Component {
       return (
         <Fragment>
           <StartContainer socket={this.state.socket} connected={this.state.connected}
-            loaded={this.state.loaded} />
+            loaded={this.state.loaded} roomKey={this.state.roomKey} />
           <Mobile />
         </Fragment>
       );
