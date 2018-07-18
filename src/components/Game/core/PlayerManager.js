@@ -12,6 +12,8 @@ class PlayerManager {
     this.name = name;
     this.history = [];
 
+    this.container = new PIXI.Container();
+
     // player sprites & animations
     const deathSequence = [];
     spriteAtlas.animations.death.forEach(phase => {
@@ -38,6 +40,7 @@ class PlayerManager {
     this.playerAnimations.moving.renderable = false;
 
     this.player = new PIXI.Container();
+    this.container.addChild(this.player);
     this.player.addChild(
       this.playerAnimations.still, this.playerAnimations.moving, this.playerAnimations.death,
     );
@@ -59,6 +62,7 @@ class PlayerManager {
     this.spearAnimations.flying.renderable = false;
 
     this.spear = new PIXI.Container();
+    this.container.addChild(this.spear);
     this.spear.addChild(this.spearAnimations.holding, this.spearAnimations.flying);
     this.spear.pivot.set(this.spear.width / 2, this.spear.height / 2);
 
@@ -67,6 +71,7 @@ class PlayerManager {
     this.healthBarFill = new PIXI.Sprite(assetManager.textures['health-bar']);
 
     this.healthBar = new PIXI.Container();
+    this.container.addChild(this.healthBar);
     this.healthBar.addChild(this.healthBarBg, this.healthBarFill);
     this.healthBar.pivot.set(this.healthBar.width / 2, this.healthBar.height / 2);
 
@@ -74,6 +79,7 @@ class PlayerManager {
     this.nameTag = new PIXI.Text(this.name, {
       fill: 'white', fontFamily: 'Poppins', fontSize: 18, fontWeight: '400',
     });
+    this.container.addChild(this.nameTag);
     this.nameTag.anchor.set(0.5, 0.5);
   }
 
