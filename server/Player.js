@@ -115,13 +115,31 @@ class Player {
   }
 
   damage(value, from, name = '') {
+    // stop & restart health regen
+    clearTimeout(this.regenTimer);
+    clearInterval(this.regenInterval);
+
+    this.regenTimer = setTimeout(() => {
+      this.regenInterval = setInterval(() => {
+        this.heal(config.player.regen.amount);
+      }, config.player.regen.freq);
+    }, config.player.regen.wait);
+
+    // take damage
     this.health -= value;
     this.health = Math.max(this.health, 0);
+
     // inform the client if they die
     if (this.health === 0 && !this.dead) {
       this.dead = true;
       this.client.send(pack('dead', { from, name }));
     }
+  }
+
+  heal(value) {
+    this.health += value;
+    this.health = Math.min(this.health, 100);
+    if (this.health === 100) clearInterval(this.regenInterval);
   }
 
   throwSpear() {

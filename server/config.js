@@ -18,6 +18,11 @@ module.exports = {
 
   player: {
     speed: 16,
+    regen: {
+      wait: 5000,
+      amount: 1,
+      freq: 300,
+    },
   },
 
   spear: {
