@@ -108,6 +108,11 @@ class Game extends Component {
   resize = () => {
     this.app.renderer.resize(window.innerWidth, window.innerHeight);
     this.arenaManager.resize();
+
+    // maximum distance an entity can be from the player and be visible
+    const viewDistance =
+      Math.sqrt(((window.innerWidth / 2) ** 2) + ((window.innerHeight / 2) ** 2));
+    this.props.socket.send(pack('clientView', { distance: Math.ceil(viewDistance) }));
   }
 
   render = () => (

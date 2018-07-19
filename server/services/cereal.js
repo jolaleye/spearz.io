@@ -112,6 +112,10 @@ const lexicon = {
     type: 'score',
     schema: sp.build({ _: 'uint', value: 'uint' }),
   },
+  18: {
+    type: 'clientView',
+    schema: sp.build({ _: 'uint', distance: 'uint' }),
+  },
 };
 
 exports.pack = (type, data = {}) => {

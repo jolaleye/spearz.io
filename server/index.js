@@ -43,6 +43,11 @@ ws.on('connection', client => {
         client.player.throwSpear(data.tick, data.delta);
         break;
 
+      case 'clientView':
+        if (!data.distance) return;
+        client.viewDistance = data.distance;
+        break;
+
       case 'remove':
         lobby.disconnect(client, true);
         break;
@@ -57,3 +62,5 @@ ws.on('connection', client => {
 });
 
 server.listen(process.env.PORT || 3001);
+
+/* eslint no-param-reassign: off */

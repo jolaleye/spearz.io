@@ -227,8 +227,10 @@ class Room {
         timestamp: Date.now().toString(),
         tick: this.tick,
         last: client.last,
-        players: this.getNearbyPlayers(client, 1250).map(player => player.retrieve()),
-        scorePickups: this.getNearbyScorePickups(client, 1250).map(pickup => pickup.retrieve()),
+        players: this.getNearbyPlayers(client, client.viewDistance)
+          .map(player => player.retrieve()),
+        scorePickups: this.getNearbyScorePickups(client, client.viewDistance)
+          .map(pickup => pickup.retrieve()),
       }));
     });
   }
@@ -261,7 +263,7 @@ class Room {
     });
   }
 
-  getNearbyPlayers(client, maxDistance) {
+  getNearbyPlayers(client, maxDistance = 1000) {
     return this.players.filter(player => {
       const distance = getDistance(
         client.player.pos.x, player.pos.x,
@@ -272,7 +274,7 @@ class Room {
     });
   }
 
-  getNearbyScorePickups(client, maxDistance) {
+  getNearbyScorePickups(client, maxDistance = 1000) {
     return this.scorePickups.filter(pickup => {
       const distance = getDistance(
         client.player.pos.x, pickup.pos.x,
