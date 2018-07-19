@@ -1,6 +1,5 @@
 import sp from 'schemapack';
 
-sp.setStringEncoding('ascii');
 sp.addTypeAlias('uint', 'varuint');
 sp.addTypeAlias('int', 'varint');
 
