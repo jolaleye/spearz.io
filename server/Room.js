@@ -19,7 +19,7 @@ class Room {
 
     // add initial score pick-ups
     this.scorePickups = [];
-    _.times(config.scorePickups.initialCount, () => this.scorePickups.push(new ScorePickup()));
+    this.addScorePickup(config.scorePickups.initialCount);
 
     this.ticks = {};
 
@@ -73,8 +73,13 @@ class Room {
       clnt.send(pack('feed', { type: 'join', names: [client.player.name] }));
     });
 
+    // inform client of score pick-ups
+    this.scorePickups.forEach(pickup => {
+      client.send(pack('scorePickup', { ...pickup.retrieve() }));
+    });
+
     // add more pick-ups
-    _.times(config.scorePickups.onJoin, () => this.scorePickups.push(new ScorePickup()));
+    this.addScorePickup(config.scorePickups.onJoin);
   }
 
   addToQueue(clientID, data) {
@@ -204,10 +209,25 @@ class Room {
 
       // delete the pick-up and increase score
       this.scorePickups = this.scorePickups.filter(pickup => pickup.id !== candidate.id);
+      Object.values(this.clients).forEach(client => {
+        client.send(pack('removeScorePickup', { id: candidate.id }));
+      });
       player.increaseScore(config.score.pickup);
 
       // add a new pick-up
-      this.scorePickups.push(new ScorePickup());
+      this.addScorePickup(1);
+    });
+  }
+
+  addScorePickup(count) {
+    _.times(count, () => {
+      // add a pick-up
+      const pickup = new ScorePickup();
+      this.scorePickups.push(pickup);
+      // inform clients of its position
+      Object.values(this.clients).forEach(client => {
+        client.send(pack('scorePickup', { ...pickup.retrieve() }));
+      });
     });
   }
 
@@ -229,8 +249,6 @@ class Room {
         last: client.last,
         players: this.getNearbyPlayers(client, client.viewDistance)
           .map(player => player.retrieve()),
-        scorePickups: this.getNearbyScorePickups(client, client.viewDistance)
-          .map(pickup => pickup.retrieve()),
       }));
     });
   }
@@ -268,17 +286,6 @@ class Room {
       const distance = getDistance(
         client.player.pos.x, player.pos.x,
         client.player.pos.y, player.pos.y,
-      );
-
-      return distance.total <= maxDistance;
-    });
-  }
-
-  getNearbyScorePickups(client, maxDistance = 1000) {
-    return this.scorePickups.filter(pickup => {
-      const distance = getDistance(
-        client.player.pos.x, pickup.pos.x,
-        client.player.pos.y, pickup.pos.y,
       );
 
       return distance.total <= maxDistance;

@@ -50,10 +50,6 @@ const lexicon = {
           direction: 'float64',
         },
       }],
-      scorePickups: [{
-        id: 'string',
-        pos: { x: 'float64', y: 'float64' },
-      }],
     }),
   },
   7: {
@@ -115,6 +111,14 @@ const lexicon = {
   18: {
     type: 'clientView',
     schema: sp.build({ _: 'uint', distance: 'uint' }),
+  },
+  19: {
+    type: 'scorePickup',
+    schema: sp.build({ _: 'uint', id: 'string', pos: { x: 'float64', y: 'float64' } }),
+  },
+  20: {
+    type: 'removeScorePickup',
+    schema: sp.build({ _: 'uint', id: 'string' }),
   },
 };
 
