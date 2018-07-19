@@ -135,7 +135,7 @@ class Room {
     let candidates = this.qtree.retrieve(player.spear.qt);
     // filter out this player and pick-ups
     candidates = candidates.filter(candidate => (
-      candidate.id !== player.id && candidate.type !== 'score'
+      candidate.id !== player.id && candidate.type === 'player'
     ));
 
     // convert candidates from their qt variant to their full object
@@ -146,7 +146,7 @@ class Room {
 
     // check collision with the remaining candidates
     candidates.forEach(candidate => {
-      if (!player.spear.bounds || !candidate.bounds) return;
+      if (!player || !player.spear || !player.spear.bounds || !candidate.bounds) return;
       const hit = testPolygonPolygon(player.spear.bounds, candidate.bounds);
       if (!hit) return;
 
@@ -194,8 +194,8 @@ class Room {
   checkPickups(player) {
     // find potential collision candidates
     let candidates = this.qtree.retrieve(player.spear.qt);
-    // filter out players
-    candidates = candidates.filter(candidate => candidate.type !== 'player');
+    // filter anything but score pickups
+    candidates = candidates.filter(candidate => candidate.type === 'score');
 
     // convert candidates from their qt variant to their full object
     candidates = candidates.map(candidate => (
@@ -204,6 +204,7 @@ class Room {
 
     // check collision with the remaining candidates
     candidates.forEach(candidate => {
+      if (!player || !player.bounds || !candidate.bounds) return;
       const hit = testPolygonCircle(player.bounds, candidate.bounds);
       if (!hit) return;
 
