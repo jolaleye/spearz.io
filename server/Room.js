@@ -247,7 +247,7 @@ class Room {
         timestamp: Date.now().toString(),
         tick: this.tick,
         last: client.last,
-        players: this.getNearbyPlayers(client, client.viewDistance)
+        players: this.getNearbyPlayers(client, client.viewDistance + 100)
           .map(player => player.retrieve()),
       }));
     });
