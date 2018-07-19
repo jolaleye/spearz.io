@@ -12,6 +12,7 @@ import ScorePickupManager from './core/ScorePickupManager';
 import CanvasHUD from './core/HUD';
 import config from './core/config';
 import assetManager from '../../assetManager';
+import { getDistance } from './core/util';
 
 class Game extends Component {
   canvasRef = createRef();
@@ -40,6 +41,7 @@ class Game extends Component {
     // canvas sizing
     this.app.renderer.autoResize = true;
     window.addEventListener('resize', this.resize);
+    this.viewDistance = 0;
 
     // SFX
     assetManager.sounds.soundtrack.play();
@@ -120,9 +122,9 @@ class Game extends Component {
     this.arenaManager.resize();
 
     // maximum distance an entity can be from the player and be visible
-    const viewDistance =
+    this.viewDistance =
       Math.sqrt(((this.app.screen.width / 2) ** 2) + ((this.app.screen.height / 2) ** 2));
-    this.props.socket.send(pack('clientView', { distance: Math.ceil(viewDistance) }));
+    this.props.socket.send(pack('clientView', { distance: Math.ceil(this.viewDistance) }));
   }
 
   render = () => (
@@ -182,7 +184,17 @@ class Game extends Component {
 
     // pick-ups
     this.scorePickupManagers.forEach(manager => {
-      manager.update(this.offset);
+      const distanceToCenter = getDistance(
+        manager.pos.x - this.offset.x, this.app.screen.width / 2,
+        manager.pos.y - this.offset.y, this.app.screen.height / 2,
+      );
+
+      // hide pick-ups out of the view distance
+      if (distanceToCenter.total > this.viewDistance) manager.hide();
+      else {
+        manager.show();
+        manager.update(this.offset);
+      }
     });
   }
 
