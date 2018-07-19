@@ -146,7 +146,10 @@ class Room {
 
     // check collision with the remaining candidates
     candidates.forEach(candidate => {
-      if (!player || !player.spear || !player.spear.bounds || !candidate.bounds) return;
+      if (!player || !player.spear || !player.spear.bounds || !candidate || !candidate.bounds) {
+        return;
+      }
+
       const hit = testPolygonPolygon(player.spear.bounds, candidate.bounds);
       if (!hit) return;
 
@@ -204,7 +207,8 @@ class Room {
 
     // check collision with the remaining candidates
     candidates.forEach(candidate => {
-      if (!player || !player.bounds || !candidate.bounds) return;
+      if (!player || !player.bounds || !candidate || !candidate.bounds) return;
+
       const hit = testPolygonCircle(player.bounds, candidate.bounds);
       if (!hit) return;
 
