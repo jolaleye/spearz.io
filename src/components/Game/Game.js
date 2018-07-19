@@ -121,7 +121,7 @@ class Game extends Component {
 
     // maximum distance an entity can be from the player and be visible
     const viewDistance =
-      Math.sqrt(((window.innerWidth / 2) ** 2) + ((window.innerHeight / 2) ** 2));
+      Math.sqrt(((this.app.screen.width / 2) ** 2) + ((this.app.screen.height / 2) ** 2));
     this.props.socket.send(pack('clientView', { distance: Math.ceil(viewDistance) }));
   }
 
