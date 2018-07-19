@@ -23,6 +23,7 @@ module.exports = {
       amount: 1,
       freq: 300,
     },
+    expiration: 4000,
   },
 
   spear: {

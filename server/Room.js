@@ -159,6 +159,9 @@ class Room {
 
       // check if the player hit is now dead
       if (this.clients[candidate.id].player.dead) {
+        // expire the player in case they aren't removed
+        setTimeout(() => this.removeClient(candidate.id, true), config.player.expiration);
+
         player.increaseScore(config.score.kill);
         this.clients[player.id].send(pack('kill', { name: candidate.name }));
 
@@ -252,7 +255,7 @@ class Room {
         timestamp: Date.now().toString(),
         tick: this.tick,
         last: client.last,
-        players: this.getNearbyPlayers(client, client.viewDistance + 100)
+        players: this.getNearbyPlayers(client, client.viewDistance)
           .map(player => player.retrieve()),
       }));
     });
@@ -293,7 +296,7 @@ class Room {
         client.player.pos.y, player.pos.y,
       );
 
-      return distance.total <= maxDistance;
+      return distance.total <= maxDistance + 100;
     });
   }
 
