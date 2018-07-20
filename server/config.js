@@ -35,6 +35,6 @@ module.exports = {
 
   scorePickups: {
     initialCount: 100,
-    onJoin: 5,
+    onJoin: 3,
   },
 };
