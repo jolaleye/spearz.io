@@ -22,7 +22,7 @@ class Lobby {
 
   findRoom() {
     // find a room with space
-    const roomKey = _.findKey(this.rooms, candidate => candidate.connections < config.playerLimit);
+    const roomKey = _.findKey(this.rooms, room => room.connections < config.playerLimit);
     let room = this.rooms[roomKey];
     // create a new room if they're all full
     if (!room) {
@@ -64,14 +64,11 @@ class Lobby {
 
     this.rooms[client.room].removeClient(client.id, fromDeath);
 
-    // remove empty rooms
-    Object.values(this.rooms).forEach(room => {
-      if (room.connections === 0) {
-        this.rooms[room.key].destroy();
-        this.rooms[room.key] = null;
-        delete this.rooms[room.key];
-      }
-    });
+    // close the room if it's now empty
+    if (this.rooms[client.room].connections === 0) {
+      this.rooms[client.room].close();
+      delete this.rooms[client.room];
+    }
   }
 }
 
