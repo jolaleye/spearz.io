@@ -44,7 +44,7 @@ class Room {
 
   removeClient(id, fromDeath) {
     // remove some pick-ups if the client was in the game
-    if (this.clients[id].player) {
+    if (this.clients[id] && this.clients[id].player) {
       _.times(config.scorePickups.onJoin, () => {
         const removed = this.scorePickups.shift();
         Object.values(this.clients).forEach(client => {
