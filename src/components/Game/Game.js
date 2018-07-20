@@ -296,6 +296,7 @@ class Game extends Component {
 
   removeScorePickup = id => {
     const pickupToRemove = this.scorePickupManagers.find(manager => manager.id === id);
+    if (!pickupToRemove) return;
 
     this.app.stage.removeChild(pickupToRemove.sprite);
 
