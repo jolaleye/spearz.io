@@ -95,6 +95,7 @@ class PlayerManager {
 
     // state that should be immediately synced
     this.local.health = player.health;
+    this.sReleased = player.released;
   }
 
   interpolate = (delta, active) => {
@@ -165,6 +166,7 @@ class PlayerManager {
 
     this.animateSpear('flying');
     this.local.released = true;
+    this.sReleased = true;
     setTimeout(this.returnSpear, config.spear.cooldown);
   }
 

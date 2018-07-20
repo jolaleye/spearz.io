@@ -219,8 +219,8 @@ class Game extends Component {
   throwSpear = event => {
     if (!this.activeManager) return;
 
-    // checks that if a key was used, it was the spacebar, and that the spear hasn't been released
-    if ((event.key && event.key !== ' ') || this.activeManager.local.released) return;
+    // checks that if a key was used, it was the spacebar
+    if ((event.key && event.key !== ' ') || this.activeManager.local.released || this.activeManager.sReleased) return;
 
     this.props.socket.send(pack('throw', {
       tick: this.serverTick, delta: Math.round(this.sinceSnapshot),
