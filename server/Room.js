@@ -43,11 +43,20 @@ class Room {
   }
 
   removeClient(id, fromDeath) {
+    // remove some pick-ups if the client was in the game
+    if (this.clients[id].player) {
+      _.times(config.scorePickups.onJoin, () => {
+        const removed = this.scorePickups.shift();
+        Object.values(this.clients).forEach(client => {
+          if (client.player) client.send(pack('removeScorePickup', { id: removed.id }));
+        });
+      });
+    }
+
     if (!fromDeath) {
       // if the disconnect was from closing tab/closing browser/drop/etc.
       this.connections -= 1;
       if (!this.clients[id]) return;
-      this.clients[id].room = null;
 
       // notify players through the feed
       Object.values(this.clients).forEach(client => {
@@ -99,8 +108,8 @@ class Room {
     // execute command queue
     this.queue.forEach((command, i) => {
       const client = this.clients[command.clientID];
-      // skip if the client does not have a player / does not exist
-      if (!client || !client.player) {
+      // skip if the client does not have a player / does not exist / is dead
+      if (!client || !client.player || client.player.dead) {
         this.queue.splice(i, 1);
         return;
       }
