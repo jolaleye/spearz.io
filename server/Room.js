@@ -13,7 +13,6 @@ class Room {
     this.key = ID();
     this.connections = 0;
     this.clients = {};
-    this.players = [];
     this.queue = [];
     this.qtree = new Quadtree({ x: 0, y: 0, length: config.arenaRadius * 2 });
 
@@ -21,18 +20,16 @@ class Room {
     this.scorePickups = [];
     this.addScorePickup(config.scorePickups.initialCount);
 
-    this.ticks = {};
-
     // simulation tick
-    this.ticks.sim = setInterval(this.simulate.bind(this), config.tickrate);
     this.tick = 0;
+    this.simTick = setInterval(this.simulate.bind(this), config.tickrate);
 
     // snapshot tick
-    this.ticks.snap = setInterval(this.snapshot.bind(this), config.snapshotRate);
     this.history = [];
+    this.snapTick = setInterval(this.snapshot.bind(this), config.snapshotRate);
 
     // send clients the leaderboard
-    this.ticks.lb = setInterval(this.updateLeaderboard.bind(this), config.leaderboardRate);
+    this.lbTick = setInterval(this.updateLeaderboard.bind(this), config.leaderboardRate);
   }
 
   addClient(client) {
@@ -65,16 +62,12 @@ class Room {
 
       delete this.clients[id];
     }
-
-    this.players = this.players.filter(player => player.id !== id);
   }
 
   // bring a client into the game
   joinGame(client, nickname) {
-    client.player = new Player(client, nickname);
-    // add the client and player
     this.clients[client.id] = client;
-    this.players.push(client.player);
+    client.player = new Player(client, nickname);
     client.send(pack('ready'));
 
     // notify players through the feed
@@ -97,13 +90,14 @@ class Room {
 
   simulate() {
     this.tick += 1;
-    if (_.isEmpty(this.queue)) return;
 
     // find each client's last command
-    Object.values(this.clients).forEach(client => {
-      const last = _.findLastIndex(this.queue, command => command.clientID === client.id);
-      if (this.queue[last]) client.last = this.queue[last].tick;
-    });
+    if (!_.isEmpty(this.queue)) {
+      Object.values(this.clients).forEach(client => {
+        const last = _.findLastIndex(this.queue, command => command.clientID === client.id);
+        if (this.queue[last]) client.last = this.queue[last].tick;
+      });
+    }
 
     // execute command queue
     this.queue.forEach((command, i) => {
@@ -126,14 +120,13 @@ class Room {
     this.scorePickups.forEach(pickup => this.qtree.insert(pickup.qt));
 
     // insert players, excluding dead players
-    this.players.forEach(player => {
+    Object.values(this.clients).forEach(({ player }) => {
       if (!player.dead) this.qtree.insert(player.qt);
     });
 
-    this.players.forEach(player => {
+    Object.values(this.clients).forEach(({ player }) => {
       // check for hits if the player has thrown their spear
       if (player.released) this.checkSpearHits(player);
-
       // check for collisions with pick-ups
       this.checkPickups(player);
     });
@@ -142,6 +135,7 @@ class Room {
   checkSpearHits(player) {
     // find potential collision candidates
     let candidates = this.qtree.retrieve(player.spear.qt);
+
     // filter out this player and pick-ups
     candidates = candidates.filter(candidate => (
       candidate.id !== player.id && candidate.type === 'player'
@@ -229,9 +223,8 @@ class Room {
       Object.values(this.clients).forEach(client => {
         client.send(pack('removeScorePickup', { id: candidate.id }));
       });
-      player.increaseScore(config.score.pickup);
 
-      // add a new pick-up
+      player.increaseScore(config.score.pickup);
       this.addScorePickup(1);
     });
   }
@@ -265,16 +258,17 @@ class Room {
         tick: this.tick,
         last: client.last,
         players: this.getNearbyPlayers(client, client.viewDistance)
-          .map(player => player.retrieve()),
+          .map(clnt => clnt.player.retrieve()),
       }));
     });
   }
 
   updateLeaderboard() {
-    if (_.isEmpty(this.players)) return;
+    const players = Object.values(this.clients).map(client => client.player);
+    if (_.isEmpty(players)) return;
 
     // sort players by score
-    const sorted = _.sortBy(this.players, ['score']).reverse();
+    const sorted = _.sortBy(players, ['score']).reverse();
 
     // give each player their rank
     sorted.forEach((player, i) => {
@@ -299,7 +293,7 @@ class Room {
   }
 
   getNearbyPlayers(client, maxDistance = 1000) {
-    return this.players.filter(player => {
+    return Object.values(this.clients).filter(({ player }) => {
       const distance = getDistance(
         client.player.pos.x, player.pos.x,
         client.player.pos.y, player.pos.y,
@@ -309,10 +303,10 @@ class Room {
     });
   }
 
-  destroy() {
-    clearInterval(this.ticks.sim);
-    clearInterval(this.ticks.snap);
-    clearInterval(this.ticks.lb);
+  close() {
+    clearInterval(this.simTick);
+    clearInterval(this.snapTick);
+    clearInterval(this.lbTick);
   }
 }
 
