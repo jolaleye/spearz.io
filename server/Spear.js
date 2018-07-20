@@ -14,7 +14,7 @@ class Spear {
     // collision bounds needed for SAT    values match the sprite
     // points ordered from the point of the spear clockwise around the spear head
     this.satPolygon = new Polygon(this.pos, [
-      new Vector(0, -51), new Vector(9, -38), new Vector(-9, -38),
+      new Vector(-9, -54), new Vector(9, -54), new Vector(9, 54), new Vector(-9, 54),
     ]);
   }
 
@@ -26,7 +26,7 @@ class Spear {
 
   // data needed for the quadtree   width & height match the sprite
   get qt() {
-    return { x: this.pos.x, y: this.pos.y - 45.5, width: 18, height: 15 };
+    return { x: this.pos.x, y: this.pos.y - 45.5, width: 18, height: 107 };
   }
 
   // collision bounds needed for SAT

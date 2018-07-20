@@ -39,8 +39,8 @@ class Player {
     // collision bounds needed for SAT    points match the sprite
     // points ordered from the point of the player clockwise
     this.satPolygon = new Polygon(this.pos, [
-      new Vector(0, -34.5), new Vector(38.5, 25), new Vector(20, 32),
-      new Vector(-20, 32), new Vector(-38.5, 25),
+      new Vector(0, -35), new Vector(39, 25), new Vector(22, 33),
+      new Vector(-22, 33), new Vector(-39, 25),
     ]);
   }
 
