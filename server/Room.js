@@ -84,17 +84,23 @@ class Room {
     this.addScorePickup(config.scorePickups.onJoin);
   }
 
-  addToQueue(clientID, data) {
-    this.queue.push({ clientID, target: data.target, tick: data.tick });
+  addToQueue(type, clientID, data) {
+    if (type === 'target') {
+      this.queue.push({ type, clientID, target: data.target, tick: data.tick });
+    } else if (type === 'throw') {
+      this.queue.push({ type, clientID, delta: data.delta, tick: data.tick });
+    }
   }
 
   simulate() {
     this.tick += 1;
 
-    // find each client's last command
+    // find each client's last target command
     if (!_.isEmpty(this.queue)) {
       Object.values(this.clients).forEach(client => {
-        const last = _.findLastIndex(this.queue, command => command.clientID === client.id);
+        const last = _.findLastIndex(this.queue, command => (
+          command.clientID === client.id && command.type === 'target'
+        ));
         if (this.queue[last]) client.last = this.queue[last].tick;
       });
     }
@@ -106,9 +112,11 @@ class Room {
       if (!client || !client.player || client.player.dead) {
         this.queue.splice(i, 1);
         return;
+      } else if (command.type === 'target') {
+        client.player.move(command.target);
+      } else if (command.type === 'throw') {
+        client.player.throwSpear(command.tick, command.delta);
       }
-
-      client.player.move(command.target);
 
       this.queue.splice(i, 1);
     });
