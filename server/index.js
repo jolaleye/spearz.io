@@ -24,7 +24,6 @@ ws.on('connection', client => {
     const data = unpack(packet);
     switch (data._) {
       case 'joinRoom':
-        if (!data.key) break;
         lobby.joinRoom(client, data.key);
         break;
 
@@ -34,17 +33,16 @@ ws.on('connection', client => {
         break;
 
       case 'target':
-        if (!data.target || !data.tick || !lobby.rooms[client.room]) break;
-        lobby.rooms[client.room].addToQueue(client.id, data);
+        if (!client.player || !lobby.rooms[client.room]) break;
+        lobby.rooms[client.room].addToQueue('target', client.id, data);
         break;
 
       case 'throw':
-        if (!client.player || !data.tick || !data.delta) break;
-        client.player.throwSpear(data.tick, data.delta);
+        if (!client.player || !lobby.rooms[client.room]) break;
+        lobby.rooms[client.room].addToQueue('throw', client.id, data);
         break;
 
       case 'clientView':
-        if (!data.distance) return;
         client.viewDistance = data.distance;
         break;
 
