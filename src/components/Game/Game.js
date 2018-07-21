@@ -12,7 +12,6 @@ import ScorePickupManager from './core/ScorePickupManager';
 import CanvasHUD from './core/HUD';
 import config from './core/config';
 import assetManager from '../../assetManager';
-import { getDistance } from './core/util';
 
 class Game extends Component {
   canvasRef = createRef();
@@ -181,19 +180,7 @@ class Game extends Component {
     this.arenaManager.update(this.offset);
 
     // pick-ups
-    this.scorePickupManagers.forEach(manager => {
-      const distanceToCenter = getDistance(
-        manager.pos.x - this.offset.x, this.app.screen.width / 2,
-        manager.pos.y - this.offset.y, this.app.screen.height / 2,
-      );
-
-      // hide pick-ups out of the view distance
-      if (distanceToCenter.total > this.viewDistance) manager.hide();
-      else {
-        manager.show();
-        manager.update(this.offset);
-      }
-    });
+    this.scorePickupManagers.forEach(manager => manager.update(this.offset));
   }
 
   track = () => {
