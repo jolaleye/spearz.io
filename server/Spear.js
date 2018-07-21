@@ -16,17 +16,16 @@ class Spear {
     this.satPolygon = new Polygon(this.pos, [
       new Vector(-9, -54), new Vector(9, -54), new Vector(9, 54), new Vector(-9, 54),
     ]);
+
+    // data needed for the quadtree   width & height match the sprite
+    this.width = 18;
+    this.height = 107;
   }
 
   // get spear data needed on the client
   retrieve() {
     const { pos, direction } = this;
     return { pos, direction };
-  }
-
-  // data needed for the quadtree   width & height match the sprite
-  get qt() {
-    return { x: this.pos.x, y: this.pos.y - 45.5, width: 18, height: 107 };
   }
 
   // collision bounds needed for SAT

@@ -18,17 +18,17 @@ class ScorePickup {
 
     // collision bounds needed for SAT
     this.bounds = new Circle(this.pos, 5);
+
+    // data needed for the quadtree   width & height match the sprite
+    this.type = 'score';
+    this.width = 10;
+    this.height = 10;
   }
 
   // retrieve data needed on the client
   retrieve() {
     const { id, pos } = this;
     return { id, pos };
-  }
-
-  // data needed for the quadtree   width & height match the sprite
-  get qt() {
-    return { id: this.id, type: 'score', x: this.pos.x, y: this.pos.y, width: 10, height: 10 };
   }
 }
 

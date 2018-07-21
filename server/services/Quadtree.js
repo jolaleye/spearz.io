@@ -35,10 +35,10 @@ class Quadtree {
 
   contains(item) {
     return (
-      item.x + (item.width / 2) <= this.bounds.x + (this.bounds.length / 2) &&
-      item.x - (item.width / 2) >= this.bounds.x - (this.bounds.length / 2) &&
-      item.y + (item.height / 2) <= this.bounds.y + (this.bounds.length / 2) &&
-      item.y - (item.height / 2) >= this.bounds.y - (this.bounds.length / 2)
+      item.pos.x + (item.width / 2) <= this.bounds.x + (this.bounds.length / 2) &&
+      item.pos.x - (item.width / 2) >= this.bounds.x - (this.bounds.length / 2) &&
+      item.pos.y + (item.height / 2) <= this.bounds.y + (this.bounds.length / 2) &&
+      item.pos.y - (item.height / 2) >= this.bounds.y - (this.bounds.length / 2)
     );
   }
 

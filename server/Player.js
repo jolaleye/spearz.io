@@ -42,17 +42,17 @@ class Player {
       new Vector(0, -35), new Vector(39, 25), new Vector(22, 33),
       new Vector(-22, 33), new Vector(-39, 25),
     ]);
+
+    // data needed for the quadtree   width & height match the sprite
+    this.type = 'player';
+    this.width = 77;
+    this.height = 69;
   }
 
   // get player data needed on the client
   retrieve() {
     const { id, name, health, dead, pos, direction, spear, released, quick } = this;
     return { id, name, health, dead, pos, direction, spear: spear.retrieve(), released, quick };
-  }
-
-  // data needed for the quadtree   width & height match the sprite
-  get qt() {
-    return { id: this.id, type: 'player', x: this.pos.x, y: this.pos.y, width: 77, height: 69 };
   }
 
   // collision bounds needed for SAT

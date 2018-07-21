@@ -117,11 +117,11 @@ class Room {
     this.qtree.clear();
 
     // insert pick-ups
-    this.scorePickups.forEach(pickup => this.qtree.insert(pickup.qt));
+    this.scorePickups.forEach(pickup => this.qtree.insert(pickup));
 
     // insert players, excluding dead players
     Object.values(this.clients).forEach(({ player }) => {
-      if (!player.dead) this.qtree.insert(player.qt);
+      if (!player.dead) this.qtree.insert(player);
     });
 
     Object.values(this.clients).forEach(({ player }) => {
@@ -134,15 +134,12 @@ class Room {
 
   checkSpearHits(player) {
     // find potential collision candidates
-    let candidates = this.qtree.retrieve(player.spear.qt);
+    let candidates = this.qtree.retrieve(player.spear);
 
     // filter out this player and pick-ups
     candidates = candidates.filter(candidate => (
       candidate.id !== player.id && candidate.type === 'player'
     ));
-
-    // convert candidates from their qt variant to their full object
-    candidates = candidates.map(candidate => this.clients[candidate.id].player);
 
     // compensate for different latency factors
     candidates = this.rollback(_.cloneDeep(candidates), player.release);
@@ -162,9 +159,6 @@ class Room {
 
       // check if the player hit is now dead
       if (this.clients[candidate.id].player.dead) {
-        // expire the player in case they aren't removed
-        setTimeout(() => this.removeClient(candidate.id, true), config.player.expiration);
-
         player.increaseScore(config.score.kill);
         this.clients[player.id].send(pack('kill', { name: candidate.name }));
 
@@ -172,6 +166,9 @@ class Room {
         Object.values(this.clients).forEach(client => {
           client.send(pack('feed', { type: 'kill', names: [player.name, candidate.name] }));
         });
+
+        // expire the player in case they aren't removed
+        setTimeout(() => this.removeClient(candidate.id, true), config.player.expiration);
       }
     });
   }
@@ -202,14 +199,10 @@ class Room {
 
   checkPickups(player) {
     // find potential collision candidates
-    let candidates = this.qtree.retrieve(player.spear.qt);
-    // filter anything but score pickups
-    candidates = candidates.filter(candidate => candidate.type === 'score');
+    let candidates = this.qtree.retrieve(player.spear);
 
-    // convert candidates from their qt variant to their full object
-    candidates = candidates.map(candidate => (
-      this.scorePickups.find(pickup => pickup.id === candidate.id)
-    ));
+    // filter out anything but score pickups
+    candidates = candidates.filter(candidate => candidate.type === 'score');
 
     // check collision with the remaining candidates
     candidates.forEach(candidate => {
@@ -219,7 +212,8 @@ class Room {
       if (!hit) return;
 
       // delete the pick-up and increase score
-      this.scorePickups = this.scorePickups.filter(pickup => pickup.id !== candidate.id);
+      const index = this.scorePickups.findIndex(pickup => pickup.id === candidate.id);
+      if (index) this.scorePickups.splice(index, 1);
       Object.values(this.clients).forEach(client => {
         client.send(pack('removeScorePickup', { id: candidate.id }));
       });
@@ -242,12 +236,13 @@ class Room {
   }
 
   snapshot() {
-    // save a snapshot of the whole room
+    // save a snapshot of the room
     const snapshot = {
       tick: this.tick,
       timestamp: Date.now(),
-      players: _.cloneDeep(this.players),
+      players: Object.values(this.clients).map(client => client.player),
     };
+
     // keep a history of the last second of snapshots
     if (this.history.length === 20) this.history.shift();
     this.history.push(snapshot);
