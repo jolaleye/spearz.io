@@ -37,4 +37,9 @@ module.exports = {
     initialCount: 100,
     onJoin: 3,
   },
+
+  bots: {
+    count: 1,
+    checkup: 10000,
+  },
 };

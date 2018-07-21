@@ -7,6 +7,7 @@ const { pack } = require('./services/cereal');
 const Player = require('./Player');
 const Quadtree = require('./services/Quadtree');
 const ScorePickup = require('./ScorePickup');
+const Bot = require('./services/Bot');
 
 class Room {
   constructor() {
@@ -30,6 +31,9 @@ class Room {
 
     // send clients the leaderboard
     this.lbTick = setInterval(this.updateLeaderboard.bind(this), config.leaderboardRate);
+
+    this.bots = {};
+    this.botTick = setInterval(this.botCheckup.bind(this), config.bots.checkup);
   }
 
   addClient(client) {
@@ -306,10 +310,21 @@ class Room {
     });
   }
 
+  botCheckup() {
+    if (Object.keys(this.bots).length < config.bots.count) {
+      const bot = new Bot();
+      this.bots[bot.botID] = bot;
+      bot.on('destroy', () => {
+        delete this.bots[bot.botID];
+      });
+    }
+  }
+
   close() {
     clearInterval(this.simTick);
     clearInterval(this.snapTick);
     clearInterval(this.lbTick);
+    clearInterval(this.botTick);
   }
 }
 
