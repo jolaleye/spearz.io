@@ -69,12 +69,10 @@ class Game extends Component {
           break;
 
         case 'scorePickup':
-          if (!data.id || !data.pos) return;
           this.addScorePickup(data.id, data.pos);
           break;
 
         case 'removeScorePickup':
-          if (!data.id) return;
           this.removeScorePickup(data.id);
           break;
 
