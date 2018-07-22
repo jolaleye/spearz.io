@@ -14,6 +14,7 @@ class Room {
     this.key = ID();
     this.connections = 0;
     this.clients = {};
+    this.players = [];
     this.queue = [];
     this.qtree = new Quadtree({ x: 0, y: 0, length: config.arenaRadius * 2 });
 
@@ -32,8 +33,9 @@ class Room {
     // send clients the leaderboard
     this.lbTick = setInterval(this.updateLeaderboard.bind(this), config.leaderboardRate);
 
-    this.bots = {};
-    this.botTick = setInterval(this.botCheckup.bind(this), config.bots.checkup);
+    // rooms start with some bots so they aren't completely empty
+    this.bots = [];
+    _.times(config.bots.count, this.deployBot.bind(this));
   }
 
   addClient(client) {
@@ -44,8 +46,11 @@ class Room {
   }
 
   removeClient(id, fromDeath) {
-    // remove some pick-ups if the client was in the game
     if (this.clients[id] && this.clients[id].player) {
+      // remove the player
+      this.players.splice(this.players.indexOf(this.clients[id].player), 1);
+
+      // remove pick-ups
       _.times(config.scorePickups.onJoin, () => {
         const removed = this.scorePickups.shift();
         Object.values(this.clients).forEach(client => {
@@ -57,6 +62,11 @@ class Room {
     if (!fromDeath) {
       // if the disconnect was from closing tab/closing browser/drop/etc.
       this.connections -= 1;
+
+      // if the room is only bots, destroy them all
+      const allBots = !Object.values(this.clients).some(client => !client.isBot);
+      if (allBots) this.bots.forEach(b => b.destroy());
+
       if (!this.clients[id]) return;
 
       // notify players through the feed
@@ -72,6 +82,7 @@ class Room {
   joinGame(client, nickname) {
     this.clients[client.id] = client;
     client.player = new Player(client, nickname);
+    this.players.push(client.player);
     client.send(pack('ready'));
 
     // notify players through the feed
@@ -132,11 +143,11 @@ class Room {
     this.scorePickups.forEach(pickup => this.qtree.insert(pickup));
 
     // insert players, excluding dead players
-    Object.values(this.clients).forEach(({ player }) => {
+    this.players.forEach(player => {
       if (!player.dead) this.qtree.insert(player);
     });
 
-    Object.values(this.clients).forEach(({ player }) => {
+    this.players.forEach(player => {
       // check for hits if the player has thrown their spear
       if (player.released) this.checkSpearHits(player);
       // check for collisions with pick-ups
@@ -265,17 +276,16 @@ class Room {
         tick: this.tick,
         last: client.last,
         players: this.getNearbyPlayers(client, client.viewDistance)
-          .map(clnt => clnt.player.retrieve()),
+          .map(player => player.retrieve()),
       }));
     });
   }
 
   updateLeaderboard() {
-    const players = Object.values(this.clients).map(client => client.player);
-    if (_.isEmpty(players)) return;
+    if (_.isEmpty(this.players)) return;
 
     // sort players by score
-    const sorted = _.sortBy(players, ['score']).reverse();
+    const sorted = _.sortBy(this.players, ['score']).reverse();
 
     // give each player their rank
     sorted.forEach((player, i) => {
@@ -300,7 +310,7 @@ class Room {
   }
 
   getNearbyPlayers(client, maxDistance = 1000) {
-    return Object.values(this.clients).filter(({ player }) => {
+    return this.players.filter(player => {
       const distance = getDistance(
         client.player.pos.x, player.pos.x,
         client.player.pos.y, player.pos.y,
@@ -310,21 +320,31 @@ class Room {
     });
   }
 
-  botCheckup() {
-    if (Object.keys(this.bots).length < config.bots.count) {
-      const bot = new Bot();
-      this.bots[bot.botID] = bot;
-      bot.on('destroy', () => {
-        delete this.bots[bot.botID];
-      });
-    }
+  deployBot() {
+    const bot = new Bot(this.key);
+    this.bots.push(bot);
+
+    bot.on('created', () => {
+      this.clients[bot.id].isBot = true;
+    });
+
+    bot.on('dead', () => {
+      bot.destroy();
+
+      const index = this.bots.findIndex(({ botID }) => botID === bot.botID);
+      if (this.bots[index]) this.bots.splice(index, 1);
+
+      // deploy another bot if there aren't enough players yet
+      const nonBots = this.players.length - this.bots.length;
+      const allBots = !Object.values(this.clients).some(client => !client.isBot);
+      if (nonBots < config.bots.keepUntil && !allBots) this.deployBot();
+    });
   }
 
   close() {
     clearInterval(this.simTick);
     clearInterval(this.snapTick);
     clearInterval(this.lbTick);
-    clearInterval(this.botTick);
   }
 }
 

@@ -39,7 +39,7 @@ module.exports = {
   },
 
   bots: {
-    count: 1,
-    checkup: 10000,
+    count: 5,
+    keepUntil: 5,
   },
 };

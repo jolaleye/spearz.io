@@ -6,14 +6,16 @@ const { pack, unpack } = require('./cereal');
 const { ID } = require('./util');
 
 class Bot extends EventEmitter {
-  constructor() {
+  constructor(roomKey) {
     super();
+
+    this.roomKey = roomKey;
 
     this.botID = ID();
     this.socket = new WebSocket(`ws://localhost:${process.env.PORT || 3001}`);
 
     this.socket.on('open', () => {
-      this.socket.send(pack('joinGame', { nickname: '{•̃_•̃}' }));
+      this.socket.send(pack('joinRoom', { key: roomKey }));
     });
 
     this.socket.on('message', packet => {
@@ -23,8 +25,18 @@ class Bot extends EventEmitter {
           this.id = data.id;
           break;
 
+        case 'ready':
+          if (this.id) this.emit('created');
+          break;
+
+        case 'keyMsg':
+          // destroy the bot if it can't join its designated room
+          if (data.code === 1) this.join();
+          else this.destroy();
+          break;
+
         case 'roomKey':
-          this.room = data.key;
+          if (data.key === this.roomKey) this.join();
           break;
 
         case 'snapshot':
@@ -32,7 +44,7 @@ class Bot extends EventEmitter {
           break;
 
         case 'dead':
-          this.destroy();
+          this.emit('dead');
           break;
 
         default: break;
@@ -41,17 +53,16 @@ class Bot extends EventEmitter {
 
     // super complex artificial intelligence
     this.tick = 0;
-    setInterval(this.move.bind(this), 33);
+    this.ticker = setInterval(this.move.bind(this), 33);
+  }
+
+  join() {
+    if (!this.joined) this.socket.send(pack('joinGame', { nickname: '{•̃_•̃}' }));
+    this.joined = true;
   }
 
   update(player) {
-    // if the player is missing, destroy the bot
-    if (!player) {
-      this.destroy();
-    } else {
-      // otherwise, update
-      this.player = player;
-    }
+    if (player) this.player = player;
   }
 
   move() {
@@ -72,8 +83,8 @@ class Bot extends EventEmitter {
   }
 
   destroy() {
+    clearInterval(this.ticker);
     this.socket.close();
-    this.emit('destroy');
   }
 }
 
