@@ -5,6 +5,7 @@ import { unpack } from '../../../services/cereal';
 class HUD {
   constructor(app, socket) {
     socket.addEventListener('message', packet => {
+      if (packet.data === 'ping') return;
       const data = unpack(packet.data);
       switch (data._) {
         case 'score':

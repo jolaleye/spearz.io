@@ -33,6 +33,9 @@ class Room {
     // send clients the leaderboard
     this.lbTick = setInterval(this.updateLeaderboard.bind(this), config.leaderboardRate);
 
+    // measure each client's latency
+    this.pingPong = setInterval(this.ping.bind(this), config.pingRate);
+
     // rooms start with some bots so they aren't completely empty
     this.bots = [];
     _.times(config.bots.count, this.deployBot.bind(this));
@@ -262,6 +265,13 @@ class Room {
 
       client.lastSnapshot = snapshot;
       client.send(pack('snapshot', snapshot));
+    });
+  }
+
+  ping() {
+    Object.values(this.clients).forEach(client => {
+      client.startTime = Date.now();
+      client.send('ping');
     });
   }
 

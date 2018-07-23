@@ -40,6 +40,11 @@ class App extends Component {
     });
 
     socket.addEventListener('message', packet => {
+      if (packet.data === 'ping') {
+        socket.send('pong');
+        return;
+      }
+
       const data = unpack(packet.data);
       switch (data._) {
         case 'id':

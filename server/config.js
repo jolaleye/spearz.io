@@ -4,6 +4,7 @@ module.exports = {
   leaderboardRate: 750,
   arenaRadius: 5000,
   playerLimit: 100,
+  pingRate: 2000,
 
   damage: {
     bounds: 10,
