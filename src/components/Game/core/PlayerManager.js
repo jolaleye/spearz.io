@@ -253,6 +253,31 @@ class PlayerManager {
     this.nameTag.position.set(this.player.position.x, this.player.position.y + 80);
   }
 
+  checkCollisions = managers => {
+    if (!this.local.released) return;
+
+    const spear = {
+      x: this.spear.getGlobalPosition().x,
+      y: this.spear.getGlobalPosition().y,
+      w: this.spear.width,
+      h: this.spear.height,
+    };
+
+    managers.forEach(manager => {
+      const player = {
+        x: manager.player.getGlobalPosition().x,
+        y: manager.player.getGlobalPosition().y,
+        w: manager.player.width,
+        h: manager.player.height,
+      };
+
+      const xCollision = spear.x < player.x + player.w && spear.x + spear.w > player.x;
+      const yCollision = spear.y < player.y + player.h && spear.y + spear.h > player.y;
+
+      if (xCollision && yCollision) this.local.released = false;
+    });
+  }
+
   animatePlayer = animation => {
     if (animation === this.currentPlayerAnimation || this.currentPlayerAnimation === 'death') {
       return;

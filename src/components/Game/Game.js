@@ -168,6 +168,10 @@ class Game extends Component {
       manager.update(this.offset, manager.id === this.props.socket.id);
     });
 
+    // simulate spear hits
+    const otherPlayers = this.playerManagers.filter(mngr => mngr.id !== this.activeManager.id);
+    this.activeManager.checkCollisions(otherPlayers);
+
     // arena rendering
     this.arenaManager.update(this.offset);
 
