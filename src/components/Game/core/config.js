@@ -2,7 +2,7 @@ export default {
   tickrate: 33,
   arenaRadius: 5000,
 
-  reconciliationThreshold: 10, // max position disparity between client and server
+  reconciliationThreshold: 32, // max position disparity between client and server
 
   player: {
     speed: 16,

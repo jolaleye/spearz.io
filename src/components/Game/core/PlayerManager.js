@@ -92,6 +92,10 @@ class PlayerManager {
 
     // set local data if needed
     if (!this.local) this.local = player;
+    // set prev data if needed
+    if (!this.prev) this.prev = player;
+    // set next data if needed
+    if (!this.next) this.next = player;
 
     // state that should be immediately synced
     this.local.health = player.health;
@@ -115,12 +119,15 @@ class PlayerManager {
     }
   }
 
-  // logic copied directly from the server...
   predict = target => {
-    this.local.pos = this.next ? _.clone(this.next.pos) : this.local.pos;
+    if (!this.local || !this.prev || !this.next) return;
+
+    // reset states
+    this.local.pos = _.clone(this.next.pos);
     this.prev = _.cloneDeep(this.local);
     this.next = _.cloneDeep(this.local);
 
+    // logic copied directly from the server...
     const distance = getDistance(this.local.pos.x, target.x, this.local.pos.y, target.y);
     this.next.direction = Math.atan2(distance.y, distance.x);
 
@@ -206,7 +213,8 @@ class PlayerManager {
 
     // adopt the server's authoritative state if the disparity is large enough
     if (disparity.total > config.reconciliationThreshold) {
-      this.local.pos = serverState.pos;
+      this.next.pos = serverState.pos;
+      this.next.direction = serverState.direction;
     }
   }
 
