@@ -213,8 +213,8 @@ class PlayerManager {
 
     // adopt the server's authoritative state if the disparity is large enough
     if (disparity.total > config.reconciliationThreshold) {
-      this.next.pos = serverState.pos;
-      this.next.direction = serverState.direction;
+      this.local.pos = serverState.pos;
+      this.local.direction = serverState.direction;
     }
   }
 
