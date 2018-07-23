@@ -155,7 +155,7 @@ class Room {
     ));
 
     // compensate for different latency factors
-    candidates = this.rollback(_.cloneDeep(candidates), player.release);
+    // candidates = this.rollback(_.cloneDeep(candidates), player.release);
 
     // check collision with the remaining candidates
     candidates.forEach(candidate => {
