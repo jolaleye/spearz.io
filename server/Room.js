@@ -51,12 +51,7 @@ class Room {
       this.players.splice(this.players.indexOf(this.clients[id].player), 1);
 
       // remove pick-ups
-      _.times(config.scorePickups.onJoin, () => {
-        const removed = this.scorePickups.shift();
-        Object.values(this.clients).forEach(client => {
-          if (client.player) client.send(pack('removeScorePickup', { id: removed.id }));
-        });
-      });
+      _.times(config.scorePickups.onJoin, () => this.scorePickups.shift());
     }
 
     if (!fromDeath) {
@@ -88,11 +83,6 @@ class Room {
     // notify players through the feed
     Object.values(this.clients).forEach(clnt => {
       clnt.send(pack('feed', { type: 'join', names: [client.player.name] }));
-    });
-
-    // inform client of score pick-ups
-    this.scorePickups.forEach(pickup => {
-      client.send(pack('scorePickup', { ...pickup.retrieve() }));
     });
 
     // add more pick-ups
@@ -237,9 +227,6 @@ class Room {
       // delete the pick-up and increase score
       const index = this.scorePickups.findIndex(pickup => pickup.id === candidate.id);
       if (index) this.scorePickups.splice(index, 1);
-      Object.values(this.clients).forEach(client => {
-        client.send(pack('removeScorePickup', { id: candidate.id }));
-      });
 
       player.increaseScore(config.score.pickup);
       this.addScorePickup(1);
@@ -248,13 +235,8 @@ class Room {
 
   addScorePickup(count) {
     _.times(count, () => {
-      // add a pick-up
       const pickup = new ScorePickup();
       this.scorePickups.push(pickup);
-      // inform clients of its position
-      Object.values(this.clients).forEach(client => {
-        client.send(pack('scorePickup', { ...pickup.retrieve() }));
-      });
     });
   }
 
@@ -277,6 +259,8 @@ class Room {
         last: client.last,
         players: this.getNearbyPlayers(client, client.viewDistance)
           .map(player => player.retrieve()),
+        pickups: this.getNearbyPickups(client, client.viewDistance)
+          .map(pickup => pickup.retrieve()),
       }));
     });
   }
@@ -314,6 +298,17 @@ class Room {
       const distance = getDistance(
         client.player.pos.x, player.pos.x,
         client.player.pos.y, player.pos.y,
+      );
+
+      return distance.total <= maxDistance + 100;
+    });
+  }
+
+  getNearbyPickups(client, maxDistance = 1000) {
+    return this.scorePickups.filter(pickup => {
+      const distance = getDistance(
+        client.player.pos.x, pickup.pos.x,
+        client.player.pos.y, pickup.pos.y,
       );
 
       return distance.total <= maxDistance + 100;

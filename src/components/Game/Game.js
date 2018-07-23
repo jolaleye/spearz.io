@@ -57,7 +57,7 @@ class Game extends Component {
     this.playerManagers = [];
 
     // managers for score pick-ups
-    this.scorePickupManagers = [];
+    this.pickupManagers = [];
 
     // listen for snapshots
     this.props.socket.addEventListener('message', packet => {
@@ -65,14 +65,6 @@ class Game extends Component {
       switch (data._) {
         case 'snapshot':
           this.sync(data);
-          break;
-
-        case 'scorePickup':
-          this.addScorePickup(data.id, data.pos);
-          break;
-
-        case 'removeScorePickup':
-          this.removeScorePickup(data.id);
           break;
 
         case 'hit':
@@ -180,7 +172,7 @@ class Game extends Component {
     this.arenaManager.update(this.offset);
 
     // pick-ups
-    this.scorePickupManagers.forEach(manager => manager.update(this.offset));
+    this.pickupManagers.forEach(manager => manager.update(this.offset));
   }
 
   track = () => {
@@ -268,25 +260,30 @@ class Game extends Component {
       }
     });
 
+    // remove managers for pick-ups that aren't present
+    this.pickupManagers.forEach((manager, i) => {
+      if (snapshot.pickups.some(pickup => pickup.id === manager.id)) return;
+
+      // remove the manager if no player shares the id
+      manager.hide();
+      this.pickupManagers.splice(i, 1);
+    });
+
+    // update pick-ups
+    snapshot.pickups.forEach(pickup => {
+      // find the manager for this pick-up
+      let manager = this.pickupManagers.find(mngr => mngr.id === pickup.id);
+
+      // create one if needed
+      if (!manager) {
+        manager = new ScorePickupManager(pickup.id, pickup.pos);
+        this.app.stage.addChild(manager.sprite);
+        manager.sprite.parentGroup = this.pickupGroup;
+        this.pickupManagers.push(manager);
+      }
+    });
+
     this.sinceSnapshot = 0;
-  }
-
-  addScorePickup = (id, pos) => {
-    const manager = new ScorePickupManager(id, pos);
-
-    this.app.stage.addChild(manager.sprite);
-    manager.sprite.parentGroup = this.pickupGroup;
-    this.scorePickupManagers.push(manager);
-  }
-
-  removeScorePickup = id => {
-    const pickupToRemove = this.scorePickupManagers.find(manager => manager.id === id);
-    if (!pickupToRemove) return;
-
-    this.app.stage.removeChild(pickupToRemove.sprite);
-
-    const index = this.scorePickupManagers.indexOf(pickupToRemove);
-    this.scorePickupManagers.splice(index, 1);
   }
 }
 

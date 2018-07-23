@@ -25,6 +25,10 @@ class ScorePickupManager {
     }, _.random(10, 20));
   }
 
+  hide = () => {
+    this.sprite.visible = false;
+  }
+
   update = offset => {
     this.sprite.position.set(this.pos.x - offset.x, this.pos.y - offset.y);
   }
