@@ -276,8 +276,8 @@ class Room {
 
   ping() {
     Object.values(this.clients).forEach(client => {
-      client.startTime = Date.now();
-      client.send('ping');
+      client.pingTime = Date.now();
+      client.send(pack('ping'));
     });
   }
 

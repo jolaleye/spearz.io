@@ -115,6 +115,14 @@ const lexicon = {
     type: 'clientView',
     schema: sp.build({ _: 'uint', distance: 'uint' }),
   },
+  19: {
+    type: 'ping',
+    schema: sp.build({ _: 'uint' }),
+  },
+  20: {
+    type: 'pong',
+    schema: sp.build({ _: 'uint' }),
+  },
 };
 
 exports.pack = (type, data = {}) => {

@@ -11,7 +11,6 @@ class RoomModalContainer extends Component {
 
   componentDidMount() {
     this.props.socket.addEventListener('message', packet => {
-      if (packet.data === 'ping') return;
       const data = unpack(packet.data);
       if (data._ === 'keyMsg') {
         this.setState({ msg: { code: data.code, msg: data.msg } });

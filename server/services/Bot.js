@@ -19,7 +19,6 @@ class Bot extends EventEmitter {
     });
 
     this.socket.on('message', packet => {
-      if (packet === 'ping') return;
       const data = unpack(packet);
       switch (data._) {
         case 'id':

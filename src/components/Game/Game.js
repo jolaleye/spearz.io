@@ -61,7 +61,6 @@ class Game extends Component {
 
     // listen for snapshots
     this.props.socket.addEventListener('message', packet => {
-      if (packet.data === 'ping') return;
       const data = unpack(packet.data);
       switch (data._) {
         case 'snapshot':

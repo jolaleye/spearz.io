@@ -5,7 +5,7 @@ import './main.css';
 import StartContainer from './components/Start/StartContainer';
 import Game from './components/Game/Game';
 import Mobile from './components/Mobile/Mobile';
-import { unpack } from './services/cereal';
+import { unpack, pack } from './services/cereal';
 import assetManager from './assetManager';
 
 class App extends Component {
@@ -40,13 +40,12 @@ class App extends Component {
     });
 
     socket.addEventListener('message', packet => {
-      if (packet.data === 'ping') {
-        socket.send('pong');
-        return;
-      }
-
       const data = unpack(packet.data);
       switch (data._) {
+        case 'ping':
+          socket.send(pack('pong'));
+          break;
+
         case 'id':
           socket.id = data.id;
           break;

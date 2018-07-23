@@ -21,13 +21,12 @@ ws.on('connection', client => {
   lobby.initiate(client);
 
   client.on('message', packet => {
-    if (packet === 'pong') {
-      client.latency = (Date.now() - client.startTime) / 2;
-      return;
-    }
-
     const data = unpack(packet);
     switch (data._) {
+      case 'pong':
+        client.latency = (Date.now() - client.pingTime) / 2;
+        break;
+
       case 'joinRoom':
         lobby.joinRoom(client, data.key);
         break;
