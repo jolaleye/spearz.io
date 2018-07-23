@@ -15,6 +15,10 @@ class Lobby {
     client.id = ID(2);
     client.send(pack('id', { id: client.id }));
 
+    // ping
+    client.startTime = Date.now();
+    client.send('ping');
+
     // find a room
     const room = this.findRoom();
     this.connect(client, room.key);
