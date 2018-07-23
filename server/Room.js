@@ -2,7 +2,7 @@ const _ = require('lodash');
 const { testPolygonPolygon, testPolygonCircle } = require('sat');
 
 const config = require('./config');
-const { ID, getDistance, lerp } = require('./services/util');
+const { ID, getDistance } = require('./services/util');
 const { pack } = require('./services/cereal');
 const Player = require('./Player');
 const Quadtree = require('./services/Quadtree');
@@ -96,7 +96,7 @@ class Room {
     if (type === 'target') {
       this.queue.push({ type, clientID, target: data.target, tick: data.tick });
     } else if (type === 'throw') {
-      this.queue.push({ type, clientID, delta: data.delta, tick: data.tick });
+      this.queue.push({ type, clientID });
     }
   }
 
@@ -123,7 +123,7 @@ class Room {
       } else if (command.type === 'target') {
         client.player.move(command.target);
       } else if (command.type === 'throw') {
-        client.player.throwSpear(command.tick, command.delta);
+        client.player.throwSpear();
       }
 
       this.queue.splice(i, 1);
@@ -142,7 +142,7 @@ class Room {
 
     this.players.forEach(player => {
       // check for hits if the player has thrown their spear
-      if (player.released) this.checkSpearHits(player);
+      if (player.released && player.release) this.checkSpearHits(player);
       // check for collisions with pick-ups
       this.checkPickups(player);
     });
@@ -158,7 +158,7 @@ class Room {
     ));
 
     // compensate for different latency factors
-    // candidates = this.rollback(_.cloneDeep(candidates), player.release);
+    candidates = this.rollback(candidates, player.release);
 
     // check collision with the remaining candidates
     candidates.forEach(candidate => {
@@ -189,28 +189,34 @@ class Room {
     });
   }
 
-  rollback(players, { tick, delta }) {
-    // find the snapshot with the given tick
-    const snapshot = this.history.find(snap => snap.tick === tick);
-    // and the next one
-    const nextSnapshot = this.history[this.history.indexOf(snapshot) + 1];
+  rollback(candidates, release) {
+    const closestSnapshot = time => {
+      let closest = Number.MAX_SAFE_INTEGER;
+      let index = 0;
 
-    if (!snapshot || !nextSnapshot) return players;
+      this.history.forEach((snapshot, i) => {
+        const elapsed = Math.abs(time - snapshot.timestamp);
+        if (elapsed < closest && snapshot.timestamp < time) {
+          index = i;
+          closest = elapsed;
+        }
+      });
 
-    players.forEach(player => {
-      // states in the last and next snapshots
-      const s1 = snapshot.players.find(plyr => plyr.id === player.id);
-      const s2 = nextSnapshot.players.find(plyr => plyr.id === player.id);
+      return index;
+    };
 
-      if (!s1 || !s2) return;
+    // time since the player's throw
+    const delta = Date.now() - release;
 
-      const t = _.clamp(delta / (nextSnapshot.timestamp - snapshot.timestamp), 1);
-      // roll player positions back to that snapshot + the delta
-      player.pos.x = lerp(s1.pos.x, s2.pos.x, t);
-      player.pos.y = lerp(s1.pos.y, s2.pos.y, t);
-    });
+    // find the snapshot closest to and before the current spear time
+    const snapshot = this.history[closestSnapshot(release + delta)];
 
-    return players;
+    if (!snapshot) return candidates;
+
+    // return the candidates from the snapshot
+    return snapshot.players.filter(player => (
+      candidates.some(candidate => candidate.id === player.id)
+    ));
   }
 
   checkPickups(player) {
@@ -244,12 +250,12 @@ class Room {
   }
 
   snapshot() {
-    // keep a history of the last second of snapshots
-    if (this.history.length === 20) this.history.shift();
+    // keep a history of snapshots
+    if (this.history.length === 25) this.history.shift();
     this.history.push({
       tick: this.tick,
       timestamp: Date.now(),
-      players: this.players,
+      players: _.cloneDeep(this.players),
     });
 
     Object.values(this.clients).forEach(client => {

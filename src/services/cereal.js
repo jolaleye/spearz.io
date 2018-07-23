@@ -77,7 +77,7 @@ const lexicon = {
   },
   9: {
     type: 'throw',
-    schema: sp.build({ _: 'uint', tick: 'uint', delta: 'uint' }),
+    schema: sp.build({ _: 'uint' }),
   },
   10: {
     type: 'hit',

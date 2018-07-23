@@ -26,7 +26,7 @@ class Player {
 
     this.spear = new Spear(this.id, this.pos);
     this.released = false;
-    this.release = {};
+    this.release = null;
 
     this.health = 100;
     this.dead = false;
@@ -143,15 +143,15 @@ class Player {
     if (this.health === 100) clearInterval(this.regenInterval);
   }
 
-  throwSpear(tick, delta) {
+  throwSpear() {
     if (this.released || !this.spear) return;
 
     // reset then launch
     this.spear.follow(this.pos, this.direction);
     this.spear.launch();
 
-    // data about the throw
-    this.release = { tick, delta };
+    // release time = server time - latency - interpolation delay
+    this.release = Date.now() - this.client.latency - 50;
 
     this.released = true;
     // timer for the spear to return

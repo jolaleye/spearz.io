@@ -200,9 +200,7 @@ class Game extends Component {
     // checks that if a key was used, it was the spacebar
     if ((event.key && event.key !== ' ') || this.activeManager.local.released || this.activeManager.sReleased) return;
 
-    this.props.socket.send(pack('throw', {
-      tick: this.serverTick, delta: Math.round(this.sinceSnapshot),
-    }));
+    this.props.socket.send(pack('throw'));
     this.activeManager.emulateThrow();
     assetManager.sounds.throw.play();
   }

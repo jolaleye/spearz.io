@@ -44,7 +44,7 @@ ws.on('connection', client => {
 
       case 'throw':
         if (!client.player || !lobby.rooms[client.room]) break;
-        lobby.rooms[client.room].addToQueue('throw', client.id, data);
+        lobby.rooms[client.room].addToQueue('throw', client.id);
         break;
 
       case 'clientView':
