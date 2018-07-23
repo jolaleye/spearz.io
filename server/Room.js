@@ -316,7 +316,7 @@ class Room {
         client.player.pos.y, player.pos.y,
       );
 
-      return distance.total <= maxDistance + 100;
+      return distance.total <= maxDistance;
     });
   }
 
