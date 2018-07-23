@@ -241,19 +241,16 @@ class Room {
   }
 
   snapshot() {
-    // save a snapshot of the room
-    const snapshot = {
-      tick: this.tick,
-      timestamp: Date.now(),
-      players: Object.values(this.clients).map(client => client.player),
-    };
-
     // keep a history of the last second of snapshots
     if (this.history.length === 20) this.history.shift();
-    this.history.push(snapshot);
+    this.history.push({
+      tick: this.tick,
+      timestamp: Date.now(),
+      players: this.players,
+    });
 
     Object.values(this.clients).forEach(client => {
-      client.send(pack('snapshot', {
+      const snapshot = {
         timestamp: Date.now().toString(),
         tick: this.tick,
         last: client.last,
@@ -261,7 +258,10 @@ class Room {
           .map(player => player.retrieve()),
         pickups: this.getNearbyPickups(client, client.viewDistance)
           .map(pickup => pickup.retrieve()),
-      }));
+      };
+
+      client.lastSnapshot = snapshot;
+      client.send(pack('snapshot', snapshot));
     });
   }
 
@@ -311,7 +311,7 @@ class Room {
         client.player.pos.y, pickup.pos.y,
       );
 
-      return distance.total <= maxDistance + 100;
+      return distance.total <= maxDistance;
     });
   }
 
