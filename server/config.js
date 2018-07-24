@@ -10,7 +10,7 @@ module.exports = {
   damage: {
     bounds: 10,
     boundsFreq: 750,
-    hit: 20,
+    hit: 30,
   },
 
   score: {
