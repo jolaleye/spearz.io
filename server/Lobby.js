@@ -8,6 +8,19 @@ const Room = require('./Room');
 class Lobby {
   constructor() {
     this.rooms = {};
+
+    setInterval(this.log.bind(this), config.logFreq);
+  }
+
+  log() {
+    const roomCount = Object.keys(this.rooms).length;
+
+    let playerCount = 0;
+    Object.values(this.rooms).forEach(room => {
+      playerCount += room.players.length;
+    });
+
+    console.log(`${roomCount} rooms\t${playerCount} players`);
   }
 
   initiate(client) {
