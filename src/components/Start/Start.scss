@@ -20,7 +20,7 @@
   margin-bottom: 5em;
 }
 
-.start__info {
+.start__instructions {
   display: flex;
   flex-flow: column nowrap;
   align-items: center;
@@ -104,6 +104,23 @@
       color: white;
   
       border: 2px solid white;
+    }
+  }
+}
+
+.start__info {
+  position: absolute;
+  bottom: 1em;
+  right: 1.5em;
+
+  & .icon {
+    width: 2em;
+    height: auto;
+  
+    color: white;
+
+    &:hover {
+      cursor: pointer;
     }
   }
 }

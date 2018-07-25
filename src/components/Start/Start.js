@@ -1,11 +1,12 @@
 import React from 'react';
-import { Users, Volume2, VolumeX } from 'react-feather';
+import { Users, Volume2, VolumeX, Info } from 'react-feather';
 
 import './Start.css';
 import logo from '../../assets/logo.svg';
 
 const Start = ({
-  connected, loaded, nickname, handleNameChange, audio, toggleAudio, toggleModal, joinGame,
+  connected, loaded, nickname, handleNameChange, audio,
+  toggleAudio, toggleModal, toggleInfo, joinGame,
 }) => (
   <div className="start is-hidden-touch">
 
@@ -20,7 +21,7 @@ const Start = ({
       }
     </form>
 
-    <div className="start__info">
+    <div className="start__instructions">
       <p>Move with your <span>mouse</span></p>
       <p><span>Click</span> or press <span>space</span> to throw your spear</p>
     </div>
@@ -31,6 +32,10 @@ const Start = ({
         ? <Volume2 className="icon" onClick={toggleAudio} />
         : <VolumeX className="icon" onClick={toggleAudio} />
       }
+    </div>
+
+    <div className="start__info">
+      <Info className="icon" onClick={toggleInfo} />
     </div>
 
   </div>

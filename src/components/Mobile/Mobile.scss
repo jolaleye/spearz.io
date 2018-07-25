@@ -24,4 +24,20 @@
     width: 80%;
     height: auto;
   }
+
+  & .icon {
+    width: 3em;
+    height: auto;
+  
+    color: white;
+
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 2em;
+
+    &:hover {
+      cursor: pointer;
+    }
+  }
 }

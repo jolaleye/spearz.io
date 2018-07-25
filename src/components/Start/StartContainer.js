@@ -2,15 +2,17 @@ import React, { Component, Fragment } from 'react';
 import _ from 'lodash';
 import { Howler } from 'howler';
 
+import { pack } from '../../services/cereal';
 import Start from './Start';
 import RoomModalContainer from './RoomModal/RoomModalContainer';
-import { pack } from '../../services/cereal';
+import Info from '../Info/Info';
 
 class StartContainer extends Component {
   state = {
     nickname: '',
     audio: true,
     modal: false,
+    info: false,
   }
 
   handleNameChange = event => {
@@ -26,6 +28,10 @@ class StartContainer extends Component {
     this.setState(prevState => ({ modal: !prevState.modal }));
   }
 
+  toggleInfo = () => {
+    this.setState(prevState => ({ info: !prevState.info }));
+  }
+
   joinGame = event => {
     event.preventDefault();
     if (!this.props.connected || !this.props.loaded) return;
@@ -39,12 +45,13 @@ class StartContainer extends Component {
       <Start connected={this.props.connected} loaded={this.props.loaded}
         nickname={this.state.nickname} handleNameChange={this.handleNameChange}
         audio={this.state.audio} toggleAudio={this.toggleAudio} toggleModal={this.toggleModal}
-        joinGame={this.joinGame} />
+        toggleInfo={this.toggleInfo} joinGame={this.joinGame} />
       {this.props.connected
         ? <RoomModalContainer socket={this.props.socket} modal={this.state.modal}
             toggleModal={this.toggleModal} roomKey={this.props.roomKey} />
         : null
       }
+      <Info open={this.state.info} toggle={this.toggleInfo} />
     </Fragment>
   );
 }
