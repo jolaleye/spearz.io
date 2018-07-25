@@ -14,7 +14,8 @@ const Info = ({ open, toggle }) => (
         </div>
 
         <div className="info__reddit">
-          Join the community on <a href="">Reddit</a>!
+          <span>Join the community on </span>
+          <a href="https://www.reddit.com/r/spearzio/">Reddit</a>!
         </div>
 
         <div className="info__changelog">
