@@ -60,11 +60,6 @@ class Room {
     if (!fromDeath) {
       // if the disconnect was from closing tab/closing browser/drop/etc.
       this.connections -= 1;
-
-      // if the room is only bots, destroy them all
-      const allBots = !Object.values(this.clients).some(client => !client.isBot);
-      if (allBots) this.bots.forEach(b => b.destroy());
-
       if (!this.clients[id]) return;
 
       // notify players through the feed
@@ -72,7 +67,15 @@ class Room {
         client.send(pack('feed', { type: 'leave', names: [this.clients[id].player.name] }));
       });
 
+      const wasBot = this.clients[id].isBot;
       delete this.clients[id];
+
+      // if the room is only bots and it wasn't a bot that just left, destroy them all
+      const someReal = Object.values(this.clients).some(client => !client.isBot);
+      if (!someReal && !wasBot) {
+        this.bots.forEach(b => b.destroy());
+        this.bots = [];
+      }
     }
   }
 
@@ -285,15 +288,18 @@ class Room {
     if (_.isEmpty(this.players)) return;
 
     // sort players by score
-    const sorted = _.sortBy(this.players, ['score']).reverse();
+    let leaders = _.sortBy(this.players, ['score']).reverse();
+
+    // exclude dead players
+    leaders = leaders.filter(player => !player.dead);
 
     // give each player their rank
-    sorted.forEach((player, i) => {
+    leaders.forEach((player, i) => {
       player.rank = i + 1;
     });
 
     // cut down to the top 10
-    let leaders = sorted.slice(0, 10);
+    leaders = leaders.slice(0, 10);
 
     // convert to leaderboard-friendly variants of the players
     leaders = leaders.map(player => player.lb);
@@ -346,9 +352,8 @@ class Room {
       if (this.bots[index]) this.bots.splice(index, 1);
 
       // deploy another bot if there aren't enough players yet
-      const nonBots = this.players.length - this.bots.length;
-      const allBots = !Object.values(this.clients).some(client => !client.isBot);
-      if (nonBots < config.bots.keepUntil && !allBots) this.deployBot();
+      const real = Object.values(this.clients).filter(client => !client.isBot);
+      if (real.length < config.bots.keepUntil) this.deployBot();
     });
   }
 
