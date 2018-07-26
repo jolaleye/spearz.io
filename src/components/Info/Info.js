@@ -18,6 +18,15 @@ const Info = ({ open, toggle }) => (
           <a href="https://www.reddit.com/r/spearzio/">Reddit</a>!
         </div>
 
+        <div className="info__privacy">
+          <span>spearz.io does not collect data on its players,</span>
+          <span>but here you go anyway... :)</span>
+          <a className="iubenda-white iubenda-embed" title="Privacy Policy"
+            href="https://www.iubenda.com/privacy-policy/44536004">
+            Privacy Policy
+          </a>
+        </div>
+
         <div className="info__changelog">
           <span className="changelog-label">Changelog</span>
         </div>
