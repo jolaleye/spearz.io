@@ -11,9 +11,12 @@ class HUD extends Component {
     message: false,
     leaderboard: [],
     feed: [],
+    dead: false,
   }
 
   componentDidMount() {
+    this.mounted = true;
+
     this.props.socket.addEventListener('message', packet => {
       const data = unpack(packet.data);
       switch (data._) {
@@ -49,6 +52,10 @@ class HUD extends Component {
     });
   }
 
+  componentWillUnmount() {
+    this.mounted = false;
+  }
+
   showMessage = type => {
     let msg;
     if (type === 'bounds') {
@@ -56,11 +63,11 @@ class HUD extends Component {
       assetManager.sounds.bounds.play();
     }
 
-    this.setState({ message: { type, msg } });
+    if (this.mounted) this.setState({ message: { type, msg } });
   }
 
   clearMessage = type => {
-    if (this.state.message && type === this.state.message.type) {
+    if (this.mounted && this.state.message && type === this.state.message.type) {
       this.setState({ message: false });
     }
 
@@ -71,28 +78,34 @@ class HUD extends Component {
     // reset the message timer so that subsequent messages aren't cleared early
     clearTimeout(this.killMessageTimer);
 
-    this.setState({ message: { type: 'kill', name: name || '<unnamed>' } });
+    if (this.mounted) this.setState({ message: { type: 'kill', name: name || '<unnamed>' } });
 
     // set a timer on the message
     this.killMessageTimer = setTimeout(() => {
       // if the message is still a kill message, clear it
-      if (this.state.message.type === 'kill') {
+      if (this.mounted && this.state.message.type === 'kill') {
         this.setState({ message: false });
       }
     }, 3000);
   }
 
   showDeath = (from, name) => {
-    if (from === 'bounds') {
-      this.setState({ message: {
-        type: 'deathByBounds',
-        msg: 'You were out of bounds... (－‸ლ)',
-      } });
-    } else if (from === 'player') {
-      this.setState({ message: {
-        type: 'deathByPlayer',
-        name: name || '<unnamed>',
-      } });
+    if (this.mounted && from === 'bounds') {
+      this.setState({
+        message: {
+          type: 'deathByBounds',
+          msg: 'You were out of bounds... (－‸ლ)',
+        },
+        dead: true,
+      });
+    } else if (this.mounted && from === 'player') {
+      this.setState({
+        message: {
+          type: 'deathByPlayer',
+          name: name || '<unnamed>',
+        },
+        dead: true,
+      });
     }
 
     // death process finished, remove player and go back to the start screen
@@ -108,7 +121,7 @@ class HUD extends Component {
       active: player.id === this.props.socket.id,
     }));
 
-    this.setState({ leaderboard: leaders });
+    if (this.mounted) this.setState({ leaderboard: leaders });
   }
 
   addToFeed = (type, names) => {
@@ -134,15 +147,15 @@ class HUD extends Component {
       const feed = [...this.state.feed];
       if (feed.length === 5) feed.shift();
       feed.push(message);
-      this.setState({ feed });
+      if (this.mounted) this.setState({ feed });
     }
   }
 
   render = () => (
     <Fragment>
       {this.state.message ? <Message message={this.state.message} /> : null}
-      <Leaderboard leaderboard={this.state.leaderboard} />
-      <Feed feed={this.state.feed} />
+      {this.state.dead ? null : <Leaderboard leaderboard={this.state.leaderboard} />}
+      {this.state.dead ? null : <Feed feed={this.state.feed} />}
     </Fragment>
   );
 }
