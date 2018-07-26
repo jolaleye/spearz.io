@@ -3,6 +3,8 @@
 
   &__content {
     margin-top: 5em;
+    max-height: 85%;
+    border-radius: 6px;
   }
 }
 
@@ -10,13 +12,14 @@
   display: flex;
   flex-flow: column nowrap;
   align-items: center;
-  padding-bottom: 3em;
+  height: 100%;
+  overflow-y: auto;
 
   &__contact {
     display: flex;
     flex-flow: row wrap;
     font-size: 1.5em;
-    margin-bottom: 0.75em;
+    margin-bottom: 0.5em;
 
     & .contact-label {
       margin-right: 0.5em;
@@ -26,7 +29,6 @@
 
   &__reddit {
     font-size: 1.5em;
-    margin-bottom: 2em;
 
     & a {
       color: #ff4500;
@@ -34,6 +36,8 @@
   }
 
   &__changelog {
+    margin: 2.5em 0;
+
     & .changelog-label  {
       font-size: 2em;
       font-weight: 500;
