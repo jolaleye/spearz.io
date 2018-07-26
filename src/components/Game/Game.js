@@ -69,7 +69,6 @@ class Game extends Component {
 
         case 'hit':
           assetManager.sounds.hit.play();
-          if (this.activeManager) this.activeManager.returnSpear();
           break;
 
         case 'dead':

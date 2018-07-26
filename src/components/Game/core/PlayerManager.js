@@ -191,12 +191,10 @@ class PlayerManager {
     this.animateSpear('flying');
     this.local.released = true;
     this.sReleased = true;
-    setTimeout(this.returnSpear, config.spear.cooldown);
-  }
-
-  returnSpear = () => {
-    this.animateSpear('holding');
-    this.local.released = false;
+    setTimeout(() => {
+      this.animateSpear('holding');
+      this.local.released = false;
+    }, config.spear.cooldown);
   }
 
   reconcile = (player, lastTick) => {
@@ -290,7 +288,11 @@ class PlayerManager {
 
     managers.forEach(manager => {
       const hit = SAT.testPolygonPolygon(this.spearBounds, manager.playerBounds);
-      if (hit) this.local.released = false;
+      if (hit) {
+        this.animateSpear('holding');
+        this.local.released = false;
+        assetManager.sounds.hit.play();
+      }
     });
   }
 

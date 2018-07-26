@@ -173,7 +173,7 @@ class Room {
       if (!hit) return;
 
       player.released = false;
-      this.clients[player.id].send(pack('hit'));
+      this.clients[candidate.id].send(pack('hit'));
       this.clients[candidate.id].player.damage(config.damage.hit, 'player', player.name);
 
       // check if the player hit is now dead
