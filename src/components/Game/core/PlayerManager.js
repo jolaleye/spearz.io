@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import * as PIXI from 'pixi.js';
+import SAT from 'sat';
 
 import { lerp, angularLerp, getDistance } from './util';
 import assetManager from '../../../assetManager';
@@ -46,6 +47,14 @@ class PlayerManager {
     );
     this.player.pivot.set(this.player.width / 2, this.player.height / 2);
 
+    this.playerSAT = new SAT.Polygon(
+      new SAT.Vector(this.player.position.x, this.player.position.y),
+      [
+        new SAT.Vector(0, -35), new SAT.Vector(39, 25), new SAT.Vector(22, 33),
+        new SAT.Vector(-22, 33), new SAT.Vector(-39, 25),
+      ],
+    );
+
     // spear sprites & animations
     const flyingSequence = [];
     spriteAtlas.animations.spear.forEach(phase => {
@@ -65,6 +74,14 @@ class PlayerManager {
     this.container.addChild(this.spear);
     this.spear.addChild(this.spearAnimations.holding, this.spearAnimations.flying);
     this.spear.pivot.set(this.spear.width / 2, this.spear.height / 2);
+
+    this.spearSAT = new SAT.Polygon(
+      new SAT.Vector(this.spear.position.x, this.spear.position.y),
+      [
+        new SAT.Vector(-9, -54), new SAT.Vector(9, -54), new SAT.Vector(9, 54),
+        new SAT.Vector(-9, 54),
+      ],
+    );
 
     // health bar sprite
     this.healthBarBg = new PIXI.Sprite(assetManager.textures['health-bar-bg']);
@@ -252,28 +269,28 @@ class PlayerManager {
     this.nameTag.position.set(this.player.position.x, this.player.position.y + 80);
   }
 
+  get playerBounds() {
+    this.playerSAT.pos.x = this.player.position.x;
+    this.playerSAT.pos.y = this.player.position.y;
+    this.playerSAT.setAngle(this.player.rotation);
+
+    return this.playerSAT;
+  }
+
+  get spearBounds() {
+    this.spearSAT.pos.x = this.spear.position.x;
+    this.spearSAT.pos.y = this.spear.position.y;
+    this.spearSAT.setAngle(this.spear.rotation);
+
+    return this.spearSAT;
+  }
+
   checkCollisions = managers => {
     if (!this.local.released) return;
 
-    const spear = {
-      x: this.spear.getGlobalPosition().x,
-      y: this.spear.getGlobalPosition().y,
-      w: this.spear.width,
-      h: this.spear.height,
-    };
-
     managers.forEach(manager => {
-      const player = {
-        x: manager.player.getGlobalPosition().x,
-        y: manager.player.getGlobalPosition().y,
-        w: manager.player.width,
-        h: manager.player.height,
-      };
-
-      const xCollision = spear.x < player.x + player.w && spear.x + spear.w > player.x;
-      const yCollision = spear.y < player.y + player.h && spear.y + spear.h > player.y;
-
-      if (xCollision && yCollision) this.local.released = false;
+      const hit = SAT.testPolygonPolygon(this.spearBounds, manager.playerBounds);
+      if (hit) this.local.released = false;
     });
   }
 
