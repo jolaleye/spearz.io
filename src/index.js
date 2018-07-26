@@ -48,10 +48,12 @@ class App extends Component {
 
         case 'id':
           socket.id = data.id;
+          console.log(`You are player ${data.id}`);
           break;
 
         case 'roomKey':
           this.setState({ roomKey: data.key });
+          console.log(`Connected to room ${data.key}`);
           break;
 
         case 'ready':
@@ -69,6 +71,7 @@ class App extends Component {
 
       // if the connection keeps getting dropped, stop trying
       if (this.state.connectionAttempts < 10) this.connect();
+      else console.log('Can\'t connect to the server :(');
     });
   }
 

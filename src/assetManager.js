@@ -21,6 +21,7 @@ class AssetManager {
   load = async () => {
     this.loadSounds();
     await this.loadImages();
+    console.log('Assets loaded');
   }
 
   loadImages = () => new Promise(resolve => {
