@@ -84,21 +84,21 @@ class Game extends Component {
     window.addEventListener('click', this.throwSpear);
 
     this.serverTick = 0;
-    this.tick = 0;
+    this.currentTick = 0;
     this.sinceSnapshot = 0;
     this.sincePrediction = 0;
 
     // render loop
     this.app.ticker.add(this.renderX);
-    // target tracking
-    this.trackingInterval = setInterval(this.track, config.tickrate);
+    // client ticker
+    this.ticker = setInterval(this.tick, config.tickrate);
 
     this.resize();
   }
 
   componentWillUnmount() {
     this.app.ticker.stop();
-    clearInterval(this.trackingInterval);
+    clearInterval(this.ticker);
     this.playerManagers = [];
     this.app.stage.removeChildren();
     assetManager.sounds.bounds.stop();
@@ -136,8 +136,8 @@ class Game extends Component {
 
 
   stop = () => {
-    // stop target tracking
-    clearInterval(this.trackingInterval);
+    // stop ticker
+    clearInterval(this.ticker);
 
     // remove player health bar, name, spear & play death animation
     this.activeManager.hide({ player: false, spear: true, name: true, health: true });
@@ -167,10 +167,6 @@ class Game extends Component {
       manager.update(this.offset, manager.id === this.props.socket.id);
     });
 
-    // simulate spear hits
-    const otherPlayers = this.playerManagers.filter(mngr => mngr.id !== this.activeManager.id);
-    this.activeManager.checkCollisions(otherPlayers);
-
     // arena rendering
     this.arenaManager.update(this.offset);
 
@@ -178,10 +174,10 @@ class Game extends Component {
     this.pickupManagers.forEach(manager => manager.update(this.offset));
   }
 
-  track = () => {
-    this.tick += 1;
+  tick = () => {
+    this.currentTick += 1;
 
-    if (!this.activeManager || !this.tick) return;
+    if (!this.activeManager || !this.currentTick) return;
 
     const mouse = this.app.renderer.plugins.interaction.mouse.global;
     const target = { x: mouse.x + this.offset.x, y: mouse.y + this.offset.y };
@@ -189,9 +185,16 @@ class Game extends Component {
     if (!Number.isFinite(target.x) || !Number.isFinite(target.y)) return;
 
     // send the target to the server and simulate the effects locally
-    this.props.socket.send(pack('target', { target, tick: this.tick }));
+    this.props.socket.send(pack('target', { target, tick: this.currentTick }));
     this.activeManager.predict(target);
-    this.activeManager.history.push({ target, tick: this.tick });
+    this.activeManager.history.push({ target, tick: this.currentTick });
+
+    // check pick-ups
+    this.activeManager.checkPickups(this.pickupManagers);
+
+    // simulate spear hits
+    const otherPlayers = this.playerManagers.filter(mngr => mngr.id !== this.activeManager.id);
+    this.activeManager.checkHits(otherPlayers);
 
     this.sincePrediction = 0;
   }

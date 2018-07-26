@@ -283,7 +283,7 @@ class PlayerManager {
     return this.spearSAT;
   }
 
-  checkCollisions = managers => {
+  checkHits = managers => {
     if (!this.local.released) return;
 
     managers.forEach(manager => {
@@ -293,6 +293,13 @@ class PlayerManager {
         this.local.released = false;
         assetManager.sounds.hit.play();
       }
+    });
+  }
+
+  checkPickups = managers => {
+    managers.forEach(manager => {
+      const hit = SAT.testCirclePolygon(manager.bounds, this.playerBounds);
+      if (hit && manager.sprite.visible) manager.hide();
     });
   }
 

@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import * as PIXI from 'pixi.js';
+import SAT from 'sat';
 
 import assetManager from '../../../assetManager';
 
@@ -17,12 +18,23 @@ class ScorePickupManager {
     this.sprite = new PIXI.Sprite(texture);
     this.sprite.anchor.set(0.5, 0.5);
 
+    this.pickupSAT = new SAT.Circle(
+      new SAT.Vector(this.sprite.position.x, this.sprite.position.y), 5,
+    );
+
     // fluctuate opacity
     let alphaVariation = 0.01;
     setInterval(() => {
       this.sprite.alpha -= alphaVariation;
       if (this.sprite.alpha < 0.5 || this.sprite.alpha === 1) alphaVariation *= -1;
     }, _.random(10, 20));
+  }
+
+  get bounds() {
+    this.pickupSAT.pos.x = this.sprite.position.x;
+    this.pickupSAT.pos.y = this.sprite.position.y;
+
+    return this.pickupSAT;
   }
 
   hide = () => {
