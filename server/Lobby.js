@@ -9,7 +9,7 @@ class Lobby {
   constructor() {
     this.rooms = {};
 
-    setInterval(this.log.bind(this), config.logFreq);
+    // setInterval(this.log.bind(this), config.logFreq);
   }
 
   log() {
@@ -86,6 +86,8 @@ class Lobby {
       this.rooms[client.room].close();
       delete this.rooms[client.room];
     }
+
+    if (!fromDeath) client.room = null;
   }
 }
 
