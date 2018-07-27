@@ -20,7 +20,7 @@ const Info = ({ open, toggle }) => (
 
         <div className="info__privacy">
           <span>spearz.io does not collect data on its players,</span>
-          <span>but here you go anyway... :)</span>
+          <span>which is why this doesn't say much... :)</span>
           <a className="iubenda-white iubenda-embed" title="Privacy Policy"
             href="https://www.iubenda.com/privacy-policy/44536004">
             Privacy Policy
