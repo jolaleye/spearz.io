@@ -4,7 +4,7 @@ import SAT from 'sat';
 
 import assetManager from '../../../assetManager';
 
-class ScorePickupManager {
+class PickupManager {
   constructor(id, pos) {
     this.id = id;
     this.pos = pos;
@@ -46,4 +46,4 @@ class ScorePickupManager {
   }
 }
 
-export default ScorePickupManager;
+export default PickupManager;

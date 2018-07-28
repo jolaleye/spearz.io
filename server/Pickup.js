@@ -4,7 +4,7 @@ const _ = require('lodash');
 const config = require('./config');
 const { ID } = require('./services/util');
 
-class ScorePickup {
+class Pickup {
   constructor() {
     this.id = ID();
 
@@ -32,4 +32,4 @@ class ScorePickup {
   }
 }
 
-module.exports = ScorePickup;
+module.exports = Pickup;

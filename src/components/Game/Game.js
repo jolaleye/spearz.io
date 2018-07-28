@@ -8,7 +8,7 @@ import HUD from './HUD/HUD';
 import { pack, unpack } from '../../services/cereal';
 import ArenaManager from './core/ArenaManager';
 import PlayerManager from './core/PlayerManager';
-import ScorePickupManager from './core/ScorePickupManager';
+import ScorePickupManager from './core/PickupManager';
 import CanvasHUD from './core/HUD';
 import config from './core/config';
 import assetManager from '../../assetManager';

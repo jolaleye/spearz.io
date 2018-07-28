@@ -6,7 +6,7 @@ const { ID, getDistance } = require('./services/util');
 const { pack } = require('./services/cereal');
 const Player = require('./Player');
 const Quadtree = require('./services/Quadtree');
-const ScorePickup = require('./ScorePickup');
+const Pickup = require('./Pickup');
 const Bot = require('./services/Bot');
 
 class Room {
@@ -19,8 +19,8 @@ class Room {
     this.qtree = new Quadtree({ x: 0, y: 0, length: config.arenaRadius * 2 });
 
     // add initial score pick-ups
-    this.scorePickups = [];
-    this.addScorePickup(config.scorePickups.initialCount);
+    this.pickups = [];
+    this.addPickup(config.pickups.initialCount);
 
     // simulation tick
     this.tick = 0;
@@ -55,7 +55,7 @@ class Room {
       if (this.players[index]) this.players.splice(index, 1);
 
       // remove pick-ups
-      _.times(config.scorePickups.onJoin, () => this.scorePickups.shift());
+      _.times(config.pickups.onJoin, () => this.pickups.shift());
     }
 
     if (!fromDeath) {
@@ -93,7 +93,7 @@ class Room {
     });
 
     // add more pick-ups
-    this.addScorePickup(config.scorePickups.onJoin);
+    this.addPickup(config.pickups.onJoin);
   }
 
   addToQueue(type, clientID, data) {
@@ -137,7 +137,7 @@ class Room {
     this.qtree.clear();
 
     // insert pick-ups
-    this.scorePickups.forEach(pickup => this.qtree.insert(pickup));
+    this.pickups.forEach(pickup => this.qtree.insert(pickup));
 
     // insert players, excluding dead players
     this.players.forEach(player => {
@@ -238,18 +238,18 @@ class Room {
       if (!hit) return;
 
       // delete the pick-up and increase score
-      const index = this.scorePickups.findIndex(pickup => pickup.id === candidate.id);
-      if (index) this.scorePickups.splice(index, 1);
+      const index = this.pickups.indexOf(candidate);
+      if (this.pickups[index]) this.pickups.splice(index, 1);
 
       player.increaseScore(config.score.pickup);
-      this.addScorePickup(1);
+      this.addPickup(1);
     });
   }
 
-  addScorePickup(count) {
+  addPickup(count) {
     _.times(count, () => {
-      const pickup = new ScorePickup();
-      this.scorePickups.push(pickup);
+      const pickup = new Pickup();
+      this.pickups.push(pickup);
     });
   }
 
@@ -328,7 +328,7 @@ class Room {
   }
 
   getNearbyPickups(client, maxDistance = 1000) {
-    const pickups = this.scorePickups.filter(pickup => {
+    const pickups = this.pickups.filter(pickup => {
       const distance = getDistance(
         client.player.pos.x, pickup.pos.x,
         client.player.pos.y, pickup.pos.y,
@@ -351,7 +351,7 @@ class Room {
     bot.on('dead', () => {
       bot.destroy();
 
-      const index = this.bots.findIndex(({ botID }) => botID === bot.botID);
+      const index = this.bots.indexOf(bot);
       if (this.bots[index]) this.bots.splice(index, 1);
 
       // deploy bots if there aren't enough players yet

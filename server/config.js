@@ -35,7 +35,7 @@ module.exports = {
     throwAngleDivisor: 38, // increasing this makes the spear follow a straighter path
   },
 
-  scorePickups: {
+  pickups: {
     initialCount: 100,
     onJoin: 3,
   },
