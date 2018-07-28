@@ -266,10 +266,8 @@ class Room {
         timestamp: Date.now().toString(),
         tick: this.tick,
         last: client.last,
-        players: this.getNearbyPlayers(client, client.viewDistance)
-          .map(player => player.retrieve()),
-        pickups: this.getNearbyPickups(client, client.viewDistance)
-          .map(pickup => pickup.retrieve()),
+        players: this.getNearbyPlayers(client, client.viewDistance),
+        pickups: this.getNearbyPickups(client, client.viewDistance),
       };
 
       client.lastSnapshot = snapshot;
@@ -316,7 +314,7 @@ class Room {
   }
 
   getNearbyPlayers(client, maxDistance = 1000) {
-    return this.players.filter(player => {
+    const players = this.players.filter(player => {
       const distance = getDistance(
         client.player.pos.x, player.pos.x,
         client.player.pos.y, player.pos.y,
@@ -324,10 +322,12 @@ class Room {
 
       return distance.total <= maxDistance;
     });
+
+    return players.map(player => player.retrieve());
   }
 
   getNearbyPickups(client, maxDistance = 1000) {
-    return this.scorePickups.filter(pickup => {
+    const pickups = this.scorePickups.filter(pickup => {
       const distance = getDistance(
         client.player.pos.x, pickup.pos.x,
         client.player.pos.y, pickup.pos.y,
@@ -335,6 +335,8 @@ class Room {
 
       return distance.total <= maxDistance;
     });
+
+    return pickups.map(pickup => pickup.retrieve());
   }
 
   deployBot() {
@@ -351,9 +353,11 @@ class Room {
       const index = this.bots.findIndex(({ botID }) => botID === bot.botID);
       if (this.bots[index]) this.bots.splice(index, 1);
 
-      // deploy another bot if there aren't enough players yet
+      // deploy bots if there aren't enough players yet
       const real = Object.values(this.clients).filter(client => !client.isBot);
-      if (real.length < config.bots.keepUntil) this.deployBot();
+      if (real.length <= config.bots.keepUntil) {
+        _.times(config.bots.count - this.bots.length, this.deployBot.bind(this));
+      }
     });
   }
 
