@@ -41,7 +41,6 @@ module.exports = {
   },
 
   bots: {
-    count: 5,
-    keepUntil: 5,
+    count: 8, // bots fill space up to 8 spots
   },
 };

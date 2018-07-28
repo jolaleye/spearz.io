@@ -2,8 +2,9 @@ const EventEmitter = require('events');
 const WebSocket = require('uws');
 const _ = require('lodash');
 
+const config = require('../config');
 const { pack, unpack } = require('./cereal');
-const { ID } = require('./util');
+const { ID, getDistance } = require('./util');
 
 class Bot extends EventEmitter {
   constructor(roomKey) {
@@ -43,11 +44,6 @@ class Bot extends EventEmitter {
           this.update(data.players.find(player => player.id === this.id));
           break;
 
-        case 'message':
-          // turn the bot around if they go out of bounds
-          if (data.type === 'bounds') this.player.direction += Math.PI;
-          break;
-
         case 'dead':
           this.emit('dead');
           break;
@@ -75,9 +71,15 @@ class Bot extends EventEmitter {
 
     this.tick += 1;
     const { direction, pos } = this.player;
+    let newDirection = direction;
 
+    // check boundary
+    const distanceFromCenter = getDistance(pos.x, 0, pos.y, 0);
+    if (distanceFromCenter.total >= config.arenaRadius) newDirection += Math.PI;
+
+    // move target a bit
     const posNeg = (Math.round(Math.random()) * 2) - 1;
-    const newDirection = direction + (_.random(Math.PI / 20) * posNeg);
+    newDirection += (_.random(Math.PI / 40) * posNeg);
 
     const target = {
       x: pos.x + (Math.cos(newDirection) * 90),
