@@ -246,8 +246,10 @@ class PlayerManager {
     this.player.position.set(this.local.pos.x - offset.x, this.local.pos.y - offset.y);
     this.player.rotation = this.local.direction + (Math.PI / 2);
 
-    if ((!active && this.next.released) ||
-    (this.local.released && this.local.spear.pos.x && this.local.spear.pos.y)) {
+    if (
+      (!active && this.next.released) ||
+      (active && this.local.released && this.local.spear.pos.x && this.local.spear.pos.y)
+    ) {
       // render the spear at its position if it is flying
       this.spear.position.set(this.local.spear.pos.x - offset.x, this.local.spear.pos.y - offset.y);
       this.spear.rotation = this.local.spear.direction + (Math.PI / 2);
