@@ -7,11 +7,9 @@
     "start:server": "nodemon server/index.js",
     "start:client": "react-scripts start",
     "start:dev": "concurrently -k -n \"client,server,css\" -c \"cyan,magenta,blue\" \"npm run start:client\" \"npm run start:server\" \"npm run watch:css\"",
-    "start:prod": "npm run build && set \"NODE_ENV=production\" && npm run start",
     "build": "npm run build:css && react-scripts build",
     "build:css": "node-sass-chokidar --quiet src/ -o src/ --include-path ./node_modules --include-path ./src",
-    "watch:css": "npm run build:css && node-sass-chokidar --quiet src/ -o src/ --watch --recursive --include-path ./node_modules --include-path ./src --usePolling --polling-interval 500",
-    "heroku-postbuild": "npm run build"
+    "watch:css": "npm run build:css && node-sass-chokidar --quiet src/ -o src/ --watch --recursive --include-path ./node_modules --include-path ./src --usePolling --polling-interval 500"
   },
   "dependencies": {
     "bulma": "^0.7.1",
@@ -35,8 +33,5 @@
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.13.0",
     "nodemon": "^1.18.3"
-  },
-  "engines": {
-    "node": "8.11.2"
   }
 }
