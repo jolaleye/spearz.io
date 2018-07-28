@@ -1,0 +1,42 @@
+.changelog {
+  margin: 2.5em 0 1em 0;
+  width: 90%;
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+
+  &__header  {
+    font-size: 2em;
+    font-weight: 500;
+    margin-bottom: 0.5em;
+  }
+}
+
+.releases {
+  width: 100%;
+  height: auto;
+  list-style: none;
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+}
+
+.release {
+  width: 100%;
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+  margin-bottom: 1.5em;
+
+  & .version, & .date {
+    font-size: 1.2em;
+  }
+
+  & .version {
+    font-weight: 500;
+  }
+
+  & .head {
+    margin-bottom: 0.2em;
+  }
+}

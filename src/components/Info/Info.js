@@ -1,6 +1,7 @@
 import React from 'react';
 
 import './Info.css';
+import Changelog from './Changelog/Changelog';
 
 const Info = ({ open, toggle }) => (
   <div className={`info-modal modal ${open ? 'is-active' : ''}`}>
@@ -19,17 +20,13 @@ const Info = ({ open, toggle }) => (
         </div>
 
         <div className="info__privacy">
-          <span>spearz.io does not collect data on its players,</span>
-          <span>which is why this doesn't say much... :)</span>
           <a className="iubenda-white iubenda-embed" title="Privacy Policy"
             href="https://www.iubenda.com/privacy-policy/44536004">
             Privacy Policy
           </a>
         </div>
 
-        <div className="info__changelog">
-          <span className="changelog-label">Changelog</span>
-        </div>
+        <Changelog />
 
       </div>
     </div>
