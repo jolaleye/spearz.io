@@ -8,19 +8,6 @@ const Room = require('./Room');
 class Lobby {
   constructor() {
     this.rooms = {};
-
-    // setInterval(this.log.bind(this), config.logFreq);
-  }
-
-  log() {
-    const roomCount = Object.keys(this.rooms).length;
-
-    let playerCount = 0;
-    Object.values(this.rooms).forEach(room => {
-      playerCount += room.players.length;
-    });
-
-    console.log(`${roomCount} rooms\t${playerCount} players`);
   }
 
   initiate(client) {
@@ -39,7 +26,9 @@ class Lobby {
 
   findRoom() {
     // find a room with space
-    const roomKey = _.findKey(this.rooms, room => room.connections < config.playerLimit);
+    const roomKey = _.findKey(this.rooms, room => (
+      room.connections < config.playerLimit && !room.locked
+    ));
     let room = this.rooms[roomKey];
     // create a new room if they're all full
     if (!room) {
@@ -76,10 +65,10 @@ class Lobby {
   }
 
   // disconnect a client from their room
-  disconnect(client, fromDeath = false) {
+  disconnect(client, left = false) {
     if (!this.rooms[client.room]) return;
 
-    this.rooms[client.room].removeClient(client.id, fromDeath);
+    this.rooms[client.room].removeClient(client.id, left);
 
     // close the room if it's now empty
     if (this.rooms[client.room].connections === 0) {
@@ -87,7 +76,7 @@ class Lobby {
       delete this.rooms[client.room];
     }
 
-    if (!fromDeath) client.room = null;
+    if (left) client.room = null;
   }
 }
 
