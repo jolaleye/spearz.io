@@ -51,7 +51,8 @@ class Room {
   removeClient(id, fromDeath) {
     if (this.clients[id] && this.clients[id].player) {
       // remove the player
-      this.players.splice(this.players.indexOf(this.clients[id].player), 1);
+      const index = this.players.indexOf(this.clients[id].player);
+      if (this.players[index]) this.players.splice(index, 1);
 
       // remove pick-ups
       _.times(config.scorePickups.onJoin, () => this.scorePickups.shift());
