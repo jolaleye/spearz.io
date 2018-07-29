@@ -189,10 +189,10 @@ class Room {
 
       player.released = false;
       this.clients[candidate.id].send(pack('hit'));
-      this.clients[candidate.id].player.damage(config.damage.hit, 'player', player.name);
+      candidate.damage(config.damage.hit, 'player', player.name);
 
       // check if the player hit is now dead
-      if (this.clients[candidate.id].player.dead) {
+      if (candidate.dead) {
         player.increaseScore(config.score.kill);
         this.clients[player.id].send(pack('kill', { name: candidate.name }));
 
@@ -273,7 +273,7 @@ class Room {
     this.history.push({
       tick: this.tick,
       timestamp: Date.now(),
-      players: _.cloneDeep(this.players),
+      players: this.players,
     });
 
     Object.values(this.clients).forEach(client => {
