@@ -11,18 +11,21 @@
   flex-flow: column nowrap;
   align-items: center;
 
-  & span {
-    color: white;
-    font-size: 1.8em;
-    font-weight: 500;
-    text-align: center;
-    margin-top: 5em;
-    margin-bottom: 2em;
-  }
+  padding: 0.5em;
 
   & img {
-    width: 80%;
+    width: 95%;
     height: auto;
+    margin-top: 15vh;
+    margin-bottom: 5vh;
+  }
+
+  & .text {
+    color: white;
+    text-align: center;
+    font-weight: 500;
+    font-size: 1.4em;
+    padding: 0.3em;
   }
 
   & .icon {
@@ -35,9 +38,5 @@
     left: 50%;
     transform: translateX(-50%);
     bottom: 2em;
-
-    &:hover {
-      cursor: pointer;
-    }
   }
 }

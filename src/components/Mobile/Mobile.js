@@ -16,9 +16,14 @@ class Mobile extends Component {
 
   render = () => (
     <Fragment>
-      <div className="mobile is-hidden-desktop">
-        <span>Please move to a larger device to play :)</span>
+      <div className="mobile">
         <img src={logo} alt="spearz.io"/>
+        <div className="text">
+          <span>
+            Spearz.io isn't designed for touch devices. Please move to another device to play.
+          </span>
+          <span role="img" aria-label="Slightly Smiling Face"> 🙂</span>
+        </div>
         <InfoIcon className="icon" onClick={this.toggleInfo} />
       </div>
       <Info open={this.state.info} toggle={this.toggleInfo} />
