@@ -90,7 +90,8 @@ class Room {
 
     // deploy bots if there aren't enough players
     if (config.bots.enabled && this.players.length < config.bots.count && !this.locked) {
-      _.times(config.bots.count - this.players.length, this.deployBot.bind(this));
+      const count = _.clamp(config.bots.count - this.players.length, 0, config.bots.count - 1);
+      _.times(count, this.deployBot.bind(this));
     }
   }
 
