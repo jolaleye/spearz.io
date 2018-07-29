@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 
 import './main.css';
@@ -10,6 +10,7 @@ import assetManager from './assetManager';
 
 class App extends Component {
   state = {
+    mobile: false,
     mode: 'start',
     socket: null,
     connected: false,
@@ -19,6 +20,9 @@ class App extends Component {
   }
 
   async componentDidMount() {
+    // check for mobile
+    window.addEventListener('touchstart', () => this.setState({ mobile: true }));
+
     // WebSocket connection
     this.connect();
 
@@ -80,21 +84,15 @@ class App extends Component {
   }
 
   render = () => {
-    if (this.state.mode === 'start') {
+    if (this.state.mobile) {
+      return <Mobile />;
+    } else if (this.state.mode === 'start') {
       return (
-        <Fragment>
-          <StartContainer socket={this.state.socket} connected={this.state.connected}
-            loaded={this.state.loaded} roomKey={this.state.roomKey} />
-          <Mobile />
-        </Fragment>
+        <StartContainer socket={this.state.socket} connected={this.state.connected}
+          loaded={this.state.loaded} roomKey={this.state.roomKey} />
       );
     } else if (this.state.mode === 'game') {
-      return (
-        <Fragment>
-          <Game socket={this.state.socket} changeMode={this.changeMode} />
-          <Mobile />
-        </Fragment>
-      );
+      return <Game socket={this.state.socket} changeMode={this.changeMode} />;
     }
 
     return null;

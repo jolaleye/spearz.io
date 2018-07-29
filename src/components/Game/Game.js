@@ -116,7 +116,7 @@ class Game extends Component {
   }
 
   render = () => (
-    <div className="game is-hidden-touch">
+    <div className="game">
       <canvas ref={this.canvasRef} />
       <HUD socket={this.props.socket} changeMode={this.props.changeMode} />
     </div>

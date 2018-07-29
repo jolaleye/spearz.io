@@ -8,7 +8,7 @@ const Start = ({
   connected, loaded, nickname, handleNameChange, audio,
   toggleAudio, toggleModal, toggleInfo, joinGame,
 }) => (
-  <div className="start is-hidden-touch">
+  <div className="start">
 
     <img className="start__logo" src={logo} alt="Spearz.io" />
 
