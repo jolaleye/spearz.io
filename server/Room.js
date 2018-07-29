@@ -285,7 +285,6 @@ class Room {
         pickups: this.getNearbyPickups(client, client.viewDistance),
       };
 
-      client.lastSnapshot = snapshot;
       client.send(pack('snapshot', snapshot));
     });
   }

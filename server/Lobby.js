@@ -1,5 +1,3 @@
-const _ = require('lodash');
-
 const config = require('./config');
 const { ID } = require('./services/util');
 const { pack } = require('./services/cereal');
@@ -20,23 +18,25 @@ class Lobby {
     client.send(pack('ping'));
 
     // find a room
-    const room = this.findRoom();
-    this.connect(client, room.key);
+    const key = this.findRoom();
+    this.connect(client, key);
   }
 
   findRoom() {
     // find a room with space
-    const roomKey = _.findKey(this.rooms, room => (
-      room.connections < config.playerLimit && !room.locked
-    ));
+    const roomKey = Object.keys(this.rooms).find(key => {
+      const room = this.rooms[key];
+      return room.connections < config.playerLimit && !room.locked;
+    });
     let room = this.rooms[roomKey];
-    // create a new room if they're all full
+
+    // create a new room if needed
     if (!room) {
       room = new Room();
       this.rooms[room.key] = room;
     }
 
-    return room;
+    return room.key;
   }
 
   joinRoom(client, key) {
@@ -49,6 +49,9 @@ class Lobby {
     } else if (this.rooms[key].connections >= config.playerLimit) {
       // room is full
       client.send(pack('keyMsg', { code: 0, msg: 'That room is full' }));
+    } else if (this.rooms[key].locked) {
+      // room is locked
+      client.send(pack('keyMsg', { code: 0, msg: 'That room is locked' }));
     } else {
       // room exists and has space
       this.disconnect(client);
