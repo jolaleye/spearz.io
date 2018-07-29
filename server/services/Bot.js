@@ -13,7 +13,7 @@ class Bot extends EventEmitter {
     this.roomKey = roomKey;
 
     this.botID = ID();
-    this.socket = new WebSocket(`ws://localhost:${process.env.PORT || 3001}`);
+    this.socket = new WebSocket('ws://localhost:3001');
 
     this.socket.on('open', () => {
       this.socket.send(pack('joinRoom', { key: roomKey }));
