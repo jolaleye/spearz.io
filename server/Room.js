@@ -38,8 +38,10 @@ class Room {
     this.pingPong = setInterval(this.ping.bind(this), config.pingRate);
 
     // rooms start with some bots so they aren't completely empty
-    this.bots = [];
-    _.times(config.bots.count - 1, this.deployBot.bind(this));
+    if (config.bots.enabled) {
+      this.bots = [];
+      _.times(config.bots.count - 1, this.deployBot.bind(this));
+    }
   }
 
   addClient(client) {
@@ -64,14 +66,16 @@ class Room {
     if (left) {
       this.connections -= 1;
 
-      const wasReal = this.clients[id] ? !this.clients[id].isBot : true;
-      const someReal = Object.values(this.clients).some(client => !client.isBot);
-      // if the room is only bots and it wasn't a bot that just left, destroy them all
-      if (!someReal && wasReal) {
-        this.locked = true;
-        this.bots.forEach(bot => bot.destroy());
-        this.bots = [];
-        return;
+      if (config.bots.enabled) {
+        const wasReal = this.clients[id] ? !this.clients[id].isBot : true;
+        const someReal = Object.values(this.clients).some(client => !client.isBot);
+        // if the room is only bots and it wasn't a bot that just left, destroy them all
+        if (!someReal && wasReal) {
+          this.locked = true;
+          this.bots.forEach(bot => bot.destroy());
+          this.bots = [];
+          return;
+        }
       }
 
       if (!this.clients[id]) return;
@@ -85,7 +89,7 @@ class Room {
     }
 
     // deploy bots if there aren't enough players
-    if (this.players.length < config.bots.count && !this.locked) {
+    if (config.bots.enabled && this.players.length < config.bots.count && !this.locked) {
       _.times(config.bots.count - this.players.length, this.deployBot.bind(this));
     }
   }

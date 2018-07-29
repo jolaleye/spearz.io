@@ -41,6 +41,7 @@ module.exports = {
   },
 
   bots: {
-    count: 8, // bots fill space up to 8 spots
+    enabled: true,
+    count: 5, // bots fill space up to 5 spots
   },
 };
