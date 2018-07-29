@@ -16,20 +16,21 @@
   overflow-y: auto;
 
   &__contact {
-    display: flex;
-    flex-flow: row wrap;
-    font-size: 1.5em;
+    width: 95%;
+    font-size: 1.2em;
     margin-bottom: 0.5em;
+    text-align: center;
 
     & .contact-label {
-      margin-right: 0.5em;
       font-weight: 500;
     }
   }
 
   &__reddit {
+    width: 95%;
     font-size: 1.5em;
     margin-bottom: 0.75em;
+    text-align: center;
 
     & a {
       color: #ff4500;

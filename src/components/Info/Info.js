@@ -11,7 +11,8 @@ const Info = ({ open, toggle }) => (
       <div className="box info">
 
         <div className="info__contact">
-          <span className="contact-label">Contact:</span>contact.spearz@gmail.com
+          <span className="contact-label">Contact: </span>
+          <span>contact.spearz@gmail.com</span>
         </div>
 
         <div className="info__reddit">
