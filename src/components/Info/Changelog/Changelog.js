@@ -9,7 +9,7 @@ const Changelog = () => (
 
       <li className="release">
         <div className="head">
-          <span className="version">v1.0.0</span>  |  <span className="date">7.28.18</span>
+          <span className="version">v1.0.0</span>  |  <span className="date">7.29.18</span>
         </div>
         <ul className="changes">
           <li className="change">
