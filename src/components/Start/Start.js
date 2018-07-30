@@ -38,6 +38,12 @@ const Start = ({
       <Info className="icon" onClick={toggleInfo} />
     </div>
 
+    <div className="start__more">
+      <a href="http://iogames.space" target="_blank" rel="noopener noreferrer">
+        More IO Games
+      </a>
+    </div>
+
   </div>
 );
 
