@@ -130,12 +130,13 @@
   left: 0;
   bottom: 2em;
   padding: 0.5em 1em;
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: rgba(0, 0, 0, 0.2);
   border-top-right-radius: 2em;
   border-bottom-right-radius: 2em;
 
   & a {
     color: rgb(223, 223, 223);
     margin-right: 0.2em;
+    font-size: 0.8em;
   }
 }
