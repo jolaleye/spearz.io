@@ -34,6 +34,9 @@ class Room {
     // send clients the leaderboard
     this.lbTick = setInterval(this.updateLeaderboard.bind(this), config.leaderboardRate);
 
+    // update clients' minimaps
+    this.mapTick = setInterval(this.updateMinimap.bind(this), config.minimapRate);
+
     // measure each client's latency
     this.pingPong = setInterval(this.ping.bind(this), config.pingRate);
 
@@ -282,7 +285,7 @@ class Room {
         timestamp: Date.now().toString(),
         tick: this.tick,
         last: client.last,
-        players: this.getNearbyPlayers(client, client.viewDistance),
+        players: this.getNearbyPlayers(client, client.viewDistance, true),
         pickups: this.getNearbyPickups(client, client.viewDistance),
       };
 
@@ -328,13 +331,32 @@ class Room {
     });
   }
 
-  getNearbyPlayers(client, maxDistance = 1000) {
+  updateMinimap() {
+    if (_.isEmpty(this.players)) return;
+
+    // collect player positions
+    const players = this.players.map(player => ({
+      x: Math.round(player.pos.x / 50), y: Math.round(player.pos.y / 50),
+    }));
+
+    Object.values(this.clients).forEach(client => {
+      client.send(pack('map', {
+        players,
+        current: {
+          x: Math.round(client.player.pos.x / 50), y: Math.round(client.player.pos.y / 50),
+        },
+      }));
+    });
+  }
+
+  getNearbyPlayers(client, maxDistance = 1000, include = true) {
     const players = this.players.filter(player => {
       const distance = getDistance(
         client.player.pos.x, player.pos.x,
         client.player.pos.y, player.pos.y,
       );
 
+      if (!include && player.id === client.id) return false;
       return distance.total <= maxDistance;
     });
 
@@ -373,6 +395,7 @@ class Room {
     clearInterval(this.simTick);
     clearInterval(this.snapTick);
     clearInterval(this.lbTick);
+    clearInterval(this.mapTick);
   }
 }
 

@@ -6,6 +6,7 @@ module.exports = {
   playerLimit: 100,
   pingRate: 1000,
   logFreq: 30000,
+  minimapRate: 1500,
 
   damage: {
     bounds: 10,

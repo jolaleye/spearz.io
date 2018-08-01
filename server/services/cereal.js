@@ -123,6 +123,14 @@ const lexicon = {
     type: 'pong',
     schema: sp.build({ _: 'uint' }),
   },
+  21: {
+    type: 'map',
+    schema: sp.build({
+      _: 'uint',
+      players: [{ x: 'int', y: 'int' }],
+      current: { x: 'int', y: 'int' },
+    }),
+  },
 };
 
 exports.pack = (type, data = {}) => {
