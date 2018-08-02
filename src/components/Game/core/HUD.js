@@ -58,9 +58,11 @@ class HUD {
     // show other players
     players.forEach(player => {
       const current = getDistance(player.x, currentPlayer.x, player.y, currentPlayer.y).total === 0;
-      if (current) return;
+      const outOfBounds = getDistance(player.x, 0, player.y, 0).total >= 100;
+      if (current || outOfBounds) return;
 
       const point = new PIXI.Sprite(this.mapPoint);
+      point.anchor.set(0.5, 0.5);
       point.position.set(player.x, player.y);
       this.minimap.addChild(point);
     });
