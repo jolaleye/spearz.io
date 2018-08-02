@@ -36,8 +36,9 @@ module.exports = {
   },
 
   pickups: {
-    initialCount: 100,
-    onJoin: 5,
+    initialCount: 50,
+    onJoin: 10,
+    max: 200,
   },
 
   bots: {

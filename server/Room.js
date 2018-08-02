@@ -265,11 +265,12 @@ class Room {
       if (this.pickups[index]) this.pickups.splice(index, 1);
 
       player.increaseScore(config.score.pickup);
-      this.addPickup(1);
+      this.addPickup();
     });
   }
 
-  addPickup(count) {
+  addPickup(count = 1) {
+    if (this.pickups.length >= config.pickups.max) return;
     _.times(count, () => {
       const pickup = new Pickup();
       this.pickups.push(pickup);
