@@ -5,8 +5,7 @@ module.exports = {
   arenaRadius: 5000,
   playerLimit: 100,
   pingRate: 1000,
-  logFreq: 30000,
-  minimapRate: 1500,
+  minimapRate: 1700,
 
   damage: {
     bounds: 10,
