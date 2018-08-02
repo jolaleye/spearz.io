@@ -10,7 +10,7 @@ class Lobby {
 
   initiate(client) {
     // assign the client an ID
-    client.id = ID(2);
+    client.id = ID();
     client.send(pack('id', { id: client.id }));
 
     // ping
