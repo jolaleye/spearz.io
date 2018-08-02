@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
+import _ from 'lodash';
+import { Howler } from 'howler';
 
 import './main.css';
 import StartContainer from './components/Start/StartContainer';
@@ -17,6 +19,8 @@ class App extends Component {
     connectionAttempts: 0,
     loaded: false,
     roomKey: '',
+    nickname: '',
+    audio: true,
   }
 
   async componentDidMount() {
@@ -79,8 +83,24 @@ class App extends Component {
     });
   }
 
+  handleNameChange = event => {
+    this.setState({ nickname: event.target.value });
+  }
+
+  joinGame = event => {
+    event.preventDefault();
+    if (this.state.connected && this.state.loaded) {
+      this.state.socket.send(pack('joinGame', { nickname: _.trim(this.state.nickname) }));
+    }
+  }
+
   changeMode = mode => {
     this.setState({ mode });
+  }
+
+  toggleAudio = async () => {
+    await this.setState(prevState => ({ audio: !prevState.audio }));
+    Howler.mute(!this.state.audio);
   }
 
   render = () => {
@@ -89,7 +109,9 @@ class App extends Component {
     } else if (this.state.mode === 'start') {
       return (
         <StartContainer socket={this.state.socket} connected={this.state.connected}
-          loaded={this.state.loaded} roomKey={this.state.roomKey} />
+          loaded={this.state.loaded} roomKey={this.state.roomKey}
+          audio={this.state.audio} toggleAudio={this.toggleAudio} nickname={this.state.nickname}
+          handleNameChange={this.handleNameChange} joinGame={this.joinGame} />
       );
     } else if (this.state.mode === 'game') {
       return <Game socket={this.state.socket} changeMode={this.changeMode} />;
