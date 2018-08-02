@@ -55,15 +55,9 @@ class Room {
   }
 
   removeClient(id, left) {
-    // client had a player
-    if (this.clients[id] && this.clients[id].player) {
-      // remove the player
-      const index = this.players.indexOf(this.clients[id].player);
-      if (this.players[index]) this.players.splice(index, 1);
-
-      // remove pick-ups
-      _.times(config.pickups.onJoin, () => this.pickups.shift());
-    }
+    // remove the player
+    const index = this.players.findIndex(player => player.id === id);
+    if (this.players[index]) this.players.splice(index, 1);
 
     // client left the game
     if (left) {
@@ -102,6 +96,17 @@ class Room {
   joinGame(client, nickname) {
     this.clients[client.id] = client;
     client.player = new Player(client, nickname);
+
+    client.player.on('deathByBounds', () => {
+      // notify players through the feed
+      Object.values(this.clients).forEach(clnt => {
+        clnt.send(pack('feed', { type: 'bounds', names: [client.player.name] }));
+      });
+
+      // expire the player in case they aren't removed
+      setTimeout(() => this.removeClient(client.id), config.player.expiration);
+    });
+
     this.players.push(client.player);
     client.send(pack('ready'));
 

@@ -38,7 +38,7 @@ module.exports = {
 
   pickups: {
     initialCount: 100,
-    onJoin: 3,
+    onJoin: 5,
   },
 
   bots: {

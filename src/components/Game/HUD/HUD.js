@@ -140,6 +140,10 @@ class HUD extends Component {
         message = `${names[0] || '<unnamed>'} killed ${names[1] || '<unnamed>'}`;
         break;
 
+      case 'bounds':
+        message = `${names[0] || '<unnamed>'} ran away`;
+        break;
+
       default: break;
     }
 

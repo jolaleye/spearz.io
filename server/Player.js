@@ -1,3 +1,4 @@
+const EventEmitter = require('events');
 const _ = require('lodash');
 const { Vector, Polygon } = require('sat');
 
@@ -6,8 +7,9 @@ const { getDistance } = require('./services/util');
 const Spear = require('./Spear');
 const { pack } = require('./services/cereal');
 
-class Player {
+class Player extends EventEmitter {
   constructor(client, nickname) {
+    super();
     this.client = client;
     this.id = client.id;
     this.name = nickname;
@@ -134,6 +136,7 @@ class Player {
     if (this.health === 0 && !this.dead) {
       this.dead = true;
       this.client.send(pack('dead', { from, name }));
+      if (from === 'bounds') this.emit('deathByBounds');
     }
   }
 
