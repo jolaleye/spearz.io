@@ -16,6 +16,7 @@ class App extends Component {
     mode: 'start',
     socket: null,
     connected: false,
+    ready: false,
     connectionAttempts: 0,
     loaded: false,
     roomKey: '',
@@ -43,11 +44,9 @@ class App extends Component {
 
     this.setState(prevState => ({ socket, connectionAttempts: prevState.connectionAttempts + 1 }));
 
-    socket.addEventListener('open', () => {
-      this.setState({ connected: true });
-    });
+    socket.addEventListener('open', () => this.setState({ connected: true }));
 
-    socket.addEventListener('message', packet => {
+    socket.addEventListener('message', async packet => {
       const data = unpack(packet.data);
       switch (data._) {
         case 'ping':
@@ -57,11 +56,13 @@ class App extends Component {
         case 'id':
           socket.id = data.id;
           console.log(`You are player ${data.id}`);
+          if (socket.id && this.state.roomKey) this.setState({ ready: true });
           break;
 
         case 'roomKey':
-          this.setState({ roomKey: data.key });
+          await this.setState({ roomKey: data.key });
           console.log(`Connected to room ${data.key}`);
+          if (socket.id && this.state.roomKey) this.setState({ ready: true });
           break;
 
         case 'ready':
@@ -74,7 +75,7 @@ class App extends Component {
 
     // if the connection drops, go back to the start screen and reconnect
     socket.addEventListener('close', () => {
-      this.setState({ connected: false });
+      this.setState({ connected: false, ready: false });
       this.changeMode('start');
 
       // if the connection keeps getting dropped, stop trying
@@ -89,7 +90,7 @@ class App extends Component {
 
   joinGame = event => {
     event.preventDefault();
-    if (this.state.connected && this.state.loaded) {
+    if (this.state.connected && this.state.ready && this.state.loaded) {
       this.state.socket.send(pack('joinGame', { nickname: _.trim(this.state.nickname) }));
     }
   }
@@ -108,10 +109,11 @@ class App extends Component {
       return <Mobile />;
     } else if (this.state.mode === 'start') {
       return (
-        <StartContainer socket={this.state.socket} connected={this.state.connected}
-          loaded={this.state.loaded} roomKey={this.state.roomKey}
-          audio={this.state.audio} toggleAudio={this.toggleAudio} nickname={this.state.nickname}
-          handleNameChange={this.handleNameChange} joinGame={this.joinGame} />
+        <StartContainer socket={this.state.socket}
+          ready={this.state.connected && this.state.ready && this.state.loaded}
+          roomKey={this.state.roomKey} audio={this.state.audio} toggleAudio={this.toggleAudio}
+          nickname={this.state.nickname} handleNameChange={this.handleNameChange}
+          joinGame={this.joinGame} />
       );
     } else if (this.state.mode === 'game') {
       return <Game socket={this.state.socket} changeMode={this.changeMode} />;

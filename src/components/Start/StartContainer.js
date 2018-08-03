@@ -20,11 +20,11 @@ class StartContainer extends Component {
 
   render = () => (
     <Fragment>
-      <Start connected={this.props.connected} loaded={this.props.loaded}
-        nickname={this.props.nickname} handleNameChange={this.props.handleNameChange}
-        audio={this.props.audio} toggleAudio={this.props.toggleAudio} toggleModal={this.toggleModal}
+      <Start ready={this.props.ready} nickname={this.props.nickname}
+        handleNameChange={this.props.handleNameChange} audio={this.props.audio}
+        toggleAudio={this.props.toggleAudio} toggleModal={this.toggleModal}
         toggleInfo={this.toggleInfo} joinGame={this.props.joinGame} />
-      {this.props.connected
+      {this.props.ready
         ? <RoomModalContainer socket={this.props.socket} modal={this.state.modal}
             toggleModal={this.toggleModal} roomKey={this.props.roomKey} />
         : null

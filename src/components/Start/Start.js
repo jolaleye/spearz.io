@@ -5,7 +5,7 @@ import './Start.css';
 import logo from '../../assets/logo.svg';
 
 const Start = ({
-  connected, loaded, nickname, handleNameChange, audio,
+  ready, nickname, handleNameChange, audio,
   toggleAudio, toggleModal, toggleInfo, joinGame,
 }) => (
   <div className="start">
@@ -15,7 +15,7 @@ const Start = ({
     <form className="start__form" onSubmit={joinGame}>
       <input className="input" type="text" value={nickname} placeholder="Nickname" maxLength="12"
         spellCheck="false" onChange={handleNameChange} />
-      {!connected || !loaded
+      {!ready
         ? <button className="button is-rounded is-loading">Loading...</button>
         : <button className="button is-rounded" type="submit">PLAY</button>
       }
