@@ -115,6 +115,7 @@ class PlayerManager {
     if (!this.next) this.next = player;
 
     // state that should be immediately synced
+    this.local.dead = player.dead;
     this.local.health = player.health;
     this.sReleased = player.released;
   }
@@ -289,6 +290,7 @@ class PlayerManager {
     if (!this.local.released) return;
 
     managers.forEach(manager => {
+      if (manager.local.dead) return;
       const hit = SAT.testPolygonPolygon(this.spearBounds, manager.playerBounds);
       if (hit) {
         this.animateSpear('holding');
