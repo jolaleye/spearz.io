@@ -33,7 +33,6 @@ const lexicon = {
     schema: sp.build({
       _: 'uint',
       timestamp: 'string',
-      tick: 'uint',
       last: 'uint',
       players: [{
         id: 'string',

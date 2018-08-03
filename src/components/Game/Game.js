@@ -83,7 +83,6 @@ class Game extends Component {
     window.addEventListener('keydown', this.throwSpear);
     window.addEventListener('click', this.throwSpear);
 
-    this.serverTick = 0;
     this.currentTick = 0;
     this.sinceSnapshot = 0;
     this.sincePrediction = 0;
@@ -176,6 +175,7 @@ class Game extends Component {
 
   tick = () => {
     this.currentTick += 1;
+    this.sincePrediction = 0;
 
     if (!this.activeManager || !this.currentTick) return;
 
@@ -195,8 +195,6 @@ class Game extends Component {
     // simulate spear hits
     const otherPlayers = this.playerManagers.filter(mngr => mngr.id !== this.activeManager.id);
     this.activeManager.checkHits(otherPlayers);
-
-    this.sincePrediction = 0;
   }
 
   throwSpear = event => {
@@ -212,7 +210,7 @@ class Game extends Component {
 
   // new snapshot received
   sync = snapshot => {
-    this.serverTick = snapshot.tick;
+    this.sinceSnapshot = 0;
 
     // remove managers for players who aren't present
     this.playerManagers.forEach((manager, i) => {
@@ -286,8 +284,6 @@ class Game extends Component {
         this.pickupManagers.push(manager);
       }
     });
-
-    this.sinceSnapshot = 0;
   }
 }
 

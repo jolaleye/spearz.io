@@ -289,7 +289,6 @@ class Room {
     Object.values(this.clients).forEach(client => {
       const snapshot = {
         timestamp: Date.now().toString(),
-        tick: this.tick,
         last: client.last,
         players: this.getNearbyPlayers(client, client.viewDistance, true),
         pickups: this.getNearbyPickups(client, client.viewDistance),
