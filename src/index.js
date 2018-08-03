@@ -39,6 +39,7 @@ class App extends Component {
   connect = () => {
     const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
     const host = process.env.NODE_ENV === 'production' ? 'spearz.io' : 'localhost:3001';
+    // const { host } = window.location;
     const socket = new WebSocket(`${protocol}://${host}`);
     socket.binaryType = 'arraybuffer';
 
