@@ -140,3 +140,23 @@
     font-size: 0.8em;
   }
 }
+
+.start__privacy {
+  width: 70%;
+  color: white;
+  opacity: 0.6;
+  position: absolute;
+  bottom: 1.3em;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  font-size: 0.7em;
+
+  & .moreinfo {
+    text-decoration: underline;
+
+    &:hover {
+      cursor: pointer;
+    }
+  }
+}
