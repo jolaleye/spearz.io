@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 
 import './Info.css';
 import Changelog from './Changelog/Changelog';
-import Privacy from '../Privacy/Privacy';
+import Privacy from './Privacy/Privacy';
 
 class Info extends Component {
   state = {
