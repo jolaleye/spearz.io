@@ -3,12 +3,10 @@ import { Users, Volume2, VolumeX, Info } from 'react-feather';
 
 import './Start.css';
 import logo from '../../assets/logo.svg';
-import Privacy from '../Privacy/Privacy';
 
 const Start = ({
   ready, nickname, handleNameChange, audio,
   toggleAudio, toggleModal, toggleInfo, joinGame,
-  privacy, togglePrivacy,
 }) => (
   <div className="start">
 
@@ -41,18 +39,10 @@ const Start = ({
     </div>
 
     <div className="start__more">
-      <a href="http://iogames.space" target="_blank" rel="noopener noreferrer">
+      <a href="https://www.crazygames.com/c/io" target="_blank" rel="noopener noreferrer">
         More IO Games
       </a>
     </div>
-
-    <div className="start__privacy">
-      {/* eslint-disable */}
-      <span>Cookies are used by a third party (Google) to serve ads (Google Adsense) and analyze traffic (Google Analytics). By continuing to use and play spearz.io you consent to the use of cookies. </span>
-      {/* eslint-enable */}
-      <span className="moreinfo" onClick={togglePrivacy}>More Information.</span>
-    </div>
-    <Privacy open={privacy} toggle={togglePrivacy} />
 
   </div>
 );
