@@ -22,12 +22,12 @@ class Info extends Component {
 
           <div className="info__contact">
             <span className="contact-label">Contact: </span>
-            <span>contact.spearz@gmail.com</span>
+            <span>***@gmail.com</span>
           </div>
 
           <div className="info__reddit">
             <span>Join the community on </span>
-            <a href="https://www.reddit.com/r/spearzio/">Reddit</a>!
+            <a href="">Reddit</a>!
           </div>
 
           <span className="info__privacy" onClick={this.togglePrivacy}>Privacy & Cookies</span>
